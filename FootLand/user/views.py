@@ -1,12 +1,17 @@
 from django.contrib.auth import authenticate, login as auth_login
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import user_registration
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.decorators import login_required
+from .models import Product
+from .forms import ProductForm
+from django.contrib.auth.decorators import login_required
 
 def home(request):
     return render(request, 'home.html')
+def user_dashboard(request):
+    return render(request, 'user_dashboard.html')
 
 def login(request):
     if request.method == 'POST':
@@ -74,6 +79,45 @@ def delete_customer(request, id):
         messages.error(request, 'Customer does not exist!')
     
     return redirect('view_customers')
+
+
+
+
+def add_product(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Product successfully added!')
+            return redirect('add_product')
+        else:
+            messages.error(request, 'Error adding product. Please check the form.')
+    else:
+        form = ProductForm()
+    
+    return render(request, 'add_product.html', {'form': form})
+
+def view_product(request):
+    products = Product.objects.all()
+    return render(request, 'view_product.html', {'products': products})
+
+def delete_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    product.delete()
+    return redirect('view_product')
+
+def edit_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            return redirect('view_product')
+    else:
+        form = ProductForm(instance=product)
+
+    return render(request, 'edit_product.html', {'form': form, 'product': product})
 
 @login_required
 def cart(request):

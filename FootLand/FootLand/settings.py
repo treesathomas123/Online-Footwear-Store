@@ -129,3 +129,9 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+
+LOGIN_URL = '/login/'  # Or whatever path your login page is at
+LOGIN_REDIRECT_URL = '/view_product/'  # Redirect here after login

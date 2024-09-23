@@ -111,13 +111,13 @@
                 <p>Hello, Admin</p>
             </div>
             <nav class="menu">
-                <a href="admin_dashboard">Dashboard</a>
+                <a href="{%url 'admin_dashboard'%}">Dashboard</a>
                 
                 <a href="{% url 'view_customers' %}">Customers</a>
                 <a href="#">Category</a>
                 <a href="#">Sizes</a>
-                <a href="#">Product Sizes</a>
-                <a href="#">Products</a>
+                <a href="{% url 'view_product'%}"> View Product </a>
+                <a href="{% url 'add_product'%}">Products</a>
                 <a href="#">Orders</a>
             </nav>
         </aside>

@@ -1,0 +1,173 @@
+{%load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .product-form {
+            background-color: #fff;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-form h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .product-form label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .product-form input,
+        .product-form textarea,
+        .product-form select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .product-form button {
+            width: 100%;
+            padding: 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .product-form button:hover {
+            background-color: #218838;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .success {
+            color: green;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="product-form">
+    <h2>Add Product</h2>
+    <form method="POST" enctype="multipart/form-data" action="">
+        <!-- CSRF Token for Django -->
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+        
+        <!-- Product Name -->
+        <label for="name">Product Name:</label>
+        <input type="text" id="name" name="name" required oninput="validateName()" placeholder="Enter product name">
+        <small id="nameError" class="error"></small>
+
+        <!-- Description -->
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required oninput="validateDescription()" placeholder="Enter product description (max 100 words)"></textarea>
+        <small id="descError" class="error"></small>
+
+        <!-- Brand -->
+        <label for="brand">Brand:</label>
+        <input type="text" id="brand" name="brand" required placeholder="Enter brand name">
+
+        <!-- Price -->
+        <label for="price">Price:</label>
+        <input type="number" id="price" name="price" required min="0" oninput="validatePrice()" placeholder="Enter product price">
+        <small id="priceError" class="error"></small>
+
+        <!-- Stock Quantity -->
+        <label for="stock_quantity">Stock Quantity:</label>
+        <input type="number" id="stock_quantity" name="stock_quantity" required min="0" placeholder="Enter stock quantity">
+
+        <!-- Image -->
+        <label for="image">Product Image:</label>
+        <input type="file" id="image" name="image" required accept=".jpg,.jpeg,.png" onchange="validateImage()">
+        <small id="imageError" class="error"></small>
+
+        <!-- Size -->
+        <label for="size">Size:</label>
+        <input type="text" id="size" name="size" placeholder="Enter product size">
+
+        <!-- Color -->
+        <label for="color">Color:</label>
+        <input type="text" id="color" name="color" placeholder="Enter product color">
+
+        <!-- Submit Button -->
+        <button type="submit">Add Product</button>
+
+        <small id="successMessage" class="success"></small>
+    </form>
+</div>
+
+<script>
+    function validateName() {
+        const nameField = document.getElementById('name');
+        const errorField = document.getElementById('nameError');
+        const regex = /^[A-Z][a-zA-Z\s]*$/;
+
+        if (!regex.test(nameField.value)) {
+            errorField.textContent = 'Name must start with a capital letter and contain no special characters.';
+        } else {
+            errorField.textContent = '';
+        }
+    }
+
+    function validateDescription() {
+        const descField = document.getElementById('description');
+        const errorField = document.getElementById('descError');
+        const wordCount = descField.value.split(/\s+/).length;
+
+        if (wordCount > 100) {
+            errorField.textContent = 'Description cannot exceed 100 words.';
+        } else {
+            errorField.textContent = '';
+        }
+    }
+
+    function validatePrice() {
+        const priceField = document.getElementById('price');
+        const errorField = document.getElementById('priceError');
+
+        if (priceField.value < 0) {
+            errorField.textContent = 'Price cannot be negative.';
+        } else {
+            errorField.textContent = '';
+        }
+    }
+
+    function validateImage() {
+        const imageField = document.getElementById('image');
+        const errorField = document.getElementById('imageError');
+        const allowedExtensions = ['jpg', 'jpeg', 'png'];
+        const fileExtension = imageField.value.split('.').pop().toLowerCase();
+
+        if (!allowedExtensions.includes(fileExtension)) {
+            errorField.textContent = 'Only jpg, jpeg, and png formats are allowed.';
+        } else {
+            errorField.textContent = '';
+        }
+    }
+</script>
+
+</body>
+</html>

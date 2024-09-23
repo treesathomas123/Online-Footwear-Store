@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Products</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            margin: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #3e3d3d;
+            color: white;
+        }
+
+        img {
+            width: 80px;
+            height: auto;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .edit-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Product Items</h1>
+    <table>
+        <thead>
+        <tr>
+            <th>S.N.</th>
+            <th>Product Image</th>
+            <th>Product Name</th>
+            <th>Description</th>
+            <th>Brand</th>
+            <th>Size</th>
+            <th>Color</th>
+            <th>Price</th>
+            <th>Stock Quantity</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for product in products %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td><img src="{{ product.image.url }}" alt="{{ product.name }}"></td>
+            <td>{{ product.description}}</td>
+            <td>{{ product.name }}</td>
+            <td>{{ product.brand }}</td>
+            <td>{{ product.size }}</td>
+            <td>{{ product.color }}</td>
+            <td>{{ product.price }}</td>
+            <td>{{ product.stock_quantity }}</td>
+            <td>
+                <div class="action-buttons">
+                    <a href="{% url 'edit_product' product.id %}" class="btn edit-btn">Edit</a>
+                    <a href="{% url 'delete_product' product.id %}" class="btn delete-btn">Delete</a>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footland | Ecommerce Website</title>
+    <style>
+        body { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
+        .header { background: #f8f9fa; padding: 10px 0; }
+        .container { width: 80%; margin: auto; overflow: hidden; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; }
+        .logo img { max-width: 125px; }
+        nav ul { list-style-type: none; margin: 0; padding: 0; display: flex; }
+        nav ul li { margin: 0 15px; }
+        nav ul li a { text-decoration: none; color: #333; }
+        .menu-icon { display: none; }
+        .row { display: flex; justify-content: space-between; }
+        .col-2 { flex: 1; padding: 10px; }
+        .col-2 img { width: 100%; }
+        .categories { background: #e9ecef; padding: 20px 0; }
+        .small-container { width: 90%; margin: auto; }
+        .small-container .title { font-size: 24px; margin-bottom: 20px; }
+        .row { display: flex; flex-wrap: wrap; }
+        .col-3, .col-4 { flex: 1; margin: 10px; }
+        .col-3 img, .col-4 img { width: 100%; }
+        .rating i { color: #f0ad4e; }
+        .offer { background: #343a40; color: #fff; padding: 20px 0; }
+        .offer-img { width: 100%; }
+        .btn { background: #007bff; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+        .btn:hover { background: #0056b3; }
+        @media (max-width: 768px) {
+            .menu-icon { display: block; }
+            nav ul { display: none; }
+            nav ul.active { display: flex; flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="navbar">
+                <div class="logo"><a href="{% url 'home' %}"><img src="{% static 'images/logo.jpg' %}" alt="Footland"></a></div>
+                <nav>
+                    <ul id="MenuItems">
+                     
+                        <li><a href="#">Products</a></li>
+                        <li><a href="#">About</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="{% url 'login' %}">Logout</a></li>
+                    </ul>
+                </nav>
+                <a href="{% url 'cart' %}"><img src="{% static 'images/cart.png' %}" width="30" height="30" alt="Cart"></a>
+                <img src="{% static 'images/menu.png' %}" class="menu-icon" onClick="menutoggle()" alt="Menu">
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <h1>Cute Shoes, Happier with footwears!</h1>
+                    <p>Walk in Style, Everywhere You Go.. Own the Streets with Style. Find Your Feet's Perfect Match</p>
+                    <a href="{% url 'product' %}" class="btn">Explore Now &#8594;</a>
+                </div>
+                <div class="col-2">
+                    <img src="{% static 'images/men.jpg' %}" alt="Men's Shoes">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="categories">
+        <div class="small-container">
+            <div class="row">
+                <div class="col-3"><img src="{% static 'images/category-1.jpg' %}" alt="Category 1"></div>
+                <div class="col-3"><img src="{% static 'images/category-2.jpg' %}" alt="Category 2"></div>
+                <div class="col-3"><img src="{% static 'images/category-3 (2).jpg' %}" alt="Category 3"></div>
+            </div>
+        </div>
+    </div>
+    <div class="small-container">
+        <h2 class="title">Featured Products</h2>
+        <div class="row">
+            <div class="col-4">
+                <a href="{% url 'products_details' %}"><img src="{% static 'images/product-11.jpg' %}" alt="Product 1"></a>
+                <a href="{% url 'products_details' %}"><h4>Downshifter Sports Shoes</h4></a>
+                <div class="rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-o"></i><i class="fa fa-star-o"></i></div>
+                <p>$50.00</p>
+            </div>
+            <div class="col-4">
+                <a href="{% url 'products_details' %}"><img src="{% static 'images/product-2.jpg' %}" alt="Product 2"></a>
+                <h4>Lace-Up Running Shoes</h4>
+                <div class="rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-o"></i></div>
+                <p>$35.00</p>
+            </div>
+            <div class="col-4">
+                <a href="{% url 'products_details' %}"><img src="{% static 'images/product-3.jpg' %}" alt="Product 3"></a>
+                <h4>Lace Fastening Shoes</h4>
+                <div class="rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-o"></i></div>
+                <p>$15.00</p>
+            </div>
+            <div class="col-4">
+                <a href="{% url 'products_details' %}"><img src="{% static 'images/product-10.jpg' %}" alt="Product 4"></a>
+                <h4>Flat Lace-Fastening Shoes</h4>
+                <div class="rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-o"></i><i class="fa fa-star-o"></i></div>
+                <p>$48.00</p>
+            </div>
+        </div>
+        <h2 class="title">Latest Products</h2>
+        <div class="row">
+            <div class="col-4">
+                <a href="{% url 'products_details' %}"><img src="{% static 'images/product-5.jpg' %}" alt="Latest Product 1"></a>
+                <h4>Flat Heel gray shoes</h4>
+                <div class="rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-o"></i><i class="fa fa-star-o"></i></div>
+                <p>$50.00</p>
+            </div>
+            <div class="col-4">
+                <a href="{% url 'products_details' %}"><img src="{% static 'images/product-3.jpg' %}" alt="Latest Product 2"></a>
+                <h4>Lace-Fastening black Shoes</h4>
+                <div class="rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-o"></i></div>
+                <p>$21.00</p>
+            </div>
+            <div class="col-4">
+                <a href="{% url 'products_details' %}"><img src="{% static 'images/product-7.jpg' %}" alt="Latest Product 3"></a>
+                <h4>HRX Men's cotton socks</h4>
+                <div class="rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-o"></i></div>
+                <p>$09.00</p>
+            </div>
+            <div class="col-4">
+                <a href="{% url 'products_details' %}"><img src="{% static 'images/product-2.jpg' %}" alt="Latest Product 4"></a>
+                <h4>Lace-Up Running Shoes</h4>
+                <div class="rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-o"></i><i class="fa fa-star-o"></i></div>
+                <p>$35.00</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-4">
+                <a href="{% url 'products_details' %}"><img src="{% static 'images/product-7.jpg' %}" alt="Latest Product 5"></a>
+                <h4>HRX cotton socks</h4>
+                <div class="rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-o"></i><i class="fa fa-star-o"></i></div>
+                <p>$10.00</p>
+            </div>
+            <div class="col-4">
+                <a href="{% url 'products_details' %}"><img src="{% static 'images/product-7.jpg' %}" alt="Latest Product 6"></a>
+                <h4>Flat Lace-Fastening Shoes</h4>
+                <div class="rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-o"></i></div>
+                <p>$48.00</p>
+            </div>
+            <div class="col-4">
+                <a href="{% url 'products_details' %}"><img src="{% static 'images/product-11.jpg' %}" alt="Latest Product 7"></a>
+                <h4>Loafers Men (Gray)</h4>
+                <div class="rating"><i class="fa fa-star-o"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-o"></i></div>
+                <p>$15.00</p>
+            </div>
+            <div class="col-4">
+                <a href="{% url 'products_details' %}"><img src="{% static 'images/product-12.jpg' %}" alt="Latest Product 8"></a>
+                <h4>Lace-Fastening white Shoes</h4>
+                <div class="rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-o"></i><i class="fa fa-star-o"></i></div>
+                <p>$21.00</p>
+            </div>
+        </div>
+    </div>
+    <div class="offer">
+        <div class="small-container">
+            <div class="row">
+                <div class="col-2"><img src="{% static 'images/image1.jpg' %}" class="offer-img" alt="Offer"></div>
+                <div class="col-2">
+                    <p>Exclusively Available on RedStore</p>
+                    <h1>Smart Shoes</h1>
+                    <small>Available in Different Styles</small>
+                    <a href="{% url 'product' %}" class="btn">Shop Now &#8594;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
