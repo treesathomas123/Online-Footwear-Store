@@ -1,0 +1,274 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form</title>
+    <style>
+        body {
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            max-width: 800px;
+            width: 100%;
+            margin: 20px;
+        }
+
+        .image {
+            flex: 1;
+            background: url("{% static 'images/men.jpg' %}") no-repeat center center/cover;
+            min-height: 400px;
+        }
+
+        .form-container {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .form-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-container input[type="text"],
+        .form-container input[type="email"],
+        .form-container input[type="password"] {
+            width: calc(100% - 40px);
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            outline: none;
+            font-size: 16px;
+        }
+
+        .form-container .error-message {
+            color: red;
+            font-size: 12px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .form-container .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: calc(50% - 10px);
+            cursor: pointer;
+        }
+
+        .form-container .password-field {
+            position: relative;
+        }
+
+        .form-container .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .form-container .divider::before,
+        .form-container .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #ccc;
+        }
+
+        .form-container .divider:not(:empty)::before {
+            margin-right: .25em;
+        }
+
+        .form-container .divider:not(:empty)::after {
+            margin-left: .25em;
+        }
+
+        .form-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #000;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .form-container .google-btn {
+            background-color: #4285F4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-container .google-btn img {
+            margin-right: 10px;
+        }
+
+        .form-container a {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #000;
+            text-decoration: none;
+        }
+
+        .home-link {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .home-link a {
+            color: #000;
+            text-decoration: none;
+            font-size: 16px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .image {
+                min-height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="image"></div>
+        <div class="form-container">
+            <h2>Register</h2>
+            <form id="registrationForm" action="{% url 'signup' %}" method="POST">
+                {% csrf_token %}
+                <input type="text" name="first_name" id="firstName" placeholder="First Name" required>
+                <div class="error-message" id="firstNameError">First name should start with a capital letter and contain only letters.</div>
+                
+                <input type="text" name="last_name" id="lastName" placeholder="Last Name" required>
+                <div class="error-message" id="lastNameError">Last name should start with a capital letter and contain only letters.</div>
+                
+                <input type="email" name="email" id="email" placeholder="Email" required>
+                <div class="error-message" id="emailError">Please enter a valid email address.</div>
+                
+                <div class="password-field">
+                    <input type="password" name="password" id="password" placeholder="Password" required>
+                    <span class="toggle-password" onclick="togglePassword('password')"></span>
+                </div>
+                <div class="error-message" id="passwordError">Password must be at least 8 characters long.</div>
+                
+                <div class="password-field">
+                    <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm Password" required>
+                    <span class="toggle-password" onclick="togglePassword('confirm_password')"></span>
+                </div>
+                <div class="error-message" id="confirmPasswordError">Passwords do not match.</div>
+                
+                <button type="submit">Register</button>
+                {% if error %}
+                    <p style="color:red">{{ error }}</p>
+                {% endif %}
+                
+    
+
+               
+                <div class="divider">or</div>
+                <button type="button" class="google-btn">
+                    <img src="https://img.icons8.com/color/16/000000/google-logo.png"/> Continue with Google
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const firstNameField = document.getElementById('firstName');
+        const lastNameField = document.getElementById('lastName');
+        const emailField = document.getElementById('email');
+        const passwordField = document.getElementById('password');
+        const confirmPasswordField = document.getElementById('confirm_password');
+
+        firstNameField.addEventListener('input', function() {
+            const firstNameError = document.getElementById('firstNameError');
+            if (/^[A-Z][a-zA-Z]*$/.test(this.value)) {
+                firstNameError.style.display = 'none';
+            } else {
+                firstNameError.style.display = 'block';
+            }
+        });
+
+        lastNameField.addEventListener('input', function() {
+            const lastNameError = document.getElementById('lastNameError');
+            if (/^[A-Z][a-zA-Z]*$/.test(this.value)) {
+                lastNameError.style.display = 'none';
+            } else {
+                lastNameError.style.display = 'block';
+            }
+        });
+
+        emailField.addEventListener('input', function() {
+            const emailError = document.getElementById('emailError');
+            if (/^\S+@\S+\.\S+$/.test(this.value)) {
+                emailError.style.display = 'none';
+            } else {
+                emailError.style.display = 'block';
+            }
+        });
+
+        passwordField.addEventListener('input', function() {
+            const passwordError = document.getElementById('passwordError');
+            if (this.value.length >= 8) {
+                passwordError.style.display = 'none';
+            } else {
+                passwordError.style.display = 'block';
+            }
+        });
+
+        confirmPasswordField.addEventListener('input', function() {
+            const confirmPasswordError = document.getElementById('confirmPasswordError');
+            if (this.value === passwordField.value && this.value.length >= 8) {
+                confirmPasswordError.style.display = 'none';
+            } else {
+                confirmPasswordError.style.display = 'block';
+            }
+        });
+
+        // Toggle password visibility
+        function togglePassword(id) {
+            const field = document.getElementById(id);
+            const type = field.getAttribute('type') === 'password' ? 'text' : 'password';
+            field.setAttribute('type', type);
+        }
+
+        document.getElementById('registrationForm').addEventListener('submit', function(event) {
+            const errors = document.querySelectorAll('.error-message');
+            let hasError = false;
+            
+            for (let error of errors) {
+                if (error.style.display === 'block') {
+                    hasError = true;
+                    break;
+                }
+            }
+            
+            if (hasError) {
+                event.preventDefault();  // Prevent form submission if there are validation errors
+            }
+        });
+    </script>
+</body>
+</html>
