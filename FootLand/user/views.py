@@ -7,6 +7,8 @@ from django.contrib.auth.decorators import login_required
 from .models import Product
 from .forms import ProductForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import check_password
 
 def home(request):
     return render(request, 'home.html')
@@ -15,24 +17,40 @@ def user_dashboard(request):
 
 def login(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        email = request.POST['email']
+        password = request.POST['password']
 
-        # Check if the user is an admin
-        if email == "admin@gmail.com" and password == "admin@123":
+        # Check if it's admin login (hardcoded credentials)
+        if email == 'admin@gmail.com' and password == 'admin@123':
+            # Admin login successful
             return redirect('admin_dashboard')
-        else:
-            # Authenticate non-admin users
-            user = authenticate(request, username=email, password=password)
-            if user is not None:
-                auth_login(request, user)
-                return redirect('home')
+
+        try:
+            # Check if email exists in the user_registration table
+            user_obj = user_registration.objects.get(email=email)
+
+            # Directly compare the plain text password
+            if password == user_obj.password:
+                # Store user information in the session (custom authentication)
+                request.session['user_id'] = user_obj.id
+                request.session['user_name'] = f"{user_obj.first_name} {user_obj.last_name}"
+                return redirect('user_dashboard')
             else:
-                messages.error(request, 'Invalid email or password')
+                messages.error(request, "Invalid email or password.")
                 return redirect('login')
+
+        except user_registration.DoesNotExist:
+            messages.error(request, "This account doesn't exist. Please sign up first.")
+            return redirect('login')
+
     return render(request, 'login.html')
 
+def user_dashboard(request):
+    # User dashboard view
+    return render(request, 'user_dashboard.html')
+
 def admin_dashboard(request):
+    # Admin dashboard view
     return render(request, 'admin_dashboard.html')
 
 def signup(request):
