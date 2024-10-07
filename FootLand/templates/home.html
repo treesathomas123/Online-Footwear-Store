@@ -23,12 +23,24 @@
                 </div>
                 <nav>
                     <ul id="MenuItems">
-                        <li><a href="{%url 'home'%}">Home</a></li>
-                         <li><a href="">Products</a></li>
-                         <li><a href="">About</a></li>
-                         <li><a href="">Contact</a></li>
-                         <li><a href="{%url 'login'%}">Login</a></li>
-
+                        <li><a href="{% url 'home' %}">Home</a></li>
+                        
+                        <li><a href="{% url 'womens' %}">Womens</a></li>
+                        <li><a href="{% url 'mens' %}">Mens</a></li>
+                        <li><a href="{% url 'kids' %}">Kids</a></li>
+                        <li>
+                            <form action="{% url 'search' %}" method="get">
+                                <input type="text" name="q" placeholder="Search..." class="search-input">
+                                <button type="submit" class="search-btn">
+                                    <img src="{% static 'images/search.png' %}" width="20px" height="20px">
+                                </button>
+                            </form>
+                        </li>
+                        <li>
+                            <a href="{% url 'login' %}">
+                                <img src="{% static 'images/user.png' %}" width="30px" height="30px">
+                            </a>
+                        </li>
                     </ul>
                 </nav>
                

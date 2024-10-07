@@ -15,6 +15,11 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Use the database to store session data
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+# Set session cookie age (optional but useful for debugging)
+SESSION_COOKIE_AGE = 3600  # 1 hour
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -138,3 +143,24 @@ LOGIN_REDIRECT_URL = '/view_product/'  # Redirect here after login
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+# Email settings (configure as per your email provider)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Use your SMTP host
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'treesathomas2025@mca.ajce.in'  # Replace with your email
+EMAIL_HOST_PASSWORD = 'Zoom#2023'  # Replace with your email password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+# settings.py
+import os
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+STATIC_URL = '/static/'
+
+# Ensure you have this line if you want to serve static files in development
+STATICFILES_DIRS = [BASE_DIR / "static"] 

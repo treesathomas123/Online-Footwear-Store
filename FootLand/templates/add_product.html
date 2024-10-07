@@ -1,4 +1,4 @@
-{%load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -111,6 +111,15 @@
         <!-- Color -->
         <label for="color">Color:</label>
         <input type="text" id="color" name="color" placeholder="Enter product color">
+
+        <!-- Category -->
+        <label for="category">Category:</label>
+        <select id="category" name="category" required>
+            <option value="">Select Category</option>
+            <option value="mens">Mens</option>
+            <option value="womens">Womens</option>
+            <option value="unisex">Unisex</option>
+        </select>
 
         <!-- Submit Button -->
         <button type="submit">Add Product</button>

@@ -75,46 +75,46 @@
 </head>
 <body>
 
-<div class="container">
-    <h1>Product Items</h1>
-    <table>
-        <thead>
-        <tr>
-            <th>S.N.</th>
-            <th>Product Image</th>
-            <th>Product Name</th>
-            <th>Description</th>
-            <th>Brand</th>
-            <th>Size</th>
-            <th>Color</th>
-            <th>Price</th>
-            <th>Stock Quantity</th>
-            <th>Action</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for product in products %}
-        <tr>
-            <td>{{ forloop.counter }}</td>
-            <td><img src="{{ product.image.url }}" alt="{{ product.name }}"></td>
-            <td>{{ product.description}}</td>
-            <td>{{ product.name }}</td>
-            <td>{{ product.brand }}</td>
-            <td>{{ product.size }}</td>
-            <td>{{ product.color }}</td>
-            <td>{{ product.price }}</td>
-            <td>{{ product.stock_quantity }}</td>
-            <td>
-                <div class="action-buttons">
-                    <a href="{% url 'edit_product' product.id %}" class="btn edit-btn">Edit</a>
-                    <a href="{% url 'delete_product' product.id %}" class="btn delete-btn">Delete</a>
-                </div>
-            </td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-</div>
-
-</body>
-</html>
+    <div class="container">
+        <h1>Product Items</h1>
+        <table>
+            <thead>
+            <tr>
+                <th>S.N.</th>
+                <th>Product Image</th>
+                <th>Product Name</th>
+                <th>Description</th>
+                <th>Brand</th>
+                <th>Size</th>
+                <th>Color</th>
+                <th>Price</th>
+                <th>Stock Quantity</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td><img src="{{ product.image.url }}" alt="{{ product.name }}"></td>  <!-- Correct placement -->
+                <td>{{ product.name }}</td>  <!-- Moved product name here -->
+                <td>{{ product.description }}</td>
+                <td>{{ product.brand }}</td>
+                <td>{{ product.size }}</td>
+                <td>{{ product.color }}</td>
+                <td>{{ product.price }}</td>
+                <td>{{ product.stock_quantity }}</td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{% url 'edit_product' product.id %}" class="btn edit-btn">Edit</a>
+                        <a href="{% url 'delete_product' product.id %}" class="btn delete-btn">Delete</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    </body>
+    </html>
