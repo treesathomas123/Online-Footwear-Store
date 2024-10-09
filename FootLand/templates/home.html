@@ -11,7 +11,42 @@
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
         <!--added a cdn link by searching font awesome4 cdn and getting this link from https://www.bootstrapcdn.com/fontawesome/ this url*/-->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+    /* Search bar styling */
+.search-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 20px; /* Rounded corners */
+    outline: none;
+    width: 200px; /* Set a width for the input */
+    transition: all 0.3s; /* Smooth transition */
+}
 
+.search-input:focus {
+    border-color: #007bff; /* Change border color on focus */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Add shadow on focus */
+}
+
+.search-btn {
+    background-color: #8b8d8f; /* Button background color */
+    border: none; /* Remove border */
+    border-radius: 20px; /* Match the border radius */
+    padding: 10px 15px; /* Adjust padding */
+    margin-left: -5px; /* Overlap slightly with the input */
+    cursor: pointer; /* Change cursor on hover */
+    transition: background-color 0.3s; /* Smooth transition for hover */
+}
+
+.search-btn:hover {
+    background-color: #8b8d8f; /* Darken the button on hover */
+}
+
+@media (max-width: 768px) {
+    .search-input {
+        width: 150px; /* Adjust width on smaller screens */
+    }
+}
+</style>
     </head>
     <body>
        

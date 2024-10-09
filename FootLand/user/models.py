@@ -52,7 +52,7 @@ class Product(models.Model):
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Use custom user model
+    user = models.OneToOneField(user_registration, on_delete=models.CASCADE)  # Use your custom user model
     address = models.CharField(max_length=255, null=True, blank=True)
     pincode = models.CharField(max_length=6, null=True, blank=True)
     phone = models.CharField(max_length=15, null=True, blank=True)

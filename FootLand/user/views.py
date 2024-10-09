@@ -126,13 +126,18 @@ def reset_password(request, email):
     return render(request, 'reset_password.html', {'email': email})
 
 def user_dashboard(request):
-    if 'user_first_name' in request.session:
-        first_name = request.session['user_first_name']
-        print(f"Session first_name: {first_name}")  # Debugging
+    user_id = request.session.get('user_id')
+    if user_id:
+        try:
+            user = user_registration.objects.get(id=user_id)
+            first_name = user.first_name
+        except user_registration.DoesNotExist:
+            first_name = 'Guest'
     else:
         first_name = 'Guest'
 
     return render(request, 'user_dashboard.html', {'first_name': first_name})
+
 
 
 def logout(request):
@@ -304,25 +309,54 @@ def search(request):
 
 
 def add_profile(request):
-    user = request.user  # Get the currently logged-in user
+    user_id = request.session.get('user_id')  # Get the user ID from the session
 
-    # Retrieve or create the user profile
-    profile, created = UserProfile.objects.get_or_create(user=user)
+    # Check if the user ID is set in the session
+    if user_id:
+        try:
+            user = user_registration.objects.get(id=user_id)  # Get the user instance
+        except user_registration.DoesNotExist:
+            return redirect('login')  # Redirect if the user does not exist
 
+        # Retrieve or create the user profile
+        profile, created = UserProfile.objects.get_or_create(user=user)
+
+        if request.method == 'POST':
+            form = ProfileForm(request.POST, instance=profile)
+            if form.is_valid():
+                form.save()
+                return redirect('add_profile')  # Redirect to the same page after saving
+        else:
+            form = ProfileForm(instance=profile)
+
+        return render(request, 'add_profile.html', {
+            'form': form,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email
+        })
+
+    # If the user is not authenticated, redirect to the login page
+    return redirect('login')
+
+
+def change_password(request):
+    user_id = request.session.get('user_id')  # Assuming you are storing user ID in session
     if request.method == 'POST':
-        form = ProfileForm(request.POST, instance=profile)
-        if form.is_valid():
-            form.save()
-            return redirect('add_profile')  # Redirect to the same page after saving
-    else:
-        form = ProfileForm(instance=profile)
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
 
-    return render(request, 'add_profile.html', {
-        'form': form,
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'email': user.email
-    })
+        if new_password == confirm_password:
+            # Hash the password before saving it
+            hashed_password = make_password(new_password)
+            # Update password in the database
+            user_registration.objects.filter(id=user_id).update(password=hashed_password)
+            messages.success(request, 'Password changed successfully!')
+            return redirect('add_profile')  # Redirect to the profile page or any other page
+        else:
+            messages.error(request, 'Passwords do not match.')
+
+    return render(request, 'change_password.html', {})
 
 
 def product_list(request, category):

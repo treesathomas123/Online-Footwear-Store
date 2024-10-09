@@ -14,169 +14,193 @@
             padding: 0;
         }
 
-        /* Centered form with some padding and shadow */
-        .profile-container {
-            width: 50%;
+        /* Container for the main layout */
+        .container {
+            display: flex;
             margin: 50px auto;
+            width: 80%;
+        }
+
+        /* Side navigation styling */
+        .sidebar {
+            width: 20%;
+            background-color: #000;  /* Changed to black */
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-right: 20px;
+            color: #fff;  /* Text color changed to white */
+        }
+
+        .sidebar h3 {
+            color: #fff;
+        }
+
+        .sidebar a {
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            padding: 8px 0;
+            transition: background 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: rgba(255, 255, 255, 0.2); /* Add hover effect */
+        }
+
+        /* Profile container */
+        .profile-container {
+            width: 75%;
             background-color: #fff;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        /* Styling for the form heading */
-        .profile-container h2 {
-            text-align: center;
+        /* Form styles */
+        .form-group {
             margin-bottom: 20px;
-            font-size: 28px;
-            color: #333;
         }
 
-        /* Basic styling for form labels */
         .form-group label {
             display: block;
             margin-bottom: 5px;
-            font-weight: bold;
-            font-size: 16px;
-            color: #333;
+            font-weight: 600;
         }
 
-        /* Input styling with padding and border-radius */
         .form-group input {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
+            transition: border-color 0.3s;
         }
 
-        /* Focus state styling for inputs */
         .form-group input:focus {
-            border-color: #333;
-            outline: none;
+            border-color: #007bff; /* Focus border color */
         }
 
-        /* Error message style */
         .error {
-            color: red;
-            font-size: 14px;
-            margin-top: 5px;  /* Add some space above the error message */
+            color: red; /* Error message color */
+            font-size: 0.875em; /* Smaller font size */
+            margin-top: 5px;
         }
 
-        /* Styling for the submit button */
         .btn {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            background-color: #333;
+            background-color: #007bff; /* Button color */
             color: #fff;
+            padding: 10px 15px;
             border: none;
             border-radius: 5px;
-            font-size: 18px;
             cursor: pointer;
-            margin-top: 20px;
-            transition: background-color 0.3s ease;
+            transition: background 0.3s;
         }
 
-        /* Button hover effect */
         .btn:hover {
-            background-color: #555;
-        }
-
-        /* Responsive design for smaller devices */
-        @media (max-width: 768px) {
-            .profile-container {
-                width: 80%;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .profile-container {
-                width: 100%;
-            }
+            background-color: #0056b3; /* Darker shade on hover */
         }
     </style>
 </head>
 <body>
 
-<div class="profile-container">
-    <h2>Add Profile Information</h2>
+<div class="container">
+    <!-- Side navigation -->
+    <div class="sidebar">
+        <h3>Edit Profile</h3>
+        <ul>
+            
+            <li><a href="{% url 'add_profile' %}">Profile</a></li>
+            <li><a href="{% url 'change_password' %}">Change Password</a></li>
+            <li><a href="{% url 'user_dashboard' %}">🔙 Back</a></li> <!-- Back icon link -->
+        </ul>
+    </div>
 
-    <form action="{% url 'add_profile' %}" method="POST">
-        {% csrf_token %}
+    <!-- Profile container -->
+    <div class="profile-container">
+        <h2>Add Profile Information</h2>
 
-        <!-- First name field (read-only) -->
-        <div class="form-group">
-            <label for="first_name">First Name:</label>
-            <input type="text" id="first_name" name="first_name" value="{{ first_name }}" readonly>
-        </div>
+        <form action="{% url 'add_profile' %}" method="POST" onsubmit="return validateForm()">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="first_name">First Name:</label>
+                <input type="text" id="first_name" name="first_name" value="{{ first_name }}" readonly>
+            </div>
 
-        <!-- Last name field (read-only) -->
-        <div class="form-group">
-            <label for="last_name">Last Name:</label>
-            <input type="text" id="last_name" name="last_name" value="{{ last_name }}" readonly>
-        </div>
+            <div class="form-group">
+                <label for="last_name">Last Name:</label>
+                <input type="text" id="last_name" name="last_name" value="{{ last_name }}" readonly>
+            </div>
 
-        <!-- Email field (read-only) -->
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" value="{{ email }}" readonly>
-        </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" value="{{ email }}" readonly>
+            </div>
 
-        <!-- Editable fields for address, pincode, phone, etc. -->
-        <div class="form-group">
-            <label for="address">Address:</label>
-            <input type="text" id="address" name="address" placeholder="Enter your address" value="{{ form.address.value }}" required>
-            {% if errors.address %}
-                <p class="error">{{ errors.address.0 }}</p>
-            {% endif %}
-        </div>
+            <div class="form-group">
+                <label for="address">Address:</label>
+                <input type="text" id="address" name="address" placeholder="Enter your address" value="{{ form.address.value }}" required onkeyup="validateField('address')">
+                <p id="address-error" class="error"></p>
+            </div>
 
-        <div class="form-group">
-            <label for="pincode">Pincode:</label>
-            <input type="text" id="pincode" name="pincode" placeholder="Enter your pincode" value="{{ form.pincode.value }}" required>
-            {% if errors.pincode %}
-                <p class="error">{{ errors.pincode.0 }}</p>
-            {% endif %}
-        </div>
+            <div class="form-group">
+                <label for="pincode">Pincode:</label>
+                <input type="text" id="pincode" name="pincode" placeholder="Enter your pincode" value="{{ form.pincode.value }}" required onkeyup="validateField('pincode')">
+                <p id="pincode-error" class="error"></p>
+            </div>
 
-        <div class="form-group">
-            <label for="phone">Phone No:</label>
-            <input type="text" id="phone" name="phone" placeholder="Enter your phone number" value="{{ form.phone.value }}" required>
-            {% if errors.phone %}
-                <p class="error">{{ errors.phone.0 }}</p>
-            {% endif %}
-        </div>
+            <div class="form-group">
+                <label for="phone">Phone No:</label>
+                <input type="text" id="phone" name="phone" placeholder="Enter your phone number" value="{{ form.phone.value }}" required onkeyup="validateField('phone')">
+                <p id="phone-error" class="error"></p>
+            </div>
 
-        <div class="form-group">
-            <label for="state">State:</label>
-            <input type="text" id="state" name="state" placeholder="Enter your state" value="{{ form.state.value }}" required>
-            {% if errors.state %}
-                <p class="error">{{ errors.state.0 }}</p>
-            {% endif %}
-        </div>
+            <div class="form-group">
+                <label for="state">State:</label>
+                <input type="text" id="state" name="state" placeholder="Enter your state" value="{{ form.state.value }}" required onkeyup="validateField('state')">
+                <p id="state-error" class="error"></p>
+            </div>
 
-        <div class="form-group">
-            <label for="street">Street:</label>
-            <input type="text" id="street" name="street" placeholder="Enter your street" value="{{ form.street.value }}" required>
-            {% if errors.street %}
-                <p class="error">{{ errors.street.0 }}</p>
-            {% endif %}
-        </div>
+            <div class="form-group">
+                <label for="street">Street:</label>
+                <input type="text" id="street" name="street" placeholder="Enter your street" value="{{ form.street.value }}" required onkeyup="validateField('street')">
+                <p id="street-error" class="error"></p>
+            </div>
 
-        <div class="form-group">
-            <label for="house_no">House No:</label>
-            <input type="text" id="house_no" name="house_no" placeholder="Enter your house number" value="{{ form.house_no.value }}" required>
-            {% if errors.house_no %}
-                <p class="error">{{ errors.house_no.0 }}</p>
-            {% endif %}
-        </div>
+            <div class="form-group">
+                <label for="house_no">House No:</label>
+                <input type="text" id="house_no" name="house_no" placeholder="Enter your house number" value="{{ form.house_no.value }}" required onkeyup="validateField('house_no')">
+                <p id="house_no-error" class="error"></p>
+            </div>
 
-        <!-- Submit button for saving the profile -->
-        <button type="submit" class="btn">Save Profile</button>
-    </form>
+            <!-- Submit button for saving the profile -->
+            <button type="submit" class="btn">Save Profile</button>
+        </form>
+    </div>
 </div>
+
+<script>
+    function validateField(field) {
+        const value = document.getElementById(field).value;
+        const errorElement = document.getElementById(`${field}-error`);
+        
+        // Reset the error message
+        errorElement.textContent = '';
+        
+        // Basic validation rules
+        if (field === 'pincode' && !/^\d{6}$/.test(value)) {
+            errorElement.textContent = 'Pincode must be a 6-digit number.';
+        } else if (field === 'phone' && !/^\d{10}$/.test(value)) {
+            errorElement.textContent = 'Phone number must be a 10-digit number.';
+        } else if ((field === 'address' || field === 'street' || field === 'state' || field === 'house_no') && value.trim() === '') {
+            errorElement.textContent = 'This field cannot be empty.';
+        }
+    }
+
+    function validateForm() {
+        // You can add overall form validation here if needed
+        return true; // Allow form submission
+    }
+</script>
 
 </body>
 </html>

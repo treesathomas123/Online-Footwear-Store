@@ -167,3 +167,5 @@ STATIC_URL = '/static/'
 
 # Ensure you have this line if you want to serve static files in development
 STATICFILES_DIRS = [BASE_DIR / "static"] 
+
+

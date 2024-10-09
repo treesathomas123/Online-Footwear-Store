@@ -5,6 +5,7 @@ from django.contrib.auth.views import LogoutView
 
 from . import views
 from .views import product_list  
+from .views import add_profile, change_password
 urlpatterns = [
     path('', views.home, name='home'),
     path('user_dashboard/', views.user_dashboard, name='user_dashboard'),
@@ -33,6 +34,7 @@ urlpatterns = [
     path('profile/', views.add_profile, name='add_profile'), 
     path('logout/', LogoutView.as_view(), name='logout'), # logout 
     path('products/<str:category>/', product_list, name='product_list'),
+     path('change_password/', change_password, name='change_password'),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
