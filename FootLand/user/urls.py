@@ -35,6 +35,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'), # logout 
     path('products/<str:category>/', product_list, name='product_list'),
      path('change_password/', change_password, name='change_password'),
+     
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

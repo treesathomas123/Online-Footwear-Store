@@ -209,12 +209,14 @@ def add_product(request):
             try:
                 form.save()
                 messages.success(request, 'Product successfully added!')
-                return redirect('add_product')  # Ensure this corresponds to your URL pattern
+                return redirect('add_product')
             except Exception as e:
                 messages.error(request, f'Error adding product: {e}')
         else:
+            # Log the form errors for debugging
             messages.error(request, 'Error adding product. Please check the form.')
-            print(form.errors)  # Log the errors for debugging
+            for field, errors in form.errors.items():
+                print(f"{field}: {errors}")
     else:
         form = ProductForm()
     

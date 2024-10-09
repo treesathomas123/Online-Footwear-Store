@@ -5,7 +5,7 @@ class ProductForm(forms.ModelForm):
     CATEGORY_CHOICES = [
         ('mens', 'Mens'),
         ('womens', 'Womens'),
-        ('unisex', 'Unisex'),
+        ('kids', 'kids'),
     ]
 
     category = forms.ChoiceField(choices=CATEGORY_CHOICES, widget=forms.Select)
@@ -18,7 +18,7 @@ class ProductForm(forms.ModelForm):
         name = self.cleaned_data.get('name')
         if not name[0].isupper():
             raise forms.ValidationError("Name must start with a capital letter")
-        if not name.isalpha():
+        if not name.replace(" ", "").isalpha():  # Allowing spaces in the name
             raise forms.ValidationError("Name should not contain symbols")
         return name
 

@@ -73,59 +73,69 @@
 <div class="product-form">
     <h2>Add Product</h2>
     <form method="POST" enctype="multipart/form-data" action="">
-        <!-- CSRF Token for Django -->
+        <!-- CSRF Token -->
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-        
+    
+        <!-- Error display for the entire form -->
+        {% if form.errors %}
+            <div class="error">
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        <li>{{ field }}: {{ errors }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    
         <!-- Product Name -->
         <label for="name">Product Name:</label>
-        <input type="text" id="name" name="name" required oninput="validateName()" placeholder="Enter product name">
-        <small id="nameError" class="error"></small>
-
+        {{ form.name }}
+        <small class="error">{{ form.name.errors }}</small>
+    
         <!-- Description -->
         <label for="description">Description:</label>
-        <textarea id="description" name="description" required oninput="validateDescription()" placeholder="Enter product description (max 100 words)"></textarea>
-        <small id="descError" class="error"></small>
-
+        {{ form.description }}
+        <small class="error">{{ form.description.errors }}</small>
+    
         <!-- Brand -->
         <label for="brand">Brand:</label>
-        <input type="text" id="brand" name="brand" required placeholder="Enter brand name">
-
+        {{ form.brand }}
+        <small class="error">{{ form.brand.errors }}</small>
+    
         <!-- Price -->
         <label for="price">Price:</label>
-        <input type="number" id="price" name="price" required min="0" oninput="validatePrice()" placeholder="Enter product price">
-        <small id="priceError" class="error"></small>
-
+        {{ form.price }}
+        <small class="error">{{ form.price.errors }}</small>
+    
         <!-- Stock Quantity -->
         <label for="stock_quantity">Stock Quantity:</label>
-        <input type="number" id="stock_quantity" name="stock_quantity" required min="0" placeholder="Enter stock quantity">
-
+        {{ form.stock_quantity }}
+        <small class="error">{{ form.stock_quantity.errors }}</small>
+    
         <!-- Image -->
         <label for="image">Product Image:</label>
-        <input type="file" id="image" name="image" required accept=".jpg,.jpeg,.png" onchange="validateImage()">
-        <small id="imageError" class="error"></small>
-
+        {{ form.image }}
+        <small class="error">{{ form.image.errors }}</small>
+    
         <!-- Size -->
         <label for="size">Size:</label>
-        <input type="text" id="size" name="size" placeholder="Enter product size">
-
+        {{ form.size }}
+        <small class="error">{{ form.size.errors }}</small>
+    
         <!-- Color -->
         <label for="color">Color:</label>
-        <input type="text" id="color" name="color" placeholder="Enter product color">
-
+        {{ form.color }}
+        <small class="error">{{ form.color.errors }}</small>
+    
         <!-- Category -->
         <label for="category">Category:</label>
-        <select id="category" name="category" required>
-            <option value="">Select Category</option>
-            <option value="mens">Mens</option>
-            <option value="womens">Womens</option>
-            <option value="unisex">Unisex</option>
-        </select>
-
+        {{ form.category }}
+        <small class="error">{{ form.category.errors }}</small>
+    
         <!-- Submit Button -->
         <button type="submit">Add Product</button>
-
-        <small id="successMessage" class="success"></small>
     </form>
+    
 </div>
 
 <script>
