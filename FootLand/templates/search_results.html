@@ -44,7 +44,7 @@
         .product-item {
             border: 1px solid #ddd;
             border-radius: 8px;
-            width: 200px;
+            width: 220px; /* Increased width for better spacing */
             text-align: center;
             background-color: #fff;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -79,6 +79,39 @@
         .product-info p {
             font-size: 16px;
             color: #666;
+        }
+
+        /* Button styling */
+        .product-actions {
+            margin-top: 10px;
+        }
+
+        .add-to-cart-btn, .buy-now-btn {
+            display: inline-block;
+            margin: 5px 0;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            width: 90%;
+        }
+
+        .buy-now-btn {
+            background-color: #28a745;
+        }
+
+        .add-to-cart-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .buy-now-btn:hover {
+            background-color: #218838;
         }
 
         /* No results message */
@@ -133,6 +166,10 @@
                             <div class="product-info">
                                 <h2>{{ product.name }}</h2>
                                 <p>${{ product.price }}</p>
+                                <div class="product-actions">
+                                    <button class="add-to-cart-btn">Add to Cart</button>
+                                    <button class="buy-now-btn">Buy Now</button>
+                                </div>
                             </div>
                         </a>
                     </li>

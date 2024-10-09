@@ -84,13 +84,14 @@ nav {
                         <li class="dropdown">
                             <a href="#"><img src="{% static 'images/user.png' %}" width="30px" height="30px"></a>
                             <div class="dropdown-content">
-                                <a href="{% url 'add_profile' %}">Welcome, {{ first_name }} {{ last_name }}</a>
+                                {% if request.session.user_id %}
+                                <a href="{% url 'add_profile' %}">Welcome, {{ request.session.username }}</a>                                {% else %}
+                                    <a href="{% url 'login' %}">Welcome</a>
+                                {% endif %}
                                 <a href="{% url 'logout' %}">Logout</a>
                             </div>
                         </li>
                         
-                    </ul>
-                </nav>
                
                 <a href="{%url 'cart'%}"><img src="{% static 'images/cart.png'%}" width="30px" height="30px"></a>
                 <img src="{% static 'images/menu.png'%}" class="menu-icon" onClick="menutoggle()" >

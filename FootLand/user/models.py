@@ -1,25 +1,35 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
-from django.contrib.auth.models import User
+from django.conf import settings  # Use this for the custom user model
+
+# Create your models here.
+
 # Create your models here.
 class user_registration(models.Model):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
+    first_name = models.CharField(max_length=50, default="Anonymous")  # Set a default value
+    last_name = models.CharField(max_length=50, default="User")  # You can set a default for last name too
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=100)
-    
-    
+
     def check_password(self, raw_password):
+        """Check if the given raw password matches the stored hashed password."""
         return check_password(raw_password, self.password)
 
     def set_password(self, raw_password):
+        """Hash the password and store it."""
         self.password = make_password(raw_password)
-        self.save()  
-    
-def __str__(self):
+
+    def save(self, *args, **kwargs):
+        """Override the save method to hash the password on creation."""
+        if not self.pk and not self.password.startswith('pbkdf2_sha256$'):  # Only hash if it's not already hashed
+            self.password = make_password(self.password)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        """Return a string representation of the user."""
         return f'{self.first_name} {self.last_name}'
     
-
+    
 class Product(models.Model):
     CATEGORY_CHOICES = [
         ('kids', 'Kids'),
@@ -40,9 +50,9 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-    
+
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Use custom user model
     address = models.CharField(max_length=255, null=True, blank=True)
     pincode = models.CharField(max_length=6, null=True, blank=True)
     phone = models.CharField(max_length=15, null=True, blank=True)

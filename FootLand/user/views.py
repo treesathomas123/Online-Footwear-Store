@@ -36,6 +36,7 @@ def user_dashboard(request):
     })
 
 
+
 def login(request):
     if request.method == 'POST':
         email = request.POST['email']
@@ -48,12 +49,11 @@ def login(request):
         try:
             user_obj = user_registration.objects.get(email=email)
 
-            # Directly compare the plain text password
-            if password == user_obj.password:
+            # Use check_password to compare the input password with the stored hashed password
+            if check_password(password, user_obj.password):
                 # Store user information in the session
                 request.session['user_id'] = user_obj.id
-                request.session['first_name'] = user_obj.first_name
-                request.session['last_name'] = user_obj.last_name
+                request.session['username'] = user_obj.first_name  # Assuming you store full names as first name
                 return redirect('user_dashboard')
             else:
                 messages.error(request, "Invalid email or password.")
@@ -64,7 +64,6 @@ def login(request):
             return redirect('login')
 
     return render(request, 'login.html')
-
 
 
 def forgot_password(request):
@@ -170,7 +169,7 @@ def signup(request):
         new_user.save()
 
         messages.success(request, 'Registration successful! Please log in.')
-        return redirect('login')
+        return redirect('user_dashboard')
 
     return render(request, 'signup.html')
 

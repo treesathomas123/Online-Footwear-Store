@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Profile | Footland</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
-
     <style>
-        /* Profile page form styling */
+        /* Basic styling for the body and form container */
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f4f4f4;
@@ -15,6 +14,7 @@
             padding: 0;
         }
 
+        /* Centered form with some padding and shadow */
         .profile-container {
             width: 50%;
             margin: 50px auto;
@@ -24,6 +24,7 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
+        /* Styling for the form heading */
         .profile-container h2 {
             text-align: center;
             margin-bottom: 20px;
@@ -31,10 +32,7 @@
             color: #333;
         }
 
-        .form-group {
-            margin-bottom: 15px;
-        }
-
+        /* Basic styling for form labels */
         .form-group label {
             display: block;
             margin-bottom: 5px;
@@ -43,6 +41,7 @@
             color: #333;
         }
 
+        /* Input styling with padding and border-radius */
         .form-group input {
             width: 100%;
             padding: 10px;
@@ -52,17 +51,20 @@
             transition: border-color 0.3s ease;
         }
 
+        /* Focus state styling for inputs */
         .form-group input:focus {
             border-color: #333;
             outline: none;
         }
 
-        .form-group .error {
+        /* Error message style */
+        .error {
             color: red;
             font-size: 14px;
-            display: none;
+            margin-top: 5px;  /* Add some space above the error message */
         }
 
+        /* Styling for the submit button */
         .btn {
             display: block;
             width: 100%;
@@ -77,10 +79,12 @@
             transition: background-color 0.3s ease;
         }
 
+        /* Button hover effect */
         .btn:hover {
             background-color: #555;
         }
 
+        /* Responsive design for smaller devices */
         @media (max-width: 768px) {
             .profile-container {
                 width: 80%;
@@ -93,66 +97,83 @@
             }
         }
     </style>
-
 </head>
 <body>
 
 <div class="profile-container">
     <h2>Add Profile Information</h2>
-    <form action="{% url 'add_profile' %}" method="POST">  <!-- Use URL name -->
+
+    <form action="{% url 'add_profile' %}" method="POST">
         {% csrf_token %}
-        {{ form.as_p }}
+
+        <!-- First name field (read-only) -->
         <div class="form-group">
             <label for="first_name">First Name:</label>
-            <input type="text" id="first_name" name="first_name" value="John" readonly>
+            <input type="text" id="first_name" name="first_name" value="{{ first_name }}" readonly>
         </div>
 
+        <!-- Last name field (read-only) -->
         <div class="form-group">
             <label for="last_name">Last Name:</label>
-            <input type="text" id="last_name" name="last_name" value="Doe" readonly>
+            <input type="text" id="last_name" name="last_name" value="{{ last_name }}" readonly>
         </div>
 
+        <!-- Email field (read-only) -->
         <div class="form-group">
             <label for="email">Email:</label>
-            <input type="email" id="email" name="email" value="john@example.com" readonly>
+            <input type="email" id="email" name="email" value="{{ email }}" readonly>
         </div>
 
+        <!-- Editable fields for address, pincode, phone, etc. -->
         <div class="form-group">
             <label for="address">Address:</label>
-            <input type="text" id="address" name="address" placeholder="Enter your address" required>
-            <p class="error" id="address_error"></p>
+            <input type="text" id="address" name="address" placeholder="Enter your address" value="{{ form.address.value }}" required>
+            {% if errors.address %}
+                <p class="error">{{ errors.address.0 }}</p>
+            {% endif %}
         </div>
 
         <div class="form-group">
             <label for="pincode">Pincode:</label>
-            <input type="text" id="pincode" name="pincode" placeholder="Enter your pincode" required>
-            <p class="error" id="pincode_error"></p>
+            <input type="text" id="pincode" name="pincode" placeholder="Enter your pincode" value="{{ form.pincode.value }}" required>
+            {% if errors.pincode %}
+                <p class="error">{{ errors.pincode.0 }}</p>
+            {% endif %}
         </div>
 
         <div class="form-group">
             <label for="phone">Phone No:</label>
-            <input type="text" id="phone" name="phone" placeholder="Enter your phone number" required>
-            <p class="error" id="phone_error"></p>
+            <input type="text" id="phone" name="phone" placeholder="Enter your phone number" value="{{ form.phone.value }}" required>
+            {% if errors.phone %}
+                <p class="error">{{ errors.phone.0 }}</p>
+            {% endif %}
         </div>
 
         <div class="form-group">
             <label for="state">State:</label>
-            <input type="text" id="state" name="state" placeholder="Enter your state" required>
-            <p class="error" id="state_error"></p>
+            <input type="text" id="state" name="state" placeholder="Enter your state" value="{{ form.state.value }}" required>
+            {% if errors.state %}
+                <p class="error">{{ errors.state.0 }}</p>
+            {% endif %}
         </div>
 
         <div class="form-group">
             <label for="street">Street:</label>
-            <input type="text" id="street" name="street" placeholder="Enter your street" required>
-            <p class="error" id="street_error"></p>
+            <input type="text" id="street" name="street" placeholder="Enter your street" value="{{ form.street.value }}" required>
+            {% if errors.street %}
+                <p class="error">{{ errors.street.0 }}</p>
+            {% endif %}
         </div>
 
         <div class="form-group">
             <label for="house_no">House No:</label>
-            <input type="text" id="house_no" name="house_no" placeholder="Enter your house number" required>
-            <p class="error" id="house_no_error"></p>
+            <input type="text" id="house_no" name="house_no" placeholder="Enter your house number" value="{{ form.house_no.value }}" required>
+            {% if errors.house_no %}
+                <p class="error">{{ errors.house_no.0 }}</p>
+            {% endif %}
         </div>
 
+        <!-- Submit button for saving the profile -->
         <button type="submit" class="btn">Save Profile</button>
     </form>
 </div>

@@ -32,7 +32,7 @@ urlpatterns = [
     path('edit-product/<int:product_id>/', views.edit_product, name='edit_product'),
     path('profile/', views.add_profile, name='add_profile'), 
     path('logout/', LogoutView.as_view(), name='logout'), # logout 
- path('products/<str:category>/', product_list, name='product_list'),
+    path('products/<str:category>/', product_list, name='product_list'),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
