@@ -16,7 +16,7 @@ urlpatterns = [
     path('product/', views.product, name='product'), # home page product
     path('womens/', views.womens, name='womens'), # womens product page
     path('mens/', views.mens, name='mens'),
-    path('kids/', views.kids, name='kids'),
+   # path('kids/', views.kids, name='kids'),
      path('search/', views.search, name='search'),  # Add this line for search
     path('products_details/', views.products_details, name='products_details'),
     path('products/', views.products, name='products'),
@@ -34,7 +34,13 @@ urlpatterns = [
     path('profile/', views.add_profile, name='add_profile'), 
     path('logout/', LogoutView.as_view(), name='logout'), # logout 
     path('products/<str:category>/', product_list, name='product_list'),
-     path('change_password/', change_password, name='change_password'),
+    path('change_password/', change_password, name='change_password'),
+    path('kids/', views.kids_products, name='kids_products'),  # Add this line
+    path('kids-products/', views.kids_products, name='kids_products'),
+     path('womens-products/', views.womens_products, name='womens_products'),
+     path('mens-products/', views.mens_products, name='mens_products'),
+    path('wishlist/<int:product_id>/', views.add_to_wishlist, name='wishlist'),
+    path('buy-now/<int:product_id>/', views.buy_now, name='buy_now'),
      
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -4,7 +4,7 @@ from django.contrib import messages
 from .models import user_registration
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.decorators import login_required
-from .models import Product
+from .models import Product,Cart 
 from .forms import ProductForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -364,3 +364,120 @@ def change_password(request):
 def product_list(request, category):
     products = Product.objects.filter(category=category)  # Fetch products based on the category
     return render(request, 'product_list.html', {'products': products, 'category': category})
+
+#kids product
+
+def kids_products(request):
+    # Filter products by category 'kids'
+    products = Product.objects.filter(category='kids')
+
+    # Apply filters based on GET parameters
+    price = request.GET.get('price')
+    color = request.GET.get('color')
+    size = request.GET.get('size')
+    brand = request.GET.get('brand')
+
+    if price:
+        products = products.filter(price__lte=price)  # Filter products within price range
+    if color:
+        products = products.filter(color=color)  # Filter products by color
+    if size:
+        products = products.filter(size=size)  # Filter products by size
+    if brand:
+        products = products.filter(brand=brand)  # Filter products by brand
+
+    context = {
+        'products': products,
+    }
+    return render(request, 'kids_products.html', context)
+
+#womens product
+
+def womens_products(request):
+    # Filter products by category 'kids'
+    products = Product.objects.filter(category='womens')
+
+    # Apply filters based on GET parameters
+    price = request.GET.get('price')
+    color = request.GET.get('color')
+    size = request.GET.get('size')
+    brand = request.GET.get('brand')
+
+    if price:
+        products = products.filter(price__lte=price)  # Filter products within price range
+    if color:
+        products = products.filter(color=color)  # Filter products by color
+    if size:
+        products = products.filter(size=size)  # Filter products by size
+    if brand:
+        products = products.filter(brand=brand)  # Filter products by brand
+
+    context = {
+        'products': products,
+    }
+    return render(request, 'womens_products.html', context)
+
+
+#mens product
+
+def mens_products(request):
+    # Filter products by category 'kids'
+    products = Product.objects.filter(category='mens')
+
+    # Apply filters based on GET parameters
+    price = request.GET.get('price')
+    color = request.GET.get('color')
+    size = request.GET.get('size')
+    brand = request.GET.get('brand')
+
+    if price:
+        products = products.filter(price__lte=price)  # Filter products within price range
+    if color:
+        products = products.filter(color=color)  # Filter products by color
+    if size:
+        products = products.filter(size=size)  # Filter products by size
+    if brand:
+        products = products.filter(brand=brand)  # Filter products by brand
+
+    context = {
+        'products': products,
+    }
+    return render(request, 'mens_products.html', context)
+
+
+
+def add_to_wishlist(request, product_id):
+    """View to add a product to the cart."""
+    product = get_object_or_404(Product, id=product_id)
+    
+    # Here you would typically add logic to manage cart items,
+    # such as checking if the product is already in the cart.
+
+    # Assuming you have a Cart model where you store cart items.
+    cart_item, created = Cart.objects.get_or_create(
+        user=request.user,  # Assuming you're using Django's user system
+        product=product,
+    )
+    
+    if created:
+        messages.success(request, f'{product.name} has been added to your cart!')
+    else:
+        messages.info(request, f'{product.name} is already in your cart.')
+    
+    return redirect('kids_products')  # Redirect to the kids products page or wherever appropriate.
+
+def buy_now(request, product_id):
+    """View to handle buying a product immediately."""
+    product = get_object_or_404(Product, id=product_id)
+
+    # Here you would typically handle the process for immediate purchase
+    # This might involve adding the product to the cart and redirecting to a checkout page.
+    # Below is a placeholder implementation:
+    
+    cart_item, created = Cart.objects.get_or_create(
+        user=request.user,
+        product=product,
+    )
+    
+    # Redirecting to a checkout page or process payment logic
+    return redirect('checkout')  # Change this to your actual checkout URL

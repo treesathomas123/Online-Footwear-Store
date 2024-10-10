@@ -1,0 +1,295 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Womens Products</title>
+    <style>
+        /* Basic CSS styles for the page */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        nav {
+            background-color: #ffd6d6;
+            padding: 10px;
+            margin-bottom: 10px; /* Add space below the navbar */
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        nav ul li {
+            display: inline;
+        }
+
+        nav ul li a {
+            color: rgb(41, 37, 37);
+            text-decoration: none;
+            padding: 10px 15px;
+        }
+
+        nav ul li a:hover {
+            background-color: #c0bbbb;
+            border-radius: 5px;
+        }
+
+        .search-input {
+            padding: 5px;
+            border: none;
+            border-radius: 3px;
+        }
+
+        .search-btn {
+            background-color: #555;
+            border: none;
+            padding: 6px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .search-btn img {
+            vertical-align: middle;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-right: 20px;
+            position: fixed;
+            top: 60px; /* Adjust position to place below the navbar */
+            left: -270px;
+            height: 100%;
+            transition: 0.3s;
+        }
+
+        .sidebar.show {
+            left: 0;
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        .sidebar label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .sidebar input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .sidebar .filter-section {
+            margin-bottom: 15px;
+        }
+
+        .sidebar button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .sidebar button:hover {
+            background-color: #0056b3;
+        }
+
+        .products-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px; /* Reduced gap between product cards */
+            flex: 1;
+            margin-left: 270px; /* Adjust left margin based on sidebar width */
+        }
+
+        .toggle-btn {
+            background-color: #100f0f;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            position: absolute;
+            top: 80px; /* Place below the navbar */
+            left: 20px; /* Align to the left */
+        }
+
+        .toggle-btn:hover {
+            background-color: #3a3c3e;
+        }
+
+        .product-card {
+            background-color: #fff;
+            padding: 20px; /* Reduced padding for a more compact look */
+            border-radius: 10px;
+            width: 250px; /* Reduced size for product cards */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .product-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .product-card img {
+            max-width: 100%;
+            border-radius: 10px;
+            height: 180px; /* Reduced image height */
+        }
+
+        .product-card h3 {
+            margin: 10px 0;
+            font-size: 1em; /* Smaller font size */
+            color: #007bff;
+        }
+
+        .product-card p {
+            margin: 5px 0;
+            font-size: 1em; /* Reduced font size */
+        }
+
+        .product-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px; /* Reduced margin for buttons */
+        }
+
+        .product-buttons a {
+            text-decoration: none;
+            padding: 6px 10px; /* Reduced padding */
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85em; /* Reduced font size for buttons */
+        }
+
+        .add-to-cart {
+            background-color: #28a745;
+        }
+
+        .buy-now {
+            background-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <ul id="MenuItems">
+            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="{% url 'womens_products' %}">Womens</a></li>
+            <li><a href="{% url 'mens_products' %}">Mens</a></li>
+            <li><a href="{% url 'kids_products' %}">Kids</a></li>
+            <li>
+                <form action="{% url 'search' %}" method="get">
+                    <input type="text" name="q" placeholder="Search..." class="search-input">
+                    <button type="submit" class="search-btn">
+                        <img src="{% static 'images/search.png' %}" width="20px" height="20px">
+                    </button>
+                </form>
+            </li>
+            <li>
+                <a href="{% url 'cart' %}">
+                    <img src="{% static 'images/cart.png' %}" width="30px" height="30px" alt="Cart">
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar Toggle Button -->
+    <button class="toggle-btn" onclick="toggleSidebar()">Filters</button>
+
+    <!-- Sidebar Section -->
+    <div class="sidebar" id="sidebar">
+        <h2>Filters</h2>
+        <form method="GET">
+            <div class="filter-section">
+                <label for="price">Max Price</label>
+                <input type="number" name="price" id="price" placeholder="Max Price">
+            </div>
+
+            <div class="filter-section">
+                <label>Color</label>
+                <input type="checkbox" name="color" value="Red"> Red<br>
+                <input type="checkbox" name="color" value="Blue"> Blue<br>
+                <input type="checkbox" name="color" value="Green"> Green<br>
+                <input type="checkbox" name="color" value="Pink"> Pink<br>
+                <input type="checkbox" name="color" value="Black"> Black<br>
+                <input type="checkbox" name="color" value="White"> White<br>
+            </div>
+
+            <div class="filter-section">
+                <label>Size</label>
+                <input type="checkbox" name="size" value="5"> 5<br>
+                <input type="checkbox" name="size" value="Medium"> Medium<br>
+                <input type="checkbox" name="size" value="Large"> Large<br>
+                <input type="checkbox" name="size" value="6"> 6<br>
+                <input type="checkbox" name="size" value="7"> 7<br>
+                <input type="checkbox" name="size" value="8"> 8<br>
+                <input type="checkbox" name="size" value="9"> 9<br>
+            </div>
+
+            <div class="filter-section">
+                <label for="brand">Brand</label>
+                <input type="text" name="brand" id="brand" placeholder="Brand">
+            </div>
+
+            <div>
+                <button type="submit">Apply Filters</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Products Section -->
+    <div class="products-section">
+        {% for product in products %}
+        <div class="product-card">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            <h3>{{ product.name }}</h3>
+            <p>Price: Rs. {{ product.price }}</p>
+            <p>Brand: {{ product.brand }}</p>
+            <p>Stock: {{ product.stock_quantity }}</p>
+            <div class="product-buttons">
+                <a href="#" class="add-to-cart">Add to Cart</a>
+                <a href="#" class="buy-now">Buy Now</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Sidebar toggle function
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+    </script>
+</body>
+</html>
