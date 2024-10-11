@@ -243,7 +243,7 @@ def edit_product(request, product_id):
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             form.save()
-            return redirect('view_product')
+            return redirect('view_product')  # Redirect to the product view page after saving
     else:
         form = ProductForm(instance=product)
 

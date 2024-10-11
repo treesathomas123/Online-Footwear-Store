@@ -1,4 +1,4 @@
-{%load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -62,30 +62,7 @@
     <h1>Edit Product</h1>
     <form action="{% url 'edit_product' product.id %}" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
-        <label for="name">Product Name</label>
-        <input type="text" id="name" name="name" value="{{ product.name }}" required>
-
-        <label for="description">Product Description</label>
-        <textarea id="description" name="description" rows="4" required>{{ product.description }}</textarea>
-
-        <label for="brand">Brand</label>
-        <input type="text" id="brand" name="brand" value="{{ product.brand }}" required>
-
-        <label for="size">Size</label>
-        <input type="text" id="size" name="size" value="{{ product.size }}" required>
-
-        <label for="color">Color</label>
-        <input type="text" id="color" name="color" value="{{ product.color }}" required>
-
-        <label for="price">Price</label>
-        <input type="number" id="price" name="price" value="{{ product.price }}" required>
-
-        <label for="stock_quantity">Stock Quantity</label>
-        <input type="number" id="stock_quantity" name="stock_quantity" value="{{ product.stock_quantity }}" required>
-
-        <label for="image">Product Image</label>
-        <input type="file" id="image" name="image" accept="image/*">
-
+        {{ form.as_p }}  <!-- Renders the form fields -->
         <button type="submit" class="btn">Update Product</button>
     </form>
 </div>
