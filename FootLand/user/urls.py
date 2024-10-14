@@ -47,6 +47,7 @@ urlpatterns = [
     path('cart/add/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/update/<int:cart_item_id>/', views.update_cart, name='update_cart'),
     path('order/', views.place_order, name='place_order'),
+     path('remove_from_cart/<int:product_id>/', views.remove_from_cart, name='remove_from_cart'),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

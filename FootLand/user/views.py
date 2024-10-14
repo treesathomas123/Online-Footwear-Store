@@ -502,6 +502,26 @@ def view_cart(request):
     else:
         messages.error(request, "You need to log in to view your cart.")
         return redirect('login')
+    
+
+def remove_from_cart(request, product_id):
+    # Get the logged-in user ID from session
+    if 'user_id' in request.session:
+        user_id = request.session['user_id']  # Retrieve user ID from session
+        user = get_object_or_404(user_registration, id=user_id)
+
+        # Get the cart item for the user and the specific product, then delete it
+        cart_item = get_object_or_404(Cart, user=user, product__id=product_id)
+        cart_item.delete()
+        
+        # Optionally, display a success message
+        messages.success(request, 'Item removed from your cart.')
+    else:
+        messages.error(request, "You need to log in to remove items from your cart.")
+        return redirect('login')
+
+    # Redirect back to the cart page after removing the item
+    return redirect('cart')
 
 def update_cart(request, cart_item_id):
     if request.method == "POST":
