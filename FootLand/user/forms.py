@@ -15,7 +15,7 @@ class ProductForm(forms.ModelForm):
 
     class Meta:
         model = Product
-        fields = ['name', 'description', 'brand','type', 'price', 'stock_quantity', 'image', 'size', 'color', 'category']
+        fields = ['name', 'description','material', 'brand','type', 'price', 'stock_quantity', 'image', 'size', 'color', 'category']
 
     def clean_name(self):
         name = self.cleaned_data.get('name')

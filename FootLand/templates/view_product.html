@@ -84,6 +84,7 @@
                 <th>Product Image</th>
                 <th>Product Name</th>
                 <th>Description</th>
+                <th>Material</th>
                 <th>Brand</th>
                 <th>Type</th>
                 <th>Size</th>
@@ -100,6 +101,7 @@
                 <td><img src="{{ product.image.url }}" alt="{{ product.name }}"></td>  <!-- Correct placement -->
                 <td>{{ product.name }}</td>  <!-- Moved product name here -->
                 <td>{{ product.description }}</td>
+                <td>{{ product.material }}</td>
                 <td>{{ product.brand }}</td>
                 <td>{{ product.type }}</td>
                 <td>{{ product.size }}</td>
