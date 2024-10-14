@@ -20,6 +20,7 @@ import json
 import logging
 from django.http import HttpResponseRedirect
 from .forms import ReviewForm
+from django.views.decorators.cache import never_cache
 
 logger = logging.getLogger(__name__)
 
@@ -133,18 +134,22 @@ def reset_password(request, email):
             messages.error(request, 'Passwords do not match.')
     return render(request, 'reset_password.html', {'email': email})
 
+@never_cache
 def user_dashboard(request):
-    user_id = request.session.get('user_id')
-    if user_id:
-        try:
-            user = user_registration.objects.get(id=user_id)
-            first_name = user.first_name
-        except user_registration.DoesNotExist:
+    if 'user_id' in request.session:
+        user_id = request.session.get('user_id')
+        if user_id:
+            try:
+                user = user_registration.objects.get(id=user_id)
+                first_name = user.first_name
+            except user_registration.DoesNotExist:
+                first_name = 'Guest'
+        else:
             first_name = 'Guest'
-    else:
-        first_name = 'Guest'
 
-    return render(request, 'user_dashboard.html', {'first_name': first_name})
+        return render(request, 'user_dashboard.html', {'first_name': first_name})
+    else:
+        return redirect('login')
 
 
 
