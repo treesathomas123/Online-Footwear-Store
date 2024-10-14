@@ -6,28 +6,148 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Wishlist</title>
     <style>
-        /* Basic CSS styles for the wishlist page */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
+            display: flex;
+            flex-direction: column;
             padding: 20px;
         }
 
-        .wishlist-title {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #333;
+        nav {
+            background-color: #ffd6d6;
+            padding: 0px;
+            margin-bottom: 10px; 
+            gap: 20px/* Add space below the navbar */
         }
 
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+             ;
+        }
+
+        nav ul li {
+            margin-right: 20px;
+            
+        }
+
+        nav ul li a {
+            color: rgb(41, 37, 37);
+            text-decoration: none;
+            padding: 10px 15px;
+            
+        }
+
+        nav ul li a:hover {
+            background-color: #c0bbbb;
+            border-radius: 5px;
+        }
+        nav .navbar-wishlist-icon img, nav .navbar-wishlist-icon {
+            vertical-align: middle;
+        }
+
+        
+        /* Add to Wishlist button styling */
+        .add-to-wishlist-btn {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        .add-to-wishlist-btn:hover {
+            background-color: #ff4b4b;
+        }
+
+        /* Navbar wishlist icon */
+        .navbar-wishlist-icon {
+            margin-left: 15px; /* Space between icons */
+            cursor: pointer;
+        }
+
+
+        header {
+            background-color: #ffd6d6;
+            padding: 15px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        /* Navigation and dropdown styling  */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #MenuItems {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap:100px;
+        }
+
+        #MenuItems li {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #fdfafa;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #fdf8f8;
+        } 
+
+      
+
+        .wishlist-title {
+            font-size: 28px;
+            color: #333;
+            text-align: center;
+            margin: 40px 0;
+            font-weight: bold;
+        }
+        
         .wishlist-items {
             display: flex;
             flex-direction: column;
             gap: 10px;
+            
         }
 
         .wishlist-item {
-            background-color: #fff;
+            background-color: #fcf9f9;
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -58,10 +178,43 @@
     </style>
 </head>
 <body>
-    <h1 class="wishlist-title">My Wishlist</h1>
+    <header>
+        <nav>
+            <ul id="MenuItems">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'womens_products' %}">Womens</a></li>
+                <li><a href="{% url 'mens_products' %}">Mens</a></li>
+                <li><a href="{% url 'kids_products' %}">Kids</a></li>
+
+                <li class="dropdown">
+                    <a href="#"><img src="{% static 'images/user.png' %}" width="30px" height="30px"></a>
+                    <div class="dropdown-content">
+                        {% if request.session.user_id %}
+                            <a href="{% url 'add_profile' %}">Welcome, {{ request.session.username }}</a>
+                        {% else %}
+                            <a href="{% url 'login' %}">Welcome</a>
+                        {% endif %}
+                        <a href="{% url 'logout' %}">Logout</a>
+                    </div>
+                </li>
+                <li>
+                    <a href="{% url 'wishlist' %}">
+                        <img src="{% static 'images/heart.png' %}" width="30px" height="30px" alt="Wishlist" class="navbar-wishlist-icon">
+                    </a>
+                </li>
+                <li>
+                    <a href="{%url 'cart'%}">
+                        <img src="{% static 'images/cart.png'%}" width="30px" height="30px">
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    <center><h1 class="wishlist-title">My Wishlist</h1></center>
     <div class="wishlist-items">
         {% for item in wishlist_items %}
         <div class="wishlist-item">
+            
             <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
             <div>
                 <h3>{{ item.product.name }}</h3>

@@ -80,7 +80,31 @@
                 width: 150px; /* Adjust width on smaller screens */
             }
         }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #fdfafa;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
 
+        .dropdown-content a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #fdf8f8;
+        }  
         .sidebar {
             width: 250px;
             background-color: #fff;
@@ -246,6 +270,16 @@
                         <img src="{% static 'images/search.png' %}" width="20px" height="20px">
                     </button>
                 </form>
+            </li>
+            <li class="dropdown">
+                <a href="#"><img src="{% static 'images/user.png' %}" width="30px" height="30px"></a>
+                <div class="dropdown-content">
+                    {% if request.session.user_id %}
+                    <a href="{% url 'add_profile' %}">Welcome, {{ request.session.username }}</a>                                {% else %}
+                        <a href="{% url 'login' %}">Welcome</a>
+                    {% endif %}
+                    <a href="{% url 'logout' %}">Logout</a>
+                </div>
             </li>
             <li>
                 <a href="{% url 'wishlist' %}">
