@@ -491,14 +491,28 @@ def add_to_cart(request, product_id):
         return redirect('login')
 
 
-
 def view_cart(request):
     if 'user_id' in request.session:
         user_id = request.session['user_id']  # Get the logged-in user ID from session
         user = get_object_or_404(user_registration, id=user_id)
         cart_items = Cart.objects.filter(user=user)
+
+        # Calculate total amount for the items in the cart
         total_amount = sum(item.total_price() for item in cart_items)
-        return render(request, 'cart.html', {'cart_items': cart_items, 'total_amount': total_amount})
+
+        # Define your shipping charge and platform fee
+        shipping_charge = 50  # You can modify this logic as needed
+        platform_fee = 20     # You can modify this logic as needed
+
+        # Prepare context with all necessary variables
+        context = {
+            'cart_items': cart_items,
+            'total_amount': total_amount,
+            'shipping_charge': shipping_charge,
+            'platform_fee': platform_fee,
+        }
+
+        return render(request, 'cart.html', context)
     else:
         messages.error(request, "You need to log in to view your cart.")
         return redirect('login')
