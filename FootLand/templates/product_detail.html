@@ -8,11 +8,80 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="{% static 'styles.css' %}"> <!-- Link to your CSS -->
     <style>
-        body {
+         /* Basic CSS styles for the page */
+         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        nav {
+            background-color: #ffd6d6;
+            padding: 0px;
+            margin-bottom: 10px; 
+            gap: 20px/* Add space below the navbar */
+        }
+
+        nav ul {
+            list-style: none;
             padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+             ;
+        }
+
+        nav ul li {
+            display: inline;
+            
+        }
+
+        nav ul li a {
+            color: rgb(41, 37, 37);
+            text-decoration: none;
+            padding: 10px 15px;
+        }
+
+        nav ul li a:hover {
+            background-color: #c0bbbb;
+            border-radius: 5px;
+        }
+
+        
+        /* Add to Wishlist button styling */
+        .add-to-wishlist-btn {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        .add-to-wishlist-btn:hover {
+            background-color: #ff4b4b;
+        }
+
+        /* Navbar wishlist icon */
+        .navbar-wishlist-icon {
+            margin-left: 15px; /* Space between icons */
+            cursor: pointer;
+        }
+
+
+        header {
+            background-color: #ffd6d6;
+            padding: 15px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         .container {
@@ -82,101 +151,87 @@
             margin-top: 20px;
         }
 
-        .reviews h2 {
-            margin-bottom: 20px;
-        }
-
-        .review-item {
-            border-bottom: 1px solid #ddd;
-            padding: 10px 0;
+        /* Navigation and dropdown styling  */
+        nav {
             display: flex;
-            align-items: flex-start;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .review-item:last-child {
-            border-bottom: none;
-        }
-
-        .review-item strong {
-            font-size: 18px;
-            margin-right: 10px;
-            color: #007bff;
-        }
-
-        .rating {
-            color: #ffc107; /* Gold star color */
-            margin-right: 10px;
-        }
-
-        .review-item p {
-            flex: 1;
-        }
-
-        .review-form {
-            margin-top: 30px;
-        }
-
-        .review-form input,
-        .review-form textarea,
-        .review-form select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            margin-bottom: 10px;
-        }
-
-        .star-rating {
+        #MenuItems {
+            list-style: none;
             display: flex;
-            justify-content: flex-start;
-            margin-bottom: 15px;
+            align-items: center;
+            gap:100px;
         }
 
-        .star-rating input {
+        #MenuItems li {
+            position: relative;
+        }
+
+        .dropdown-content {
             display: none;
+            position: absolute;
+            right: 0;
+            background-color: #ffd6d6;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
         }
 
-        .star-rating label {
-            font-size: 24px;
-            color: #ccc; /* Default star color */
-            cursor: pointer;
+        .dropdown-content a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
         }
 
-        .star-rating input:checked ~ label {
-            color: #ffc107; /* Gold star color when checked */
+        .dropdown:hover .dropdown-content {
+            display: block;
         }
 
-        .star-rating label:hover,
-        .star-rating input:checked ~ label {
-            color: #ffc107;
-        }
+        .dropdown-content a:hover {
+            background-color: #ffd6d6;
+        } 
 
-        .submit-btn {
-            background-color: #28a745;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .submit-btn:hover {
-            background-color: #218838;
-        }
-
-        @media (max-width: 768px) {
-            .product-detail {
-                flex-direction: column;
-            }
-
-            .product-image {
-                padding-right: 0;
-                margin-bottom: 20px;
-            }
-        }
+      
     </style>
 </head>
 <body>
+    <header>
+        <nav>
+            <ul id="MenuItems">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'womens_products' %}">Womens</a></li>
+                <li><a href="{% url 'mens_products' %}">Mens</a></li>
+                <li><a href="{% url 'kids_products' %}">Kids</a></li>
+
+                <li class="dropdown">
+                    <a href="#"><img src="{% static 'images/user.png' %}" width="30px" height="30px"></a>
+                    <div class="dropdown-content">
+                        {% if request.session.user_id %}
+                            <a href="{% url 'add_profile' %}">Welcome, {{ request.session.username }}</a>
+                        {% else %}
+                            <a href="{% url 'login' %}">Welcome</a>
+                        {% endif %}
+                        <a href="{% url 'logout' %}">Logout</a>
+                    </div>
+                </li>
+                <li>
+                    <a href="{% url 'wishlist' %}">
+                        <img src="{% static 'images/heart.png' %}" width="30px" height="30px" alt="Wishlist" class="navbar-wishlist-icon">
+                    </a>
+                </li>
+                <li>
+                    <a href="{%url 'cart'%}">
+                        <img src="{% static 'images/cart.png'%}" width="30px" height="30px">
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
     <div class="container">
         <div class="product-detail">
             <div class="product-image">
@@ -187,7 +242,6 @@
                 <p class="price">Rs. {{ product.price }}</p>
                 <p><strong>Description:</strong> {{ product.description }}</p>
                 <p><strong>Material:</strong> {{ product.material }}</p>
-                
                 <p><strong>Brand:</strong> {{ product.brand }}</p>
                 <p><strong>Available Sizes:</strong> {{ product.size }}</p>
                 <p><strong>Color:</strong> {{ product.color }}</p>
@@ -199,51 +253,6 @@
                 </form>
             </div>
         </div>
-
-        <!-- Reviews Section -->
-       <!-- <div class="reviews">
-            <h2>Customer Reviews</h2>
-            {% for review in product.reviews.all %}
-                <div class="review-item">
-                    <strong>{{ review.name }}</strong> 
-                    <div class="rating">
-                        {% for i in "12345"|slice:":review.rating" %}
-                            <i class="fas fa-star"></i>
-                        {% endfor %}
-                    </div>
-                    <p>{{ review.comment }}</p>
-                </div>
-            {% empty %}
-                <p>No reviews yet. Be the first to review this product!</p>
-            {% endfor %}
-
-            <!-- Add Review Form
-            <div class="review-form">
-                <h3>Leave a Review</h3>
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="text" name="name" placeholder="Your Name" required>
-                    <input type="email" name="email" placeholder="Your Email" required>
-                    <textarea name="comment" rows="4" placeholder="Write your review here..." required></textarea>
-                    
-                    <div class="star-rating">
-                        <input type="radio" id="star-5" name="rating" value="5" required>
-                        <label for="star-5" title="5 stars">&#9733;</label>
-                        <input type="radio" id="star-4" name="rating" value="4">
-                        <label for="star-4" title="4 stars">&#9733;</label>
-                        <input type="radio" id="star-3" name="rating" value="3">
-                        <label for="star-3" title="3 stars">&#9733;</label>
-                        <input type="radio" id="star-2" name="rating" value="2">
-                        <label for="star-2" title="2 stars">&#9733;</label>
-                        <input type="radio" id="star-1" name="rating" value="1">
-                        <label for="star-1" title="1 star">&#9733;</label>
-                    </div>
-                
-                    <button type="submit" class="add-to-cart-btn">Submit Review</button>
-                </form>
-                
-            </div> 
-        </div>  
-    </div> -->
+    </div>
 </body>
 </html>
