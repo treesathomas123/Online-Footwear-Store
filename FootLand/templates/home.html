@@ -46,6 +46,28 @@
         width: 150px; /* Adjust width on smaller screens */
     }
 }
+
+ /* Add to Wishlist button styling */
+ .add-to-wishlist-btn {
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+}
+
+.add-to-wishlist-btn:hover {
+    background-color: #ff4b4b;
+}
+
+/* Navbar wishlist icon */
+.navbar-wishlist-icon {
+    margin-left: 15px; /* Space between icons */
+    cursor: pointer;
+}
 </style>
     </head>
     <body>
@@ -74,6 +96,11 @@
                         <li>
                             <a href="{% url 'login' %}">
                                 <img src="{% static 'images/user.png' %}" width="30px" height="30px">
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'wishlist' %}">
+                                <img src="{% static 'images/heart.png' %}" width="30px" height="30px" alt="Wishlist" class="navbar-wishlist-icon">
                             </a>
                         </li>
                     </ul>

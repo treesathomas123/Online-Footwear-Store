@@ -4,7 +4,7 @@ from django.contrib import messages
 from .models import user_registration
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.decorators import login_required
-from .models import Product,Cart 
+from .models import Product,Cart,Wishlist, Review
 from .forms import ProductForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -14,6 +14,14 @@ from django.urls import reverse
 from django.core.mail import send_mail
 from .models import UserProfile
 from .forms import ProfileForm
+from django.http import JsonResponse
+#from django.views.decorators.csrf import csrf_exempt
+import json
+import logging
+from django.http import HttpResponseRedirect
+from .forms import ReviewForm
+
+logger = logging.getLogger(__name__)
 
 # Dictionary to temporarily store user pins
 user_pins = {}
@@ -249,10 +257,7 @@ def edit_product(request, product_id):
 
     return render(request, 'edit_product.html', {'form': form, 'product': product})
 
-@login_required
-def cart(request):
-    # This view can handle displaying cart items
-    return render(request, 'cart.html')  # Create a simple cart template
+
 @login_required
 def product(request):
    return render(request, 'product.html')
@@ -376,6 +381,8 @@ def kids_products(request):
     color = request.GET.get('color')
     size = request.GET.get('size')
     brand = request.GET.get('brand')
+    
+    type = request.GET.get('type')
 
     if price:
         products = products.filter(price__lte=price)  # Filter products within price range
@@ -385,11 +392,14 @@ def kids_products(request):
         products = products.filter(size=size)  # Filter products by size
     if brand:
         products = products.filter(brand=brand)  # Filter products by brand
+    
+    if type:
+        products = products.filter(type=type)  # Filter products by brand
 
     context = {
         'products': products,
     }
-    return render(request, 'kids_products.html', context)
+    return render(request, 'kids_products.html',{'products': products})
 
 #womens product
 
@@ -402,6 +412,8 @@ def womens_products(request):
     color = request.GET.get('color')
     size = request.GET.get('size')
     brand = request.GET.get('brand')
+    type = request.GET.get('type')
+    
 
     if price:
         products = products.filter(price__lte=price)  # Filter products within price range
@@ -411,6 +423,9 @@ def womens_products(request):
         products = products.filter(size=size)  # Filter products by size
     if brand:
         products = products.filter(brand=brand)  # Filter products by brand
+    if type:
+        products = products.filter(type=type)  # Filter products by brand
+
 
     context = {
         'products': products,
@@ -429,6 +444,7 @@ def mens_products(request):
     color = request.GET.get('color')
     size = request.GET.get('size')
     brand = request.GET.get('brand')
+    type = request.GET.get('type')
 
     if price:
         products = products.filter(price__lte=price)  # Filter products within price range
@@ -438,6 +454,9 @@ def mens_products(request):
         products = products.filter(size=size)  # Filter products by size
     if brand:
         products = products.filter(brand=brand)  # Filter products by brand
+    if type:
+        products = products.filter(type=type)  # Filter products by brand
+
 
     context = {
         'products': products,
@@ -446,38 +465,148 @@ def mens_products(request):
 
 
 
-def add_to_wishlist(request, product_id):
-    """View to add a product to the cart."""
-    product = get_object_or_404(Product, id=product_id)
-    
-    # Here you would typically add logic to manage cart items,
-    # such as checking if the product is already in the cart.
 
-    # Assuming you have a Cart model where you store cart items.
-    cart_item, created = Cart.objects.get_or_create(
-        user=request.user,  # Assuming you're using Django's user system
-        product=product,
-    )
-    
-    if created:
-        messages.success(request, f'{product.name} has been added to your cart!')
+def add_to_cart(request, product_id):
+    print(f"User authenticated: {request.user.is_authenticated}")  # Debug
+    if 'user_id' in request.session:
+        user_id = request.session['user_id']  # Get the logged-in user ID from session
+        user = get_object_or_404(user_registration, id=user_id)
+        product = get_object_or_404(Product, id=product_id)
+        cart_item, created = Cart.objects.get_or_create(user=user, product=product)
+        
+        if not created:
+            cart_item.quantity += 1
+            cart_item.save()
+        else:
+            messages.success(request, f'{product.name} has been added to your cart!')
+
+        return redirect('cart')
     else:
-        messages.info(request, f'{product.name} is already in your cart.')
-    
-    return redirect('kids_products')  # Redirect to the kids products page or wherever appropriate.
+        messages.error(request, "You need to log in to add items to the cart.")
+        return redirect('login')
 
-def buy_now(request, product_id):
-    """View to handle buying a product immediately."""
+
+
+def view_cart(request):
+    if 'user_id' in request.session:
+        user_id = request.session['user_id']  # Get the logged-in user ID from session
+        user = get_object_or_404(user_registration, id=user_id)
+        cart_items = Cart.objects.filter(user=user)
+        total_amount = sum(item.total_price() for item in cart_items)
+        return render(request, 'cart.html', {'cart_items': cart_items, 'total_amount': total_amount})
+    else:
+        messages.error(request, "You need to log in to view your cart.")
+        return redirect('login')
+
+def update_cart(request, cart_item_id):
+    if request.method == "POST":
+        user_id = request.session['user_id']  # Get the logged-in user ID from session
+        user = get_object_or_404(user_registration, id=user_id)
+        cart_item = get_object_or_404(Cart, id=cart_item_id, user=user)
+        quantity = request.POST.get('quantity')
+        if quantity and int(quantity) > 0:
+            cart_item.quantity = int(quantity)
+            cart_item.save()
+            messages.success(request, "Cart updated successfully!")
+        else:
+            messages.error(request, "Invalid quantity.")
+    return redirect('cart')  # Redirect back to the cart view
+
+def place_order(request):
+    # Logic for placing an order (omitted for brevity)
+    messages.success(request, "Your order has been placed successfully!")
+    return redirect('home')  # Redirect to the homepage or order confirmation page
+
+
+def add_to_wishlist(request):
+    user_id = request.session['user_id']  # Get the logged-in user ID from session
+    user = get_object_or_404(user_registration, id=user_id)
+    if request.method == "POST":
+        product_id = request.POST.get('product_id')
+        print(product_id)
+        product = get_object_or_404(Product, pk=product_id)
+        wishlist_item, created = Wishlist.objects.get_or_create(user=user, product=product)
+        if created:
+            # Optionally, add a success message
+            print(f'{product.name} added to wishlist.')
+        else:
+            # Optionally, add an error message
+            print(f'{product.name} is already in your wishlist.')
+        return redirect('kids_products')  # Redirect back to the products page
+
+def wishlist_view(request):
+    user_id = request.session['user_id']  # Get the logged-in user ID from session
+    user = get_object_or_404(user_registration, id=user_id)
+    wishlist_items = Wishlist.objects.filter(user=user)
+    return render(request, 'wishlist.html', {'wishlist_items': wishlist_items})
+
+def remove_from_wishlist(request, product_id):
+    # Get the wishlist item and delete it
+    user_id = request.session['user_id']  # Get the logged-in user ID from session
+    user = get_object_or_404(user_registration, id=user_id)
+    wishlist_item = get_object_or_404(Wishlist, user=user, product__id=product_id)
+    wishlist_item.delete()
+    return redirect('wishlist')  # Redirect to the wishlist page
+
+
+def product_detail(request, product_id):
+    # Fetch the product details
+    logger.debug(f"Fetching product with ID: {product_id}")
+    
     product = get_object_or_404(Product, id=product_id)
 
-    # Here you would typically handle the process for immediate purchase
-    # This might involve adding the product to the cart and redirecting to a checkout page.
-    # Below is a placeholder implementation:
+    if request.method == 'POST':
+        # Handle the adding to cart logic
+        user = request.user  # Get the logged-in user
+        if user.is_authenticated:  # Check if the user is authenticated
+            quantity = request.POST.get('quantity', 1)  # Get the quantity from the form
+            cart_item, created = Cart.objects.get_or_create(user=user, product=product)
+            cart_item.quantity += int(quantity)  # Increase the quantity
+            cart_item.save()  # Save the cart item
+            return redirect('cart')  # Redirect to the cart page
+
+    return render(request, 'product_detail.html', {'product': product})
+
+
+def product_detail(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
     
-    cart_item, created = Cart.objects.get_or_create(
-        user=request.user,
-        product=product,
-    )
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            # Create a review but don't save it to the database yet
+            review = form.save(commit=False)
+            review.product = product  # Associate review with the product
+            review.user = request.user  # Set the user to the current user
+            review.save()  # Now save it to the database
+            messages.success(request, "Your review has been submitted successfully!")
+            return redirect('product_detail', product_id=product_id)
+        else:
+            messages.error(request, "There was an error in your review. Please check the form.")
     
-    # Redirecting to a checkout page or process payment logic
-    return redirect('checkout')  # Change this to your actual checkout URL
+    else:
+        form = ReviewForm()
+
+    return render(request, 'product_detail.html', {'product': product, 'form': form})
+
+#def add_review(request, product_id):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment')
+        
+        product = get_object_or_404(Product, id=product_id)
+
+        # Create and save the review
+        Review.objects.create(
+            product=product,
+            name=name,
+            email=email,
+            rating=int(rating),
+            comment=comment
+        )
+        return redirect('product_detail', product_id=product.id)  # Redirect to product detail page
+
+    return redirect('product_detail', product_id=product_id)  # Handle GET request by redirecting #
+

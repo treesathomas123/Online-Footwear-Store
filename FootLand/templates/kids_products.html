@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Footland</title>
+    <title>Footland - Kids Products</title>
     <style>
         /* Basic CSS styles for the page */
         body {
@@ -46,22 +46,39 @@
             border-radius: 5px;
         }
 
+        /* Search bar styling */
         .search-input {
-            padding: 5px;
-            border: none;
-            border-radius: 3px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 20px; /* Rounded corners */
+            outline: none;
+            width: 200px; /* Set a width for the input */
+            transition: all 0.3s; /* Smooth transition */
+        }
+
+        .search-input:focus {
+            border-color: #007bff; /* Change border color on focus */
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Add shadow on focus */
         }
 
         .search-btn {
-            background-color: #555;
-            border: none;
-            padding: 6px;
-            border-radius: 3px;
-            cursor: pointer;
+            background-color: #8b8d8f; /* Button background color */
+            border: none; /* Remove border */
+            border-radius: 20px; /* Match the border radius */
+            padding: 10px 15px; /* Adjust padding */
+            margin-left: -5px; /* Overlap slightly with the input */
+            cursor: pointer; /* Change cursor on hover */
+            transition: background-color 0.3s; /* Smooth transition for hover */
         }
 
-        .search-btn img {
-            vertical-align: middle;
+        .search-btn:hover {
+            background-color: #6c757d; /* Darken the button on hover */
+        }
+
+        @media (max-width: 768px) {
+            .search-input {
+                width: 150px; /* Adjust width on smaller screens */
+            }
         }
 
         .sidebar {
@@ -72,10 +89,11 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             margin-right: 20px;
             position: fixed;
-            top: 75px; /* Adjust position to place below the navbar */
+            top: 80px; /* Adjust position to place below the navbar */
             left: -270px;
             height: 100%;
-            transition: 0.3s;
+            overflow-y: auto;
+            transition: left 0.3s ease; /* Smooth transition for sidebar */
         }
 
         .sidebar.show {
@@ -90,10 +108,8 @@
         }
 
         .sidebar label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #1b1b1c;
+            display: inline-block;
+            margin-right: 10px;
         }
 
         .sidebar input[type="checkbox"] {
@@ -102,6 +118,20 @@
 
         .sidebar .filter-section {
             margin-bottom: 15px;
+        }
+
+        /* Display checkboxes in a row */
+        .sidebar .filter-section input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .categories {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .categories input {
+            margin-left: 10px;
         }
 
         .sidebar button {
@@ -123,6 +153,7 @@
             flex-wrap: wrap;
             gap: 10px; /* Reduced gap between product cards */
             flex: 1;
+            
             margin-left: 270px; /* Adjust left margin based on sidebar width */
         }
 
@@ -147,10 +178,11 @@
             background-color: #fff;
             padding: 20px; /* Reduced padding for a more compact look */
             border-radius: 10px;
-            width: 250px; /* Reduced size for product cards */
+            width: 250px; /* 3 cards per row with gap */
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
             text-align: center;
             transition: transform 0.2s, box-shadow 0.2s;
+           /*position: relative;*/
         }
 
         .product-card:hover {
@@ -167,7 +199,7 @@
         .product-card h3 {
             margin: 10px 0;
             font-size: 1em; /* Smaller font size */
-            color: #007bff;
+            color: #151617;
         }
 
         .product-card p {
@@ -175,27 +207,26 @@
             font-size: 1em; /* Reduced font size */
         }
 
-        .product-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 5px; /* Reduced margin for buttons */
-        }
-
-        .product-buttons a {
-            text-decoration: none;
-            padding: 6px 10px; /* Reduced padding */
-            border-radius: 5px;
+        /* Add to Wishlist button styling */
+        .add-to-wishlist-btn {
+            background-color: #ff6b6b;
             color: white;
-            font-weight: bold;
-            font-size: 0.85em; /* Reduced font size for buttons */
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
         }
 
-        .add-to-cart {
-            background-color: #28a745;
+        .add-to-wishlist-btn:hover {
+            background-color: #ff4b4b;
         }
 
-        .buy-now {
-            background-color: #007bff;
+        /* Navbar wishlist icon */
+        .navbar-wishlist-icon {
+            margin-left: 15px; /* Space between icons */
+            cursor: pointer;
         }
     </style>
 </head>
@@ -217,6 +248,11 @@
                 </form>
             </li>
             <li>
+                <a href="{% url 'wishlist' %}">
+                    <img src="{% static 'images/heart.png' %}" width="30px" height="30px" alt="Wishlist" class="navbar-wishlist-icon">
+                </a>
+            </li>
+            <li>
                 <a href="{% url 'cart' %}">
                     <img src="{% static 'images/cart.png' %}" width="30px" height="30px" alt="Cart">
                 </a>
@@ -235,26 +271,44 @@
                 <label for="price">Max Price</label>
                 <input type="number" name="price" id="price" placeholder="Max Price">
             </div>
+             <!-- Category Filter 
+            <div class="filter-section">
+                <h4>Categories</h4>
+                <div class="categories">
+                    <label><input type="checkbox" name="category" value="Boys"> Boys</label>
+                    <label><input type="checkbox" name="category" value="Girls"> Girls</label>
+                </div>
+            </div>-->
+            <!-- Type Filter -->
+        <div class="filter-section">
+            <h4>Type</h4>
+            <label><input type="checkbox" name="type" value="Clogs"> Clogs</label>
+            <label><input type="checkbox" name="type" value="Heels"> Heels</label>
+            <label><input type="checkbox" name="type" value="Shoes"> Shoes</label>
+            <label><input type="checkbox" name="type" value="Flip Flops"> Flip Flops</label>
+            <label><input type="checkbox" name="type" value="Sandals"> Sandals</label>
+            <label><input type="checkbox" name="type" value="Sneakers"> Sneakers</label>
+        </div>
 
             <div class="filter-section">
-                <label>Color</label>
-                <input type="checkbox" name="color" value="Red"> Red<br>
-                <input type="checkbox" name="color" value="Blue"> Blue<br>
-                <input type="checkbox" name="color" value="Green"> Green<br>
-                <input type="checkbox" name="color" value="Pink"> Pink<br>
-                <input type="checkbox" name="color" value="Black"> Black<br>
-                <input type="checkbox" name="color" value="White"> White<br>
+                <h4>Color</h4>
+                
+                <label><input type="checkbox" name="color" value="Red"> Red<br></label>
+                    <label><input type="checkbox" name="color" value="Blue"> Blue<br></label>
+                        <label><input type="checkbox" name="color" value="Green"> Green<br></label>
+                            <label><input type="checkbox" name="color" value="Pink"> Pink<br></label>
+                                <label><input type="checkbox" name="color" value="Black"> Black<br></label>
+                                    <labelr<input type="checkbox" name="color" value="White"> White<br></label>
             </div>
 
             <div class="filter-section">
-                <label>Size</label>
-                <input type="checkbox" name="size" value="5"> 5<br>
-                <input type="checkbox" name="size" value="Medium"> Medium<br>
-                <input type="checkbox" name="size" value="Large"> Large<br>
-                <input type="checkbox" name="size" value="6"> 6<br>
-                <input type="checkbox" name="size" value="7"> 7<br>
-                <input type="checkbox" name="size" value="8"> 8<br>
-                <input type="checkbox" name="size" value="9"> 9<br>
+                <h4>Size</h4>
+                
+                <label><input type="checkbox" name="size" value="5"> 5<br></label>
+                    <label><input type="checkbox" name="size" value="6"> 6<br></label>
+                        <label><input type="checkbox" name="size" value="7"> 7<br></label>
+                            <label><input type="checkbox" name="size" value="8"> 8<br></label>
+                                <label> <input type="checkbox" name="size" value="9"> 9<br></label>
             </div>
 
             <div class="filter-section">
@@ -272,15 +326,17 @@
     <div class="products-section">
         {% for product in products %}
         <div class="product-card">
-            <img src="{{ product.image.url }}" alt="{{ product.name }}">
-            <h3>{{ product.name }}</h3>
-            <p>Price: Rs. {{ product.price }}</p>
-            <p>Brand: {{ product.brand }}</p>
-            <!--<p>Stock: {{ product.stock_quantity }}</p> stock display in product page--> 
-            <div class="product-buttons">
-                <a href="#" class="add-to-cart">Add to Cart</a>
-                <a href="#" class="buy-now">Buy Now</a>
-            </div>
+            <a href="{% url 'product_detail' product.id %}"> <!-- Link to product detail -->
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                <h3>{{ product.name }}</h3>
+                <p>Price: Rs. {{ product.price }}</p>
+                <p>Brand: {{ product.brand }}</p>
+            </a>
+            <form action="{% url 'add_to_wishlist' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <button type="submit" class="add-to-wishlist-btn">Add to Wishlist</button>
+            </form>
         </div>
         {% endfor %}
     </div>
@@ -290,6 +346,75 @@
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('show');
         }
+
+      /* // Function to get CSRF token from cookies (if needed for other requests)
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+   // Function to add product to wishlist
+    function addToWishlist(element) {
+        const productId = element.getAttribute('data-product-id');
+        const productName = element.closest('.product-card').querySelector('h3').textContent;
+
+        let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+
+        // Check if the product is already in the wishlist
+        if (!wishlist.some(item => item.productId === productId)) {
+            wishlist.push({ productId, productName });
+            localStorage.setItem('wishlist', JSON.stringify(wishlist));
+
+            alert(`${productName} added to your wishlist!`);
+        } else {
+            alert(`${productName} is already in your wishlist.`);
+        }
+    }
+
+    // Function to display wishlist items on the wishlist page
+    function displayWishlist() {
+        const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+        const wishlistContainer = document.getElementById('wishlist-items');
+
+        wishlistContainer.innerHTML = '';
+
+        if (wishlist.length === 0) {
+            wishlistContainer.innerHTML = '<p>Your wishlist is empty.</p>';
+        } else {
+            wishlist.forEach(item => {
+                wishlistContainer.innerHTML += `
+                    <div class="wishlist-item">
+                        <h3>${item.productName}</h3>
+                        <button onclick="removeFromWishlist('${item.productId}')">Remove</button>
+                    </div>
+                `;
+            });
+        }
+    }
+
+    // Function to remove a product from the wishlist
+    function removeFromWishlist(productId) {
+        let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+
+        wishlist = wishlist.filter(item => item.productId !== productId);
+        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+
+        displayWishlist();
+    }
+
+    // Load wishlist items when the page loads
+    document.addEventListener('DOMContentLoaded', displayWishlist);*/
+</script>
     </script>
 </body>
 </html>

@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wishlist</title>
+    <style>
+        /* Basic CSS styles for the wishlist page */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .wishlist-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .wishlist-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .wishlist-item {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .wishlist-item img {
+            max-width: 100px;
+            border-radius: 8px;
+            margin-right: 20px;
+        }
+
+        .remove-btn {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .remove-btn:hover {
+            background-color: #ff4b4b;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="wishlist-title">My Wishlist</h1>
+    <div class="wishlist-items">
+        {% for item in wishlist_items %}
+        <div class="wishlist-item">
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+            <div>
+                <h3>{{ item.product.name }}</h3>
+                <p>Price: Rs. {{ item.product.price }}</p>
+                <p>Brand: {{ item.product.brand }}</p>
+            </div>
+            <form action="{% url 'remove_from_wishlist' item.product.id %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="item_id" value="{{ item.id }}">
+                <button type="submit" class="remove-btn">Remove</button>
+            </form>
+        </div>
+        {% empty %}
+        <p>Your wishlist is empty.</p>
+        {% endfor %}
+    </div>
+</body>
+</html>

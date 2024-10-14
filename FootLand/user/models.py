@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 from django.conf import settings  # Use this for the custom user model
-
+from django.core.validators import MinValueValidator, MaxValueValidator
 # Create your models here.
 
 # Create your models here.
@@ -40,6 +40,7 @@ class Product(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(max_length=1000)
     brand = models.CharField(max_length=50)
+    type = models.CharField(max_length=50)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock_quantity = models.IntegerField()
     image = models.ImageField(upload_to='products/')
@@ -62,11 +63,35 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f'{self.user.username} Profile'
-    
 class Cart(models.Model):
     user = models.ForeignKey(user_registration, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)  # Quantity of the product
+    quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self):
-        return f"{self.user.username}'s cart - {self.product.name}"
+        return f"{self.user.first_name}'s cart - {self.product.name}"
+    
+    def total_price(self):
+        return self.product.price * self.quantity
+    
+class Wishlist(models.Model):
+    user = models.ForeignKey(user_registration, on_delete=models.CASCADE, related_name='wishlists')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='wishlists')
+
+    class Meta:
+        unique_together = ('user', 'product')  # Prevent duplicate entries
+
+    def __str__(self):
+        return f'{self.user.username} - {self.product.name}'
+    
+class Review(models.Model):
+    product = models.ForeignKey(Product, related_name='reviews', on_delete=models.CASCADE)
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)  # Assuming you are using Django's User model
+    rating = models.PositiveIntegerField()  # 1 to 5 stars
+    comment = models.TextField()
+    name = models.CharField(max_length=100)
+    email = models.EmailField(null=True)  # Allow null values
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.rating} stars"

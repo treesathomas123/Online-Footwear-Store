@@ -1,0 +1,247 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} - Product Detail</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'styles.css' %}"> <!-- Link to your CSS -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .product-detail {
+            display: flex;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .product-image {
+            flex: 1;
+            padding-right: 20px;
+        }
+
+        .product-image img {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+
+        .product-info {
+            flex: 2;
+        }
+
+        .product-info h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .product-info p {
+            margin-bottom: 10px;
+        }
+
+        .price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .add-to-cart-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .add-to-cart-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .reviews {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .reviews h2 {
+            margin-bottom: 20px;
+        }
+
+        .review-item {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .review-item:last-child {
+            border-bottom: none;
+        }
+
+        .review-item strong {
+            font-size: 18px;
+            margin-right: 10px;
+            color: #007bff;
+        }
+
+        .rating {
+            color: #ffc107; /* Gold star color */
+            margin-right: 10px;
+        }
+
+        .review-item p {
+            flex: 1;
+        }
+
+        .review-form {
+            margin-top: 30px;
+        }
+
+        .review-form input,
+        .review-form textarea,
+        .review-form select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+
+        .star-rating {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            font-size: 24px;
+            color: #ccc; /* Default star color */
+            cursor: pointer;
+        }
+
+        .star-rating input:checked ~ label {
+            color: #ffc107; /* Gold star color when checked */
+        }
+
+        .star-rating label:hover,
+        .star-rating input:checked ~ label {
+            color: #ffc107;
+        }
+
+        .submit-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .submit-btn:hover {
+            background-color: #218838;
+        }
+
+        @media (max-width: 768px) {
+            .product-detail {
+                flex-direction: column;
+            }
+
+            .product-image {
+                padding-right: 0;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="product-detail">
+            <div class="product-image">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            </div>
+            <div class="product-info">
+                <h1>{{ product.name }}</h1>
+                <p class="price">Rs. {{ product.price }}</p>
+                <p><strong>Description:</strong> {{ product.description }}</p>
+                <p><strong>Brand:</strong> {{ product.brand }}</p>
+                <p><strong>Available Sizes:</strong> {{ product.size }}</p>
+                <p><strong>Color:</strong> {{ product.color }}</p>
+
+                <form method="post" action="{% url 'add_to_cart' product.id %}">
+                    {% csrf_token %}
+                    <input type="number" name="quantity" value="1" min="1" style="width: 60px;">
+                    <button type="submit" class="add-to-cart-btn">Add to Cart</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Reviews Section -->
+       <!-- <div class="reviews">
+            <h2>Customer Reviews</h2>
+            {% for review in product.reviews.all %}
+                <div class="review-item">
+                    <strong>{{ review.name }}</strong> 
+                    <div class="rating">
+                        {% for i in "12345"|slice:":review.rating" %}
+                            <i class="fas fa-star"></i>
+                        {% endfor %}
+                    </div>
+                    <p>{{ review.comment }}</p>
+                </div>
+            {% empty %}
+                <p>No reviews yet. Be the first to review this product!</p>
+            {% endfor %}
+
+            <!-- Add Review Form
+            <div class="review-form">
+                <h3>Leave a Review</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="text" name="name" placeholder="Your Name" required>
+                    <input type="email" name="email" placeholder="Your Email" required>
+                    <textarea name="comment" rows="4" placeholder="Write your review here..." required></textarea>
+                    
+                    <div class="star-rating">
+                        <input type="radio" id="star-5" name="rating" value="5" required>
+                        <label for="star-5" title="5 stars">&#9733;</label>
+                        <input type="radio" id="star-4" name="rating" value="4">
+                        <label for="star-4" title="4 stars">&#9733;</label>
+                        <input type="radio" id="star-3" name="rating" value="3">
+                        <label for="star-3" title="3 stars">&#9733;</label>
+                        <input type="radio" id="star-2" name="rating" value="2">
+                        <label for="star-2" title="2 stars">&#9733;</label>
+                        <input type="radio" id="star-1" name="rating" value="1">
+                        <label for="star-1" title="1 star">&#9733;</label>
+                    </div>
+                
+                    <button type="submit" class="add-to-cart-btn">Submit Review</button>
+                </form>
+                
+            </div> 
+        </div>  
+    </div> -->
+</body>
+</html>

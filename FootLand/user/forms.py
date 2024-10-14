@@ -1,6 +1,9 @@
 from django import forms
 from .models import Product
 from .models import UserProfile
+from .models import Review
+
+
 class ProductForm(forms.ModelForm):
     CATEGORY_CHOICES = [
         ('mens', 'Mens'),
@@ -12,7 +15,7 @@ class ProductForm(forms.ModelForm):
 
     class Meta:
         model = Product
-        fields = ['name', 'description', 'brand', 'price', 'stock_quantity', 'image', 'size', 'color', 'category']
+        fields = ['name', 'description', 'brand','type', 'price', 'stock_quantity', 'image', 'size', 'color', 'category']
 
     def clean_name(self):
         name = self.cleaned_data.get('name')
@@ -41,3 +44,46 @@ class ProfileForm(forms.ModelForm):
             'street': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your street'}),
             'house_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your house number'}),
         }
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['name', 'email', 'rating', 'comment']
+        
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Your Name',
+                'required': True
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Your Email',
+                'required': True
+            }),
+            'rating': forms.RadioSelect(choices=[
+                (1, '1 Star'),
+                (2, '2 Stars'),
+                (3, '3 Stars'),
+                (4, '4 Stars'),
+                (5, '5 Stars')
+            ], attrs={'class': 'star-rating', 'required': True}),
+            'comment': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Write your review here...',
+                'required': True
+            }),
+        }
+
+    # Optionally, you can define clean methods for additional validation
+    def clean_rating(self):
+        rating = self.cleaned_data.get('rating')
+        if rating is None or int(rating) not in range(1, 6):
+            raise forms.ValidationError('Please select a valid star rating.')
+        return rating
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if not email:
+            raise forms.ValidationError('Email is required.')
+        return email
