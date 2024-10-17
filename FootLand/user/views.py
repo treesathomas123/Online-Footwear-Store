@@ -21,6 +21,8 @@ import logging
 from django.http import HttpResponseRedirect
 from .forms import ReviewForm
 from django.views.decorators.cache import never_cache
+from django.core.mail import send_mail
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -161,7 +163,6 @@ def logout(request):
 def admin_dashboard(request):
     # Admin dashboard view
     return render(request, 'admin_dashboard.html')
-
 def signup(request):
     if request.method == 'POST':
         first_name = request.POST.get('first_name')
@@ -186,7 +187,37 @@ def signup(request):
         )
         new_user.save()
 
-        messages.success(request, 'Registration successful! Please log in.')
+        # Customized welcome email
+        subject = 'Welcome to Our Footland!'
+        message = f"""
+        Hi {first_name},
+
+        Welcome to our community! We are thrilled to have you as a part of our website. 
+
+        Whether you're here to shop for your favorite items or discover something new, we strive to provide the best experience possible. Here are a few things you can do now that you're registered:
+
+        - Browse through our exclusive products and deals.
+        - Create wishlists and share them with your friends.
+        - Leave reviews for products you've purchased to help others in their buying journey.
+
+        Should you ever need assistance or have any questions, feel free to reach out to our support team at support@footland.com. We're always here to help.
+
+        Thank you once again for joining us, and we hope you enjoy your time with us!
+
+        Best regards,
+        The Team
+
+        P.S. Don't forget to follow us on social media for the latest updates and offers!
+        """
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = [email]
+
+        try:
+            send_mail(subject, message, from_email, recipient_list)
+            messages.success(request, 'Registration successful! Please check your email for a warm welcome.')
+        except Exception as e:
+            messages.error(request, f'Registration successful, but email failed to send: {str(e)}')
+
         return redirect('user_dashboard')
 
     return render(request, 'signup.html')
@@ -649,3 +680,36 @@ def product_detail(request, product_id):
 
     return redirect('product_detail', product_id=product_id)  # Handle GET request by redirecting #
 
+#def confirm_order(request):
+    if request.method == 'POST':
+        user_id = request.session.get('user_id')
+        
+        # Debugging: Print user_id to check if it's correctly set
+        print(f"User ID from session: {user_id}")
+
+        if user_id is None:
+            messages.error(request, "User not logged in.")
+            return redirect('login')  # Redirect to login if user_id is None
+
+        try:
+            user_profile = UserProfile.objects.get(user_id=user_id)  # Fetch user profile
+        except UserProfile.DoesNotExist:
+            messages.error(request, "UserProfile matching query does not exist.")
+            return redirect('add_profile')  # Redirect to profile creation if user_profile does not exist
+
+        # Update the user profile with the new data
+        user_registration.first_name = request.POST.get('first_name')
+        user_registration.last_name = request.POST.get('last_name')
+        user_registration.email = request.POST.get('email')
+        user_profile.address = request.POST.get('address')
+        user_profile.pincode = request.POST.get('pincode')
+        user_profile.phone = request.POST.get('phone')
+        user_profile.save()
+
+        # Here you would place your order logic
+        # ...
+
+        messages.success(request, "Your order has been placed successfully!")
+        return redirect('home')  # Redirect to home or any other page after order is confirmed
+
+    return redirect('cart')  # Redirect back to the cart if the method is not POST

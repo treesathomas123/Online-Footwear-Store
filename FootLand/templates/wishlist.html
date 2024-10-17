@@ -175,6 +175,20 @@
         .remove-btn:hover {
             background-color: #ff4b4b;
         }
+        .add-to-cart-btn {
+            background-color: #4CAF50; /* Green */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .add-to-cart-btn:hover {
+            background-color: #45a049; /* Darker green */
+        }
+        
     </style>
 </head>
 <body>
@@ -225,6 +239,11 @@
                 {% csrf_token %}
                 <input type="hidden" name="item_id" value="{{ item.id }}">
                 <button type="submit" class="remove-btn">Remove</button>
+            </form>
+            <form action="{% url 'add_to_cart' item.product.id %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="item_id" value="{{ item.id }}">
+                <button type="submit" class="add-to-cart-btn">Add to Cart</button>
             </form>
         </div>
         {% empty %}

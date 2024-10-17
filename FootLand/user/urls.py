@@ -6,7 +6,7 @@ from .views import add_to_wishlist, wishlist_view, remove_from_wishlist,product_
 from . import views
 from .views import product_list  
 from .views import add_profile, change_password
-from .views import add_to_cart, view_cart, update_cart, place_order
+from .views import add_to_cart, view_cart, update_cart, place_order,confirm_order
 urlpatterns = [
     path('', views.home, name='home'),
     path('user_dashboard/', views.user_dashboard, name='user_dashboard'),
@@ -48,6 +48,8 @@ urlpatterns = [
     path('cart/update/<int:cart_item_id>/', views.update_cart, name='update_cart'),
     path('order/', views.place_order, name='place_order'),
      path('remove_from_cart/<int:product_id>/', views.remove_from_cart, name='remove_from_cart'),
+    #path('confirm-order/', confirm_order, name='confirm_order'),  # Confirm order after verification
+     
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
