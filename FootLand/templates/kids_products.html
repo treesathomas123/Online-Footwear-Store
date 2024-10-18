@@ -366,6 +366,14 @@
                 <p>Price: Rs. {{ product.price }}</p>
                 <p>Brand: {{ product.brand }}</p>
             </a>
+            {% if product.stock_quantity == 0 %}
+            <p style="color: red;">Out of Stock</p>
+        {% elif product.stock_quantity <= 5 %}
+            <p style="color: orange;">Only {{ product.stock_quantity }} left</p>
+        {% else %}
+            <p style="color: green;">In Stock</p>
+        {% endif %}
+            
             <form action="{% url 'add_to_wishlist' %}" method="post">
                 {% csrf_token %}
                 <input type="hidden" name="product_id" value="{{ product.id }}">

@@ -240,6 +240,20 @@
             padding: 5px 0;
             border-bottom: 1px solid #ddd;
         }
+        
+            .error-message {
+                margin: 0 auto;
+                max-width: 500px;
+                padding: 10px;
+                background-color: #ffdddd;
+                color: #d8000c;
+                text-align: center;
+                border: 1px solid #d8000c;
+                border-radius: 5px;
+                margin-bottom: 20px;
+            }
+        
+        
     </style>
 </head>
 <body>
@@ -277,6 +291,15 @@
     </header>
 
     <div class="main-container">
+
+        {% if messages %}
+        <div class="error-message">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
         <!-- Cart items (left) -->
         <div class="cart-items-container">
             <h2>Your Shopping Cart</h2>
@@ -306,6 +329,7 @@
                 <p>Your cart is empty.</p>
             {% endif %}
         </div>
+        
         <div class="order-summary">
             <h3>Order Summary</h3>
             {% if cart_items %}
@@ -337,6 +361,7 @@
                 </form>
             {% endif %}
         </div>
+        
         
 </body>
 </html>

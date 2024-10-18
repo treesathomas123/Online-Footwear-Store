@@ -76,12 +76,11 @@
             <h3>{{ product.name }}</h3>
             <p>{{ product.description }}</p>
             <span>Price: ${{ product.price }}</span><br>
-            <a href="{% url 'cart' %}" class="add-to-cart">Add to Cart</a>
-        </div>
+          
     {% empty %}
         <p>No products available.</p>
     {% endfor %}
 </div>
-
+        
 </body>
 </html>

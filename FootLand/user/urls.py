@@ -6,7 +6,7 @@ from .views import add_to_wishlist, wishlist_view, remove_from_wishlist,product_
 from . import views
 from .views import product_list  
 from .views import add_profile, change_password
-from .views import add_to_cart, view_cart, update_cart, place_order,confirm_order
+from .views import add_to_cart, view_cart, update_cart, place_order
 urlpatterns = [
     path('', views.home, name='home'),
     path('user_dashboard/', views.user_dashboard, name='user_dashboard'),

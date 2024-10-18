@@ -23,6 +23,7 @@ from .forms import ReviewForm
 from django.views.decorators.cache import never_cache
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -214,7 +215,7 @@ def signup(request):
 
         try:
             send_mail(subject, message, from_email, recipient_list)
-            messages.success(request, 'Registration successful! Please check your email for a warm welcome.')
+            messages.success(request, 'Registration successful! Please check your mail!!.')
         except Exception as e:
             messages.error(request, f'Registration successful, but email failed to send: {str(e)}')
 
@@ -407,7 +408,7 @@ def product_list(request, category):
     return render(request, 'product_list.html', {'products': products, 'category': category})
 
 #kids product
-
+@never_cache
 def kids_products(request):
     # Filter products by category 'kids'
     products = Product.objects.filter(category='kids')
@@ -438,7 +439,7 @@ def kids_products(request):
     return render(request, 'kids_products.html',{'products': products})
 
 #womens product
-
+@never_cache
 def womens_products(request):
     # Filter products by category 'kids'
     products = Product.objects.filter(category='womens')
@@ -470,7 +471,7 @@ def womens_products(request):
 
 
 #mens product
-
+@never_cache
 def mens_products(request):
     # Filter products by category 'kids'
     products = Product.objects.filter(category='mens')
@@ -499,28 +500,34 @@ def mens_products(request):
     }
     return render(request, 'mens_products.html', context)
 
-
-
-
+@never_cache
 def add_to_cart(request, product_id):
-    print(f"User authenticated: {request.user.is_authenticated}")  # Debug
     if 'user_id' in request.session:
         user_id = request.session['user_id']  # Get the logged-in user ID from session
         user = get_object_or_404(user_registration, id=user_id)
         product = get_object_or_404(Product, id=product_id)
-        cart_item, created = Cart.objects.get_or_create(user=user, product=product)
-        
-        if not created:
-            cart_item.quantity += 1
-            cart_item.save()
-        else:
-            messages.success(request, f'{product.name} has been added to your cart!')
 
-        return redirect('cart')
+        # Check if the product is in stock
+        if product.stock_quantity == 0:
+            messages.error(request, f'Sorry, {product.name} is out of stock.')
+            return redirect('product_list', category=product.category)  # Redirect with category
+        else:
+            cart_item, created = Cart.objects.get_or_create(user=user, product=product)
+            
+            if not created:
+                if cart_item.quantity + 1 > product.stock_quantity:
+                    messages.error(request, f'Sorry, only {product.stock_quantity} units of {product.name} are available.')
+                else:
+                    cart_item.quantity += 1
+                    cart_item.save()
+                    messages.success(request, f'{product.name} quantity updated in your cart!')
+            else:
+                messages.success(request, f'{product.name} has been added to your cart!')
+
+        return redirect('cart')  # Redirect to cart
     else:
         messages.error(request, "You need to log in to add items to the cart.")
         return redirect('login')
-
 
 def view_cart(request):
     if 'user_id' in request.session:
@@ -568,24 +575,68 @@ def remove_from_cart(request, product_id):
     # Redirect back to the cart page after removing the item
     return redirect('cart')
 
+
 def update_cart(request, cart_item_id):
     if request.method == "POST":
         user_id = request.session['user_id']  # Get the logged-in user ID from session
         user = get_object_or_404(user_registration, id=user_id)
         cart_item = get_object_or_404(Cart, id=cart_item_id, user=user)
-        quantity = request.POST.get('quantity')
-        if quantity and int(quantity) > 0:
-            cart_item.quantity = int(quantity)
+        quantity = int(request.POST.get('quantity'))
+
+        # Check if the desired quantity is greater than the available stock
+        if quantity > cart_item.product.stock_quantity:
+            if cart_item.product.stock_quantity == 0:
+                messages.error(request, f'Sorry, {cart_item.product.name} is out of stock.')
+            else:
+                messages.error(request, f'Sorry, only {cart_item.product.stock_quantity} units of {cart_item.product.name} are available.')
+        elif quantity <= 0:
+            messages.error(request, "Quantity must be at least 1.")
+        else:
+            cart_item.quantity = quantity
             cart_item.save()
             messages.success(request, "Cart updated successfully!")
-        else:
-            messages.error(request, "Invalid quantity.")
+
     return redirect('cart')  # Redirect back to the cart view
 
+from django.db import transaction
+
 def place_order(request):
-    # Logic for placing an order (omitted for brevity)
-    messages.success(request, "Your order has been placed successfully!")
-    return redirect('home')  # Redirect to the homepage or order confirmation page
+    if 'user_id' in request.session:
+        user_id = request.session['user_id']
+        user = get_object_or_404(user_registration, id=user_id)
+        cart_items = Cart.objects.filter(user=user)
+
+        if not cart_items.exists():
+            messages.error(request, "Your cart is empty.")
+            return redirect('cart')
+
+        try:
+            # Using transaction to ensure atomic operations
+            with transaction.atomic():
+                for item in cart_items:
+                    product = item.product
+
+                    # Check if the product has enough stock
+                    if item.quantity > product.stock_quantity:
+                        messages.error(request, f'Sorry, only {product.stock_quantity} units of {product.name} are available.')
+                        return redirect('cart')
+
+                    # Reduce the stock quantity
+                    product.stock_quantity -= item.quantity
+                    product.save()
+
+                # Empty the cart after successful order placement
+                cart_items.delete()
+
+                messages.success(request, "Your order has been placed successfully!")
+                return redirect('home')
+        except Exception as e:
+            messages.error(request, "There was an issue placing your order. Please try again.")
+            return redirect('cart')
+    else:
+        messages.error(request, "You need to log in to place an order.")
+        return redirect('login')
+
 
 
 def add_to_wishlist(request):

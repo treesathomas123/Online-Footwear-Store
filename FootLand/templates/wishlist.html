@@ -228,27 +228,43 @@
     <div class="wishlist-items">
         {% for item in wishlist_items %}
         <div class="wishlist-item">
-            
             <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
             <div>
                 <h3>{{ item.product.name }}</h3>
                 <p>Price: Rs. {{ item.product.price }}</p>
                 <p>Brand: {{ item.product.brand }}</p>
+    
+                {% if item.product.stock_quantity == 0 %}
+                    <p style="color: red; font-weight: bold;">Out of Stock</p>
+                {% elif item.product.stock_quantity > 0 and item.product.stock_quantity <= 5 %}
+                    <p style="color: orange; font-weight: bold;">Limited Stock: Only {{ item.product.stock_quantity }} left!</p>
+                {% endif %}
             </div>
+    
+            <!-- Form to remove item from wishlist -->
             <form action="{% url 'remove_from_wishlist' item.product.id %}" method="post">
                 {% csrf_token %}
                 <input type="hidden" name="item_id" value="{{ item.id }}">
                 <button type="submit" class="remove-btn">Remove</button>
             </form>
+    
+            <!-- Form to add item to cart -->
             <form action="{% url 'add_to_cart' item.product.id %}" method="post" style="display:inline;">
                 {% csrf_token %}
                 <input type="hidden" name="item_id" value="{{ item.id }}">
-                <button type="submit" class="add-to-cart-btn">Add to Cart</button>
+                <button type="submit" class="add-to-cart-btn" 
+                    {% if item.product.stock_quantity == 0 %} 
+                        disabled 
+                        style="background-color: grey; cursor: not-allowed;" 
+                    {% endif %}>
+                    Add to Cart
+                </button>
             </form>
         </div>
         {% empty %}
         <p>Your wishlist is empty.</p>
         {% endfor %}
     </div>
+    
 </body>
 </html>

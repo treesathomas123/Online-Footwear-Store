@@ -51,7 +51,6 @@
             border-radius: 5px;
         }
 
-        
         /* Add to Wishlist button styling */
         .add-to-wishlist-btn {
             background-color: #ff6b6b;
@@ -73,7 +72,6 @@
             margin-left: 15px; /* Space between icons */
             cursor: pointer;
         }
-
 
         header {
             background-color: #ffd6d6;
@@ -139,7 +137,12 @@
             margin-top: 15px;
         }
 
-        .add-to-cart-btn:hover {
+        .add-to-cart-btn:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+
+        .add-to-cart-btn:hover:not(:disabled) {
             background-color: #0056b3;
         }
 
@@ -194,7 +197,6 @@
         .dropdown-content a:hover {
             background-color: #fdf8f8;
         } 
-
       
     </style>
 </head>
@@ -238,6 +240,13 @@
                 <img src="{{ product.image.url }}" alt="{{ product.name }}">
             </div>
             <div class="product-info">
+                {% if product.stock_quantity == 0 %}
+                    <p style="color: red;">Out of Stock</p>
+                {% elif product.stock_quantity <= 3 %}
+                    <p style="color: orange;">Only {{ product.stock_quantity }} left</p>
+                {% else %}
+                    <p style="color: green;">In Stock</p>
+                {% endif %}
                 <h1>{{ product.name }}</h1>
                 <p class="price">Rs. {{ product.price }}</p>
                 <p><strong>Description:</strong> {{ product.description }}</p>
@@ -246,10 +255,19 @@
                 <p><strong>Available Sizes:</strong> {{ product.size }}</p>
                 <p><strong>Color:</strong> {{ product.color }}</p>
 
+                <!-- Add to Cart form -->
                 <form method="post" action="{% url 'add_to_cart' product.id %}">
                     {% csrf_token %}
                     <input type="number" name="quantity" value="1" min="1" style="width: 60px;">
-                    <button type="submit" class="add-to-cart-btn">Add to Cart</button>
+                    <button type="submit" class="add-to-cart-btn" 
+                            {% if product.stock_quantity == 0 %} disabled {% endif %}>Add to Cart</button>
+                </form>
+
+                <!-- Add to Wishlist button -->
+                <form method="post" action="{% url 'add_to_wishlist' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    <button type="submit" class="add-to-wishlist-btn">Add to Wishlist</button>
                 </form>
             </div>
         </div>
