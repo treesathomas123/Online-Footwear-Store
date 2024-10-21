@@ -24,7 +24,8 @@ from django.views.decorators.cache import never_cache
 from django.core.mail import send_mail
 from django.conf import settings
 from django.db import transaction
-
+from decimal import Decimal  # Add this import
+from django.db.models import Q
 logger = logging.getLogger(__name__)
 
 # Dictionary to temporarily store user pins
@@ -413,30 +414,42 @@ def kids_products(request):
     # Filter products by category 'kids'
     products = Product.objects.filter(category='kids')
 
-    # Apply filters based on GET parameters
+    # Get filter parameters
     price = request.GET.get('price')
-    color = request.GET.get('color')
-    size = request.GET.get('size')
+    colors = request.GET.getlist('color')  # Changed to getlist to handle multiple colors
+    sizes = request.GET.getlist('size')    # Changed to getlist to handle multiple sizes
     brand = request.GET.get('brand')
-    
-    type = request.GET.get('type')
+    types = request.GET.getlist('type')    # Changed to getlist to handle multiple types
 
+    # Apply filters
     if price:
-        products = products.filter(price__lte=price)  # Filter products within price range
-    if color:
-        products = products.filter(color=color)  # Filter products by color
-    if size:
-        products = products.filter(size=size)  # Filter products by size
+        products = products.filter(price__lte=price)
+    if colors:
+        products = products.filter(color__in=colors)
+    if sizes:
+        products = products.filter(size__in=sizes)
     if brand:
-        products = products.filter(brand=brand)  # Filter products by brand
-    
-    if type:
-        products = products.filter(type=type)  # Filter products by brand
+        products = products.filter(brand__icontains=brand)
+    if types:
+        products = products.filter(type__in=types)
+
+    # Get unique values for filters
+    all_colors = Product.objects.filter(category='kids').values_list('color', flat=True).distinct()
+    all_sizes = Product.objects.filter(category='kids').values_list('size', flat=True).distinct()
+    all_types = Product.objects.filter(category='kids').values_list('type', flat=True).distinct()
 
     context = {
         'products': products,
+        'all_colors': all_colors,
+        'all_sizes': all_sizes,
+        'all_types': all_types,
+        'selected_colors': colors,
+        'selected_sizes': sizes,
+        'selected_types': types,
+        'selected_price': price,
+        'selected_brand': brand,
     }
-    return render(request, 'kids_products.html',{'products': products})
+    return render(request, 'kids_products.html', context)
 
 #womens product
 @never_cache
@@ -528,33 +541,44 @@ def add_to_cart(request, product_id):
     else:
         messages.error(request, "You need to log in to add items to the cart.")
         return redirect('login')
-
+  
 def view_cart(request):
     if 'user_id' in request.session:
-        user_id = request.session['user_id']  # Get the logged-in user ID from session
+        user_id = request.session['user_id']
         user = get_object_or_404(user_registration, id=user_id)
-        cart_items = Cart.objects.filter(user=user)
+        
+        # Get cart items and saved items for the logged-in user
+        cart_items = Cart.objects.filter(user=user, saved_for_later=False)
+        saved_items = Cart.objects.filter(user=user, saved_for_later=True)
 
-        # Calculate total amount for the items in the cart
-        total_amount = sum(item.total_price() for item in cart_items)
+        # Calculate the subtotal (ensuring it's a Decimal)
+        subtotal = sum(item.total_price() for item in cart_items)
+        
+        # Shipping charge, platform fee, and tax (using Decimal for tax rate)
+        shipping_charge = Decimal('5') if subtotal > 0 else Decimal('0')
+        platform_fee = Decimal('5')
+        tax_rate = Decimal('0.1')  # Tax rate as Decimal
+        tax = tax_rate * subtotal
+        
+        # Calculate total amount
+        total_amount = subtotal + shipping_charge + platform_fee + tax
 
-        # Define your shipping charge and platform fee
-        shipping_charge = 50  # You can modify this logic as needed
-        platform_fee = 20     # You can modify this logic as needed
-
-        # Prepare context with all necessary variables
+        # Context to pass to the template
         context = {
             'cart_items': cart_items,
-            'total_amount': total_amount,
-            'shipping_charge': shipping_charge,
+            'saved_items': saved_items,
+            'subtotal': subtotal,
+            'shipping': shipping_charge,
             'platform_fee': platform_fee,
+            'tax': tax,
+            'total': total_amount,
         }
-
         return render(request, 'cart.html', context)
+    
     else:
+        # If the user is not logged in, redirect to login page
         messages.error(request, "You need to log in to view your cart.")
         return redirect('login')
-    
 
 def remove_from_cart(request, product_id):
     # Get the logged-in user ID from session
@@ -640,20 +664,26 @@ def place_order(request):
 
 
 def add_to_wishlist(request):
-    user_id = request.session['user_id']  # Get the logged-in user ID from session
+    if 'user_id' not in request.session:
+        messages.error(request, "Please log in to add items to your wishlist.")
+        return redirect('login')
+
+    user_id = request.session['user_id']
     user = get_object_or_404(user_registration, id=user_id)
+    
     if request.method == "POST":
         product_id = request.POST.get('product_id')
-        print(product_id)
         product = get_object_or_404(Product, pk=product_id)
         wishlist_item, created = Wishlist.objects.get_or_create(user=user, product=product)
+        
         if created:
-            # Optionally, add a success message
-            print(f'{product.name} added to wishlist.')
+            messages.success(request, f'{product.name} added to your wishlist.')
         else:
-            # Optionally, add an error message
-            print(f'{product.name} is already in your wishlist.')
-        return redirect('kids_products')  # Redirect back to the products page
+            messages.info(request, f'{product.name} is already in your wishlist.')
+        
+        return redirect('product_detail', product_id=product_id)
+
+    return redirect('home')  # Redirect to home if not a POST request
 
 def wishlist_view(request):
     user_id = request.session['user_id']  # Get the logged-in user ID from session
@@ -676,6 +706,11 @@ def product_detail(request, product_id):
     
     product = get_object_or_404(Product, id=product_id)
 
+    # Fetch similar products based on type
+    similar_products = Product.objects.filter(
+        type=product.type  # Filter by type
+    ).exclude(id=product_id)[:5]  # Exclude the current product and limit to 5
+
     if request.method == 'POST':
         # Handle the adding to cart logic
         user = request.user  # Get the logged-in user
@@ -686,11 +721,15 @@ def product_detail(request, product_id):
             cart_item.save()  # Save the cart item
             return redirect('cart')  # Redirect to the cart page
 
-    return render(request, 'product_detail.html', {'product': product})
+    return render(request, 'product_detail.html', {
+        'product': product,
+        'similar_products': similar_products  # Pass similar products to the template
+    })
 
 
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+    similar_products = Product.objects.filter(type=product.type).exclude(id=product_id)[:4]
     
     if request.method == "POST":
         form = ReviewForm(request.POST)
@@ -708,7 +747,7 @@ def product_detail(request, product_id):
     else:
         form = ReviewForm()
 
-    return render(request, 'product_detail.html', {'product': product, 'form': form})
+    return render(request, 'product_detail.html', {'product': product, 'form': form, 'similar_products': similar_products})
 
 #def add_review(request, product_id):
     if request.method == 'POST':
@@ -764,3 +803,54 @@ def product_detail(request, product_id):
         return redirect('home')  # Redirect to home or any other page after order is confirmed
 
     return redirect('cart')  # Redirect back to the cart if the method is not POST
+
+def save_for_later(request, product_id):
+    if 'user_id' in request.session:
+        user_id = request.session['user_id']
+        user = get_object_or_404(user_registration, id=user_id)
+        cart_item = get_object_or_404(Cart, user=user, product_id=product_id)
+
+        cart_item.saved_for_later = True
+        cart_item.save()
+        
+        messages.success(request, f"{cart_item.product.name} has been saved for later.")
+        return redirect('cart')
+    else:
+        messages.error(request, "You need to log in to save items for later.")
+        return redirect('login')
+
+
+def move_to_cart(request, product_id):
+    if 'user_id' in request.session:
+        user_id = request.session['user_id']
+        user = get_object_or_404(user_registration, id=user_id)
+        cart_item = get_object_or_404(Cart, user=user, product_id=product_id)
+
+        cart_item.saved_for_later = False
+        cart_item.save()
+
+        messages.success(request, f"{cart_item.product.name} has been moved back to your cart.")
+        return redirect('cart')
+    else:
+        messages.error(request, "You need to log in to move items to the cart.")
+        return redirect('login')
+
+def remove_saved_item(request, product_id):
+    if 'user_id' in request.session:
+        user_id = request.session['user_id']
+        user = get_object_or_404(user_registration, id=user_id)
+
+        # Find the item saved for later in the Cart model
+        saved_item = Cart.objects.filter(product_id=product_id, user=user, saved_for_later=True).first()
+
+        if saved_item:
+            saved_item.delete()  # Remove the item
+
+        messages.success(request, "Item removed from saved items.")
+    else:
+        messages.error(request, "You need to log in to remove saved items.")
+    
+    return redirect('cart')
+
+
+

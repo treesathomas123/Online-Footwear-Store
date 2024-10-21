@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 from django.conf import settings  # Use this for the custom user model
 from django.core.validators import MinValueValidator, MaxValueValidator
+
+
 # Create your models here.
 
 # Create your models here.
@@ -69,12 +71,21 @@ class Cart(models.Model):
     user = models.ForeignKey(user_registration, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
-
+    saved_for_later = models.BooleanField(default=False)  # New field
     def __str__(self):
         return f"{self.user.first_name}'s cart - {self.product.name}"
     
     def total_price(self):
         return self.product.price * self.quantity
+    
+class SavedItem(models.Model):
+    user = models.ForeignKey(user_registration, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    date_saved = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.first_name}'s saved item - {self.product.name}"
+
     
 class Wishlist(models.Model):
     user = models.ForeignKey(user_registration, on_delete=models.CASCADE, related_name='wishlists')

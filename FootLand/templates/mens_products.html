@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Footland - Mens Products</title>
+    <title>Footland - Kids Products</title>
     <style>
         /* Basic CSS styles for the page */
         body {
@@ -80,7 +80,31 @@
                 width: 150px; /* Adjust width on smaller screens */
             }
         }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #fdfafa;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
 
+        .dropdown-content a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #fdf8f8;
+        }  
         .sidebar {
             width: 250px;
             background-color: #fff;
@@ -153,6 +177,7 @@
             flex-wrap: wrap;
             gap: 10px; /* Reduced gap between product cards */
             flex: 1;
+            
             margin-left: 270px; /* Adjust left margin based on sidebar width */
         }
 
@@ -177,11 +202,11 @@
             background-color: #fff;
             padding: 20px; /* Reduced padding for a more compact look */
             border-radius: 10px;
-            width: 250px; /* Reduced size for product cards */
+            width: 250px; /* 3 cards per row with gap */
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
             text-align: center;
             transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
+           /*position: relative;*/
         }
 
         .product-card:hover {
@@ -227,32 +252,6 @@
             margin-left: 15px; /* Space between icons */
             cursor: pointer;
         }
-        
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            background-color: #fdfafa;
-            min-width: 160px;
-            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-            z-index: 1;
-        }
-
-        .dropdown-content a {
-            color: #333;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-            text-align: left;
-        }
-
-        .dropdown:hover .dropdown-content {
-            display: block;
-        }
-
-        .dropdown-content a:hover {
-            background-color: #fdf8f8;
-        }  
     </style>
 </head>
 <body>
@@ -260,7 +259,7 @@
     <!-- Navigation Bar -->
     <nav>
         <ul id="MenuItems">
-            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="{% url 'user_dashboard' %}">Home</a></li>
             <li><a href="{% url 'womens_products' %}">Womens</a></li>
             <li><a href="{% url 'mens_products' %}">Mens</a></li>
             <li><a href="{% url 'kids_products' %}">Kids</a></li>
@@ -301,20 +300,10 @@
     <!-- Sidebar Section -->
     <div class="sidebar" id="sidebar">
         <h2>Filters</h2>
-        <form method="GET">
-            <div class="filter-section">
-                <label for="price">Max Price</label>
-                <input type="number" name="price" id="price" placeholder="Max Price">
-            </div>
-              <!-- Category Filter -->
-            <div class="filter-section">
-                <h4>Categories</h4>
-                <div class="categories">
-                    <label><input type="checkbox" name="category" value="Boys"> Boys</label>
-                    <label><input type="checkbox" name="category" value="Girls"> Girls</label>
-                </div>
-            </div>
-            <!-- Type Filter -->
+        <div class="filter-section">
+            <label for="price">Max Price</label>
+            <input type="number" id="price" placeholder="Max Price">
+        </div>
         <div class="filter-section">
             <h4>Type</h4>
             <label><input type="checkbox" name="type" value="Clogs"> Clogs</label>
@@ -324,43 +313,33 @@
             <label><input type="checkbox" name="type" value="Sandals"> Sandals</label>
             <label><input type="checkbox" name="type" value="Sneakers"> Sneakers</label>
         </div>
-
-            <div class="filter-section">
-                <h4>Color</h4>
-                
-                <label><input type="checkbox" name="color" value="Red"> Red<br></label>
-                    <label><input type="checkbox" name="color" value="Blue"> Blue<br></label>
-                        <label><input type="checkbox" name="color" value="Green"> Green<br></label>
-                            <label><input type="checkbox" name="color" value="Pink"> Pink<br></label>
-                                <label><input type="checkbox" name="color" value="Black"> Black<br></label>
-                                    <label><input type="checkbox" name="color" value="White"> White<br></label>
-            </div>
-
-            <div class="filter-section">
-                <h4>Size</h4>
-                
-                <label><input type="checkbox" name="size" value="5"> 5<br></label>
-                    <label><input type="checkbox" name="size" value="6"> 6<br></label>
-                        <label><input type="checkbox" name="size" value="7"> 7<br></label>
-                            <label><input type="checkbox" name="size" value="8"> 8<br></label>
-                                <label> <input type="checkbox" name="size" value="9"> 9<br></label>
-            </div>
-
-            <div class="filter-section">
-                <label for="brand">Brand</label>
-                <input type="text" name="brand" id="brand" placeholder="Brand">
-            </div>
-
-            <div>
-                <button type="submit">Apply Filters</button>
-            </div>
-        </form>
+        <div class="filter-section">
+            <h4>Color</h4>
+            <label><input type="checkbox" name="color" value="Red"> Red</label>
+            <label><input type="checkbox" name="color" value="Blue"> Blue</label>
+            <label><input type="checkbox" name="color" value="Green"> Green</label>
+            <label><input type="checkbox" name="color" value="Pink"> Pink</label>
+            <label><input type="checkbox" name="color" value="Black"> Black</label>
+            <label><input type="checkbox" name="color" value="White"> White</label>
+        </div>
+        <div class="filter-section">
+            <h4>Size</h4>
+            <label><input type="checkbox" name="size" value="5"> 5</label>
+            <label><input type="checkbox" name="size" value="6"> 6</label>
+            <label><input type="checkbox" name="size" value="7"> 7</label>
+            <label><input type="checkbox" name="size" value="8"> 8</label>
+            <label><input type="checkbox" name="size" value="9"> 9</label>
+        </div>
+        <div class="filter-section">
+            <label for="brand">Brand</label>
+            <input type="text" id="brand" placeholder="Brand">
+        </div>
     </div>
 
     <!-- Products Section -->
-    <div class="products-section">
+    <div class="products-section" id="products-container">
         {% for product in products %}
-        <div class="product-card">
+        <div class="product-card" data-price="{{ product.price }}" data-type="{{ product.type }}" data-color="{{ product.color }}" data-size="{{ product.size }}" data-brand="{{ product.brand }}">
             <a href="{% url 'product_detail' product.id %}"> <!-- Link to product detail -->
                 <img src="{{ product.image.url }}" alt="{{ product.name }}">
                 <h3>{{ product.name }}</h3>
@@ -374,6 +353,7 @@
         {% else %}
             <p style="color: green;">In Stock</p>
         {% endif %}
+            
             <form action="{% url 'add_to_wishlist' %}" method="post">
                 {% csrf_token %}
                 <input type="hidden" name="product_id" value="{{ product.id }}">
@@ -389,74 +369,46 @@
             document.getElementById('sidebar').classList.toggle('show');
         }
 
-      /* // Function to get CSRF token from cookies (if needed for other requests)
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+        // Function to filter products
+        function filterProducts() {
+            const maxPrice = document.getElementById('price').value;
+            const types = Array.from(document.querySelectorAll('input[name="type"]:checked')).map(el => el.value);
+            const colors = Array.from(document.querySelectorAll('input[name="color"]:checked')).map(el => el.value);
+            const sizes = Array.from(document.querySelectorAll('input[name="size"]:checked')).map(el => el.value);
+            const brand = document.getElementById('brand').value.toLowerCase();
+
+            const products = document.querySelectorAll('.product-card');
+
+            products.forEach(product => {
+                const price = parseFloat(product.dataset.price);
+                const type = product.dataset.type;
+                const color = product.dataset.color;
+                const size = product.dataset.size;
+                const productBrand = product.dataset.brand.toLowerCase();
+
+                const priceMatch = !maxPrice || price <= parseFloat(maxPrice);
+                const typeMatch = types.length === 0 || types.includes(type);
+                const colorMatch = colors.length === 0 || colors.includes(color);
+                const sizeMatch = sizes.length === 0 || sizes.includes(size);
+                const brandMatch = !brand || productBrand.includes(brand);
+
+                if (priceMatch && typeMatch && colorMatch && sizeMatch && brandMatch) {
+                    product.style.display = 'block';
+                } else {
+                    product.style.display = 'none';
                 }
-            }
-        }
-        return cookieValue;
-    }
-
-   // Function to add product to wishlist
-    function addToWishlist(element) {
-        const productId = element.getAttribute('data-product-id');
-        const productName = element.closest('.product-card').querySelector('h3').textContent;
-
-        let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-
-        // Check if the product is already in the wishlist
-        if (!wishlist.some(item => item.productId === productId)) {
-            wishlist.push({ productId, productName });
-            localStorage.setItem('wishlist', JSON.stringify(wishlist));
-
-            alert(`${productName} added to your wishlist!`);
-        } else {
-            alert(`${productName} is already in your wishlist.`);
-        }
-    }
-
-    // Function to display wishlist items on the wishlist page
-    function displayWishlist() {
-        const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-        const wishlistContainer = document.getElementById('wishlist-items');
-
-        wishlistContainer.innerHTML = '';
-
-        if (wishlist.length === 0) {
-            wishlistContainer.innerHTML = '<p>Your wishlist is empty.</p>';
-        } else {
-            wishlist.forEach(item => {
-                wishlistContainer.innerHTML += `
-                    <div class="wishlist-item">
-                        <h3>${item.productName}</h3>
-                        <button onclick="removeFromWishlist('${item.productId}')">Remove</button>
-                    </div>
-                `;
             });
         }
-    }
 
-    // Function to remove a product from the wishlist
-    function removeFromWishlist(productId) {
-        let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+        // Add event listeners to all filter inputs
+        document.querySelectorAll('#sidebar input').forEach(input => {
+            input.addEventListener('change', filterProducts);
+        });
+        document.getElementById('brand').addEventListener('input', filterProducts);
 
-        wishlist = wishlist.filter(item => item.productId !== productId);
-        localStorage.setItem('wishlist', JSON.stringify(wishlist));
-
-        displayWishlist();
-    }
-
-    // Load wishlist items when the page loads
-    document.addEventListener('DOMContentLoaded', displayWishlist);*/
-</script>
+        // Initial filter on page load
+        filterProducts();
+   
     </script>
 </body>
 </html>
