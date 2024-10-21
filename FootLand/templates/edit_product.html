@@ -4,68 +4,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Product</title>
+    <title>Edit Product - Footland Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #f4f7fc;
+            --text-color: #333;
+            --accent-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 40px;
         }
 
         .container {
-            margin: 20px;
-            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
             background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
+            font-size: 32px;
+            color: var(--primary-color);
+            margin-bottom: 30px;
             text-align: center;
-            margin-bottom: 20px;
+            position: relative;
         }
 
-        form {
-            display: flex;
-            flex-direction: column;
+        h1::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background-color: var(--primary-color);
+            margin: 10px auto 0;
+        }
+
+        .edit-form {
+            margin-top: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
         }
 
         label {
-            margin-bottom: 5px;
-            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--primary-color);
         }
 
-        input, select, textarea {
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
             width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
         }
 
         .btn {
-            background-color: #4CAF50;
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 10px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
-            border-radius: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
         }
 
         .btn:hover {
-            background-color: #45a049;
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            margin-right: 10px;
+        }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .current-image {
+            max-width: 200px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #34495e;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            background-color: #2c3e50;
+        }
+
+        .back-btn i {
+            margin-right: 5px;
         }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1>Edit Product</h1>
-    <form action="{% url 'edit_product' product.id %}" method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}  <!-- Renders the form fields -->
-        <button type="submit" class="btn">Update Product</button>
-    </form>
-</div>
-
+    <div class="container">
+        
+        <h1>Edit Product</h1>
+        <form class="edit-form" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.name.id_for_label }}">Product Name:</label>
+                {{ form.name }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">Description:</label>
+                {{ form.description }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.price.id_for_label }}">Price:</label>
+                {{ form.price }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.type.id_for_label }}">Type:</label>
+                {{ form.type }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.brand.id_for_label }}">Brand:</label>
+                {{ form.brand }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.material.id_for_label }}">Material:</label>
+                {{ form.material }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.size.id_for_label }}">Size:</label>
+                {{ form.size }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.color.id_for_label }}">Color:</label>
+                {{ form.color }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.stock_quantity.id_for_label }}">Stock Quantity:</label>
+                {{ form.stock_quantity }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.image.id_for_label }}">Product Image:</label>
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="current-image">
+                {% endif %}
+                {{ form.image }}
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'view_product' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn">Update Product</button>
+            </div>
+        </form>
+    </div>
 </body>
 </html>

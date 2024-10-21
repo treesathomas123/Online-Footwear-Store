@@ -4,200 +4,350 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Product</title>
+    <title>Add Product - Footland Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f4f7fc;
+            --text-color: #333;
+            --accent-color: #ff6b6b;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
         }
 
-        .product-form {
-            background-color: #fff;
-            padding: 20px;
-            max-width: 600px;
-            margin: 0 auto;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
         }
 
-        .product-form h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .product-form label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
-        .product-form input,
-        .product-form textarea,
-        .product-form select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        .product-form button {
-            width: 100%;
-            padding: 15px;
-            background-color: #28a745;
+        .sidebar {
+            width: 250px;
+            background-color: #4a90e2;
             color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
+            padding: 20px 0;
+            transition: all 0.3s ease;
         }
 
-        .product-form button:hover {
-            background-color: #218838;
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .menu {
+            list-style-type: none;
+            padding: 20px 0;
+        }
+
+        .menu li {
+            margin-bottom: 10px;
+        }
+
+        .menu a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            transition: 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .menu a:hover, .menu a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left-color: var(--accent-color);
+        }
+
+        .menu i {
+            margin-right: 10px;
+            width: 20px;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            background-color: #fff;
+            border-radius: 20px;
+            margin: 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-size: 28px;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
         }
 
         .error {
-            color: red;
+            color: var(--accent-color);
             font-size: 14px;
+            margin-top: 5px;
         }
 
-        .success {
-            color: green;
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px 24px;
             font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #3a7bc8;
+            transform: translateY(-2px);
+        }
+
+        .invalid {
+            border-color: var(--accent-color);
+        }
+
+        .valid {
+            border-color: var(--success-color);
+        }
+
+        .dropdown-content {
+            display: none;
+            padding-left: 20px;
+        }
+
+        .dropdown-content a {
+            padding: 10px 20px;
+        }
+
+        .show {
+            display: block;
         }
     </style>
 </head>
 <body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="logo">Footland Admin</div>
+            <ul class="menu">
+                <li><a href="{% url 'admin_dashboard' %}"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li class="dropdown">
+                    <a href="#" onclick="toggleDropdown('productsDropdown')"><i class="fas fa-box"></i> Products</a>
+                    <div id="productsDropdown" class="dropdown-content">
+                        <a href="{% url 'add_product' %}">Add Product</a>
+                        <a href="{% url 'view_product' %}">View Products</a>
+                    </div>
+                </li>
+                <li><a href="{% url 'view_customers' %}"><i class="fas fa-users"></i> Customers</a></li>
+                <li><a href="{% url 'vendors' %}"><i class="fas fa-store"></i> Vendors</a></li>
+                <li><a href="#"><i class="fas fa-shopping-cart"></i> Orders</a></li>
+                <li><a href="{% url 'analytics' %}"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+                <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </aside>
+        <main class="main-content">
+            <h2>Add New Product</h2>
+            <form method="POST" enctype="multipart/form-data" action="" id="addProductForm">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="name">Product Name:</label>
+                    {{ form.name }}
+                    <small class="error" id="nameError"></small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    {{ form.description }}
+                    <small class="error" id="descError"></small>
+                </div>
 
-<div class="product-form">
-    <h2>Add Product</h2>
-    <form method="POST" enctype="multipart/form-data" action="">
-        <!-- CSRF Token -->
-        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-    
-        <!-- Error display for the entire form -->
-        {% if form.errors %}
-            <div class="error">
-                <ul>
-                    {% for field, errors in form.errors.items %}
-                        <li>{{ field }}: {{ errors }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
-    
-        <!-- Product Name -->
-        <label for="name">Product Name:</label>
-        {{ form.name }}
-        <small class="error">{{ form.name.errors }}</small>
-    
-        <!-- Description -->
-        <label for="material">Description:</label>
-        {{ form.description }}
-        <small class="error">{{ form.description.errors }}</small>
+                <div class="form-group">
+                    <label for="type">Type:</label>
+                    {{ form.type }}
+                    <small class="error" id="typeError"></small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="brand">Brand:</label>
+                    {{ form.brand }}
+                    <small class="error" id="brandError"></small>
+                </div>
 
-         <!-- type -->
-         <label for="type">Type:</label>
-         {{ form.type }}
-         <small class="error">{{ form.type.errors }}</small>
-    
-        <!-- Brand -->
-        <label for="brand">Brand:</label>
-        {{ form.brand }}
-        <small class="error">{{ form.brand.errors }}</small>
+                <div class="form-group">
+                    <label for="material">Material:</label>
+                    {{ form.material }}
+                    <small class="error" id="materialError"></small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="price">Price:</label>
+                    {{ form.price }}
+                    <small class="error" id="priceError"></small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="stock_quantity">Stock Quantity:</label>
+                    {{ form.stock_quantity }}
+                    <small class="error" id="stockError"></small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="image">Product Image:</label>
+                    {{ form.image }}
+                    <small class="error" id="imageError"></small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="size">Size:</label>
+                    {{ form.size }}
+                    <small class="error" id="sizeError"></small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="color">Color:</label>
+                    {{ form.color }}
+                    <small class="error" id="colorError"></small>
+                </div>
+                
+                <button type="submit">Add Product</button>
+            </form>
+        </main>
+    </div>
 
-        <!-- Material -->
-        <label for="type">Material:</label>
-        {{ form.material }}
-        <small class="error">{{ form.material.errors }}</small>
-    
-    
-        <!-- Price -->
-        <label for="price">Price:</label>
-        {{ form.price }}
-        <small class="error">{{ form.price.errors }}</small>
-    
-        <!-- Stock Quantity -->
-        <label for="stock_quantity">Stock Quantity:</label>
-        {{ form.stock_quantity }}
-        <small class="error">{{ form.stock_quantity.errors }}</small>
-    
-        <!-- Image -->
-        <label for="image">Product Image:</label>
-        {{ form.image }}
-        <small class="error">{{ form.image.errors }}</small>
-    
-        <!-- Size -->
-        <label for="size">Size:</label>
-        {{ form.size }}
-        <small class="error">{{ form.size.errors }}</small>
-    
-        <!-- Color -->
-        <label for="color">Color:</label>
-        {{ form.color }}
-        <small class="error">{{ form.color.errors }}</small>
-    
-        <!-- Category -->
-        <label for="category">Category:</label>
-        {{ form.category }}
-        <small class="error">{{ form.category.errors }}</small>
-    
-        <!-- Submit Button -->
-        <button type="submit">Add Product</button>
-    </form>
-    
-</div>
-
-<script>
-    function validateName() {
-        const nameField = document.getElementById('name');
-        const errorField = document.getElementById('nameError');
-        const regex = /^[A-Z][a-zA-Z\s]*$/;
-
-        if (!regex.test(nameField.value)) {
-            errorField.textContent = 'Name must start with a capital letter and contain no special characters.';
-        } else {
-            errorField.textContent = '';
+    <script>
+        function toggleDropdown(id) {
+            document.getElementById(id).classList.toggle("show");
         }
-    }
 
-    function validateDescription() {
-        const descField = document.getElementById('description');
-        const errorField = document.getElementById('descError');
-        const wordCount = descField.value.split(/\s+/).length;
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('addProductForm');
+            const fields = {
+                name: document.getElementById('id_name'),
+                description: document.getElementById('id_description'),
+                type: document.getElementById('id_type'),
+                brand: document.getElementById('id_brand'),
+                material: document.getElementById('id_material'),
+                price: document.getElementById('id_price'),
+                stock_quantity: document.getElementById('id_stock_quantity'),
+                image: document.getElementById('id_image'),
+                size: document.getElementById('id_size'),
+                color: document.getElementById('id_color')
+            };
 
-        if (wordCount > 100) {
-            errorField.textContent = 'Description cannot exceed 100 words.';
-        } else {
-            errorField.textContent = '';
-        }
-    }
+            const errors = {
+                name: document.getElementById('nameError'),
+                description: document.getElementById('descError'),
+                type: document.getElementById('typeError'),
+                brand: document.getElementById('brandError'),
+                material: document.getElementById('materialError'),
+                price: document.getElementById('priceError'),
+                stock_quantity: document.getElementById('stockError'),
+                image: document.getElementById('imageError'),
+                size: document.getElementById('sizeError'),
+                color: document.getElementById('colorError')
+            };
 
-    function validatePrice() {
-        const priceField = document.getElementById('price');
-        const errorField = document.getElementById('priceError');
+            const validators = {
+                name: (value) => /^[A-Za-z\s]+$/.test(value) ? '' : 'Only alphabets allowed',
+                description: (value) => {
+                    if (!/^[A-Za-z\s]+$/.test(value)) return 'Only letters allowed';
+                    if (value.split(/\s+/).length > 200) return 'Maximum 200 words allowed';
+                    return '';
+                },
+                type: (value) => /^[A-Za-z\s]+$/.test(value) ? '' : 'Only alphabets allowed',
+                brand: (value) => /^[A-Za-z\s]+$/.test(value) ? '' : 'Only alphabets allowed',
+                material: (value) => /^[A-Za-z\s]+$/.test(value) ? '' : 'Only alphabets allowed',
+                price: (value) => /^[1-9]\d*$/.test(value) ? '' : 'Only positive whole numbers allowed',
+                stock_quantity: (value) => /^[1-9]\d*$/.test(value) ? '' : 'Only positive whole numbers allowed',
+                image: (value) => {
+                    const allowedExtensions = ['jpg', 'jpeg', 'png'];
+                    const extension = value.split('.').pop().toLowerCase();
+                    return allowedExtensions.includes(extension) ? '' : 'Only jpg, jpeg, and png formats allowed';
+                },
+                size: (value) => /^[1-9]\d*$/.test(value) ? '' : 'Only positive whole numbers allowed',
+                color: (value) => /^[A-Za-z\s]+$/.test(value) ? '' : 'Only alphabets allowed'
+            };
 
-        if (priceField.value < 0) {
-            errorField.textContent = 'Price cannot be negative.';
-        } else {
-            errorField.textContent = '';
-        }
-    }
+            Object.keys(fields).forEach(field => {
+                fields[field].addEventListener('input', function() {
+                    const error = validators[field](this.value);
+                    errors[field].textContent = error;
+                    this.classList.toggle('invalid', error !== '');
+                    this.classList.toggle('valid', error === '');
+                });
+            });
 
-    function validateImage() {
-        const imageField = document.getElementById('image');
-        const errorField = document.getElementById('imageError');
-        const allowedExtensions = ['jpg', 'jpeg', 'png'];
-        const fileExtension = imageField.value.split('.').pop().toLowerCase();
+            form.addEventListener('submit', function(event) {
+                let isValid = true;
+                Object.keys(fields).forEach(field => {
+                    const error = validators[field](fields[field].value);
+                    errors[field].textContent = error;
+                    fields[field].classList.toggle('invalid', error !== '');
+                    fields[field].classList.toggle('valid', error === '');
+                    if (error) isValid = false;
+                });
 
-        if (!allowedExtensions.includes(fileExtension)) {
-            errorField.textContent = 'Only jpg, jpeg, and png formats are allowed.';
-        } else {
-            errorField.textContent = '';
-        }
-    }
-</script>
-
+                if (!isValid) {
+                    event.preventDefault();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

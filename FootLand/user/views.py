@@ -26,6 +26,7 @@ from django.conf import settings
 from django.db import transaction
 from decimal import Decimal  # Add this import
 from django.db.models import Q
+from django.contrib.auth import logout
 logger = logging.getLogger(__name__)
 
 # Dictionary to temporarily store user pins
@@ -161,10 +162,21 @@ def logout(request):
     request.session.flush()  # Clears all session data
     return redirect('login')
 
-
 def admin_dashboard(request):
-    # Admin dashboard view
-    return render(request, 'admin_dashboard.html')
+    total_products = Product.objects.count()
+    total_customers = user_registration.objects.count()
+    total_vendors = 0  # You'll need to implement this based on your vendor model
+    total_orders = Cart.objects.values('user').distinct().count()  # Assuming each unique user in Cart represents an order
+
+    context = {
+        'total_products': total_products,
+        'total_customers': total_customers,
+        'total_vendors': total_vendors,
+        'total_orders': total_orders,
+    }
+    return render(request, 'admin_dashboard.html', context)
+
+
 def signup(request):
     if request.method == 'POST':
         first_name = request.POST.get('first_name')
@@ -295,6 +307,16 @@ def edit_product(request, product_id):
 
     return render(request, 'edit_product.html', {'form': form, 'product': product})
 
+
+def vendors(request):
+    # Implement vendors logic
+    return render(request, 'vendors.html')
+
+
+@login_required
+def analytics(request):
+  
+    return render(request, 'analytics.html')
 
 @login_required
 def product(request):
@@ -684,12 +706,18 @@ def add_to_wishlist(request):
         return redirect('product_detail', product_id=product_id)
 
     return redirect('home')  # Redirect to home if not a POST request
-
 def wishlist_view(request):
-    user_id = request.session['user_id']  # Get the logged-in user ID from session
-    user = get_object_or_404(user_registration, id=user_id)
-    wishlist_items = Wishlist.objects.filter(user=user)
-    return render(request, 'wishlist.html', {'wishlist_items': wishlist_items})
+    if 'user_id' not in request.session:
+        messages.error(request, "Please log in to view your wishlist.")
+        return redirect('login')  # Redirect to your login page
+
+    user_id = request.session['user_id']
+    wishlist_items = Wishlist.objects.filter(user_id=user_id)
+    
+    context = {
+        'wishlist_items': wishlist_items,
+    }
+    return render(request, 'wishlist.html', context)
 
 def remove_from_wishlist(request, product_id):
     # Get the wishlist item and delete it
@@ -851,6 +879,7 @@ def remove_saved_item(request, product_id):
         messages.error(request, "You need to log in to remove saved items.")
     
     return redirect('cart')
+
 
 
 

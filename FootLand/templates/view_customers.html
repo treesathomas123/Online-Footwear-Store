@@ -4,8 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Management</title>
+    <title>View Customers - Footland Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f4f7fc;
+            --text-color: #333;
+            --accent-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,139 +24,200 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
         }
 
-        .container {
+        .dashboard {
             display: flex;
+            min-height: 100vh;
         }
 
         .sidebar {
             width: 250px;
-            background-color: #3e3d3d;
+            background-color:#4a90e2;
             color: white;
-            padding-top: 20px;
-            min-height: 100vh;
+            padding: 20px 0;
         }
 
-        .profile-section {
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
             text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .profile-img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin-bottom: 10px;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .menu {
-            display: flex;
-            flex-direction: column;
-            padding-left: 20px;
+            list-style-type: none;
+            padding: 20px 0;
+        }
+
+        .menu li {
+            margin-bottom: 10px;
         }
 
         .menu a {
-            text-decoration: none;
             color: white;
-            padding: 15px 0;
-            font-size: 18px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            transition: 0.3s;
         }
 
-        .menu a:hover {
-            background-color: #575757;
-            padding-left: 10px;
+        .menu a:hover, .menu a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .menu i {
+            margin-right: 10px;
         }
 
         .main-content {
             flex-grow: 1;
-            padding: 20px;
-            background-color: #fff;
+            padding: 40px;
         }
 
-        .header {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 20px;
+        h1 {
+            font-size: 32px;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
         }
 
-        .logout-btn img {
-            width: 30px;
-            height: 30px;
+        h1::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background-color: var(--primary-color);
+            margin: 10px auto 0;
         }
 
-        .customers-table {
+        .customer-table {
             width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
+            border-collapse: separate;
+            border-spacing: 0 15px;
+            margin-top: 20px;
         }
 
-        .customers-table th, .customers-table td {
-            padding: 15px;
-            border: 1px solid #ddd;
+        .customer-table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
             text-align: left;
+            padding: 15px;
+            border-radius: 5px 5px 0 0;
         }
 
-        .customers-table th {
-            background-color: #3e3d3d;
-            color: white;
+        .customer-table td {
+            background-color: white;
+            padding: 15px;
         }
 
-        .customers-table tr:nth-child(even) {
-            background-color: #f2f2f2;
+        .customer-table tr {
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
 
-        .delete-btn {
-            padding: 8px 12px;
-            background-color: red;
-            color: white;
+        .customer-table tr:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .customer-table tr td:first-child {
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+        }
+
+        .customer-table tr td:last-child {
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 15px;
             border: none;
+            border-radius: 5px;
             cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
         }
 
-        .delete-btn:hover {
-            background-color: darkred;
+        .btn-delete {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background-color: #c0392b;
         }
 
         .no-customers {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 50px;
+            font-size: 18px;
+            color: #777;
+        }
+
+        .menu .dropdown-content {
+            display: none;
+            padding-left: 20px;
+        }
+
+        .menu .dropdown-content a {
+            padding: 10px 20px;
+        }
+
+        .menu .dropdown-content.show {
+            display: block;
+        }
+
+        .menu .dropdown > a::after {
+            content: '\f107';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            margin-left: 5px;
+        }
+
+        .menu .dropdown > a.active::after {
+            content: '\f106';
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Sidebar -->
+    <div class="dashboard">
         <aside class="sidebar">
-            <div class="profile-section">
-                <img src="{% static 'images/admin.png' %}" alt="Admin Avatar" class="profile-img">
-                <p>Hello, Admin</p>
-            </div>
-            <nav class="menu">
-                <a href="admin_dashboard">Dashboard</a>
-                <a href="{% url 'view_customers' %}">Customers</a>
-                <a href="#">Category</a>
-                <a href="#">Sizes</a>
-                <a href="#">View Product </a>
-                <a href="#">Products</a>
-                <a href="#">Orders</a>
-            </nav>
+            <div class="logo">Footland Admin</div>
+            <ul class="menu">
+                <li><a href="{% url 'admin_dashboard' %}"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li class="dropdown">
+                    <a href="#" onclick="toggleDropdown('productsDropdown')"><i class="fas fa-box"></i> Products</a>
+                    <div id="productsDropdown" class="dropdown-content">
+                        <a href="{% url 'add_product' %}">Add Product</a>
+                        <a href="{% url 'view_product' %}">View Products</a>
+                    </div>
+                </li>
+                <li><a href="{% url 'view_customers' %}" class="active"><i class="fas fa-users"></i> Customers</a></li>
+                <li><a href="{% url 'vendors' %}"><i class="fas fa-store"></i> Vendors</a></li>
+                <li><a href="#"><i class="fas fa-shopping-cart"></i> Orders</a></li>
+                <li><a href="{% url 'analytics' %}"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+                <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
         </aside>
-
-        <!-- Main Content -->
         <main class="main-content">
-            <header class="header">
-                <div class="logout">
-                    <a href="{% url 'login' %}" class="logout-btn"><img src="{% static 'images/logout.png' %}" alt="Logout Icon"></a>
-                </div>
-            </header>
-
-            <h2>All Customers</h2>
+            <h1>Customer Management</h1>
 
             {% if customers %}
-            <table class="customers-table">
+            <table class="customer-table">
                 <thead>
                     <tr>
                         <th>S.N</th>
@@ -165,7 +237,7 @@
                         <td>
                             <form action="{% url 'delete_customer' customer.id %}" method="post">
                                 {% csrf_token %}
-                                <button type="submit" class="delete-btn">Delete</button>
+                                <button type="submit" class="btn btn-delete">Delete</button>
                             </form>
                         </td>
                     </tr>
@@ -179,5 +251,28 @@
             {% endif %}
         </main>
     </div>
+
+    <script>
+        function toggleDropdown(id) {
+            var dropdown = document.getElementById(id);
+            dropdown.classList.toggle("show");
+            var dropdownLink = dropdown.previousElementSibling;
+            dropdownLink.classList.toggle("active");
+        }
+
+        // Close the dropdown if the user clicks outside of it
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropdown > a')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                        openDropdown.previousElementSibling.classList.remove("active");
+                    }
+                }
+            }
+        }
+    </script>
 </body>
 </html>

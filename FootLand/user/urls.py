@@ -52,6 +52,8 @@ urlpatterns = [
     path('order/', views.place_order, name='place_order'),
      path('remove_from_cart/<int:product_id>/', views.remove_from_cart, name='remove_from_cart'),
     #path('confirm-order/', confirm_order, name='confirm_order'),  # Confirm order after verification
+    path('analytics/', views.analytics, name='analytics'),
+    path('vendors/', views.vendors, name='vendors'),
      
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

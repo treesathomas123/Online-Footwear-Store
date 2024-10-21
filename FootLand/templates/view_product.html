@@ -4,121 +4,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Products</title>
+    <title>View Products - Footland Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f4f7fc;
+            --text-color: #333;
+            --accent-color: #ff6b6b;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
         }
 
-        .container {
-            margin: 20px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #4a90e2;
+            color: white;
+            padding: 20px 0;
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
             padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .menu {
+            list-style-type: none;
+            padding: 20px 0;
+        }
+
+        .menu li {
+            margin-bottom: 10px;
+        }
+
+        .menu a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            transition: 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .menu a:hover, .menu a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left-color: var(--accent-color);
+        }
+
+        .menu i {
+            margin-right: 10px;
+            width: 20px;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
             background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            margin: 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
+            font-size: 28px;
+            color: var(--primary-color);
+            margin-bottom: 30px;
             text-align: center;
-            margin-bottom: 20px;
         }
 
-        table {
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .product-image {
             width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
+            height: 200px;
+            object-fit: cover;
         }
 
-        table, th, td {
-            border: 1px solid #ddd;
+        .product-info {
+            padding: 20px;
         }
 
-        th, td {
-            padding: 12px;
-            text-align: left;
+        .product-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
         }
 
-        th {
-            background-color: #3e3d3d;
-            color: white;
+        .product-price {
+            font-size: 16px;
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-bottom: 10px;
         }
 
-        img {
-            width: 80px;
-            height: auto;
-        }
-
-        .action-buttons {
+        .product-actions {
             display: flex;
-            gap: 10px;
+            justify-content: space-between;
+            margin-top: 15px;
         }
 
         .btn {
-            padding: 5px 10px;
+            padding: 8px 15px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            text-align: center;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            font-size: 14px;
         }
 
-        .edit-btn {
-            background-color: #4CAF50;
+        .btn-edit {
+            background-color: var(--primary-color);
             color: white;
         }
 
-        .delete-btn {
-            background-color: #f44336;
+        .btn-edit:hover {
+            background-color: #3a7bc8;
+        }
+
+        .btn-delete {
+            background-color: var(--accent-color);
             color: white;
+        }
+
+        .btn-delete:hover {
+            background-color: #e74c3c;
+        }
+
+        .dropdown-content {
+            display: none;
+            padding-left: 20px;
+        }
+
+        .dropdown-content a {
+            padding: 10px 20px;
+        }
+
+        .show {
+            display: block;
         }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <h1>Product Items</h1>
-        <table>
-            <thead>
-            <tr>
-                <th>S.N.</th>
-                <th>Product Image</th>
-                <th>Product Name</th>
-                <th>Description</th>
-                <th>Material</th>
-                <th>Brand</th>
-                <th>Type</th>
-                <th>Size</th>
-                <th>Color</th>
-                <th>Price</th>
-                <th>Stock Quantity</th>
-                <th>Action</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for product in products %}
-            <tr>
-                <td>{{ forloop.counter }}</td>
-                <td><img src="{{ product.image.url }}" alt="{{ product.name }}"></td>  <!-- Correct placement -->
-                <td>{{ product.name }}</td>  <!-- Moved product name here -->
-                <td>{{ product.description }}</td>
-                <td>{{ product.material }}</td>
-                <td>{{ product.brand }}</td>
-                <td>{{ product.type }}</td>
-                <td>{{ product.size }}</td>
-                <td>{{ product.color }}</td>
-                <td>{{ product.price }}</td>
-                <td>{{ product.stock_quantity }}</td>
-                <td>
-                    <div class="action-buttons">
-                        <a href="{% url 'edit_product' product.id %}" class="btn edit-btn">Edit</a>
-                        <a href="{% url 'delete_product' product.id %}" class="btn delete-btn">Delete</a>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="logo">Footland Admin</div>
+            <ul class="menu">
+                <li><a href="{% url 'admin_dashboard' %}"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li class="dropdown">
+                    <a href="#" onclick="toggleDropdown('productsDropdown')"><i class="fas fa-box"></i> Products</a>
+                    <div id="productsDropdown" class="dropdown-content">
+                        <a href="{% url 'add_product' %}">Add Product</a>
+                        <a href="{% url 'view_product' %}" class="active">View Products</a>
                     </div>
-                </td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+                </li>
+                <li><a href="{% url 'view_customers' %}"><i class="fas fa-users"></i> Customers</a></li>
+                <li><a href="{% url 'vendors' %}"><i class="fas fa-store"></i> Vendors</a></li>
+                <li><a href="#"><i class="fas fa-shopping-cart"></i> Orders</a></li>
+                <li><a href="{% url 'analytics' %}"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+                <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </aside>
+        <main class="main-content">
+            <h1>Product Catalog</h1>
+            <div class="product-grid">
+                {% for product in products %}
+                <div class="product-card">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                    <div class="product-info">
+                        <h2 class="product-name">{{ product.name }}</h2>
+                        <p class="product-price">${{ product.price }}</p>
+                        <p>Type: {{ product.type }}</p>
+                        <p>Brand: {{ product.brand }}</p>
+                        <p>Stock: {{ product.stock_quantity }}</p>
+                        <div class="product-actions">
+                            <a href="{% url 'edit_product' product.id %}" class="btn btn-edit">Edit</a>
+                            <a href="{% url 'delete_product' product.id %}" class="btn btn-delete">Delete</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </main>
     </div>
-    
-    </body>
-    </html>
+
+    <script>
+        function toggleDropdown(id) {
+            document.getElementById(id).classList.toggle("show");
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropdown a')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
