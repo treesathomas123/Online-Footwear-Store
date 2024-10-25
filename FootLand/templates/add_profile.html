@@ -163,9 +163,21 @@
                 <label for="state">State:</label>
                 <select id="state" name="state" required>
                     <option value="" disabled selected>Select your state</option>
-                    <option value="State1">State1</option>
-                    <option value="State2">State2</option>
-                    <option value="State3">State3</option>
+                    <option value="Kerala">Kerala</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="State3">Karnataka</option>
+                    <option value="State4">Andra Pradesh</option>
+                    <option value="State5">Goa</option>
+                    <option value="State6">Gujarath</option>
+                    <option value="State7">Rajasthan</option>
+                    <option value="State8">Punjab</option>
+                    <option value="State9">Arunachal Pradesh</option>
+                    <option value="State10">UttaraPradesh</option>
+                    <option value="State11">Kashmir</option>
+                    <option value="State12">Delhi</option>
+                    <option value="State13">Madhya Pradesh</option>
+                    <option value="State14">Karnataka</option>
+
                     <!-- Add more state options as needed -->
                 </select>
                 <p id="state-error" class="error"></p>
@@ -201,7 +213,7 @@
         switch (field) {
             case 'address':
                 if (!/^[a-zA-Z\s]{10,}$/.test(value)) {
-                    errorElement.textContent = 'Address must contain only letters and be longer than 10 characters.';
+                    errorElement.textContent = 'Address must contain only letters and be longer than 20 characters.';
                 }
                 break;
             case 'pincode':

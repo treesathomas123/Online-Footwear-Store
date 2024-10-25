@@ -255,13 +255,21 @@
                 
                 {% if product.stock_quantity > 0 %}
                     <p class="text-success">In Stock</p>
-                    <form method="post" action="{% url 'add_to_cart' product.id %}" class="mt-4">
-                        {% csrf_token %}
-                        <div class="input-group mb-3">
-                            <input type="number" name="quantity" value="1" min="1" max="{{ product.stock_quantity }}" class="form-control">
-                            <button type="submit" class="btn btn-primary add-to-cart-btn">Add to Cart</button>
-                        </div>
-                    </form>
+                   <form method="post" action="{% url 'add_to_cart' product.id %}" class="mt-4">
+    {% csrf_token %}
+    <div class="form-group mb-3">
+        <label for="size">Select Size:</label>
+        <select name="size" id="size" class="form-control">
+            {% for size in product.get_available_sizes %}
+                <option value="{{ size }}">{{ size }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="input-group mb-3">
+        <input type="number" name="quantity" value="1" min="1" max="{{ product.stock_quantity }}" class="form-control">
+        <button type="submit" class="btn btn-primary add-to-cart-btn">Add to Cart</button>
+    </div>
+</form>
                 {% else %}
                     <p class="text-danger">Out of Stock</p>
                 {% endif %}

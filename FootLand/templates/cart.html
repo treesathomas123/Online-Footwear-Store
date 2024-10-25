@@ -671,6 +671,7 @@
                             <div class="item-details">
                                 <h3>{{ item.product.name }}</h3>
                                 <p>Price: Rs. {{ item.product.price }}</p>
+                                <p>Size:  {{ item.size }}</p>
                                 <p>Subtotal: Rs. {{ item.total_price }}</p>
                                 <div class="quantity-form">
                                     <form method="post" action="{% url 'update_cart' item.id %}">
@@ -720,7 +721,9 @@
                         <span>Total:</span>
                         <span>Rs. {{ total }}</span>
                     </div>
-                    <button class="checkout-btn">Proceed to Checkout</button>
+                    <form action="{% url 'billing_details' %}" method="GET">
+                        <button type="submit" class="checkout-btn">Proceed to Checkout</button>
+                    </form>
                 {% else %}
                     <p class="empty-message">No items in cart.</p>
                 {% endif %}

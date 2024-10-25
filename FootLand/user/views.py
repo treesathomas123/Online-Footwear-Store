@@ -537,32 +537,35 @@ def mens_products(request):
 
 @never_cache
 def add_to_cart(request, product_id):
-    if 'user_id' in request.session:
-        user_id = request.session['user_id']  # Get the logged-in user ID from session
-        user = get_object_or_404(user_registration, id=user_id)
-        product = get_object_or_404(Product, id=product_id)
+   if request.method == 'POST':
+        size = request.POST.get('size')  
+        if 'user_id' in request.session:
+            user_id = request.session['user_id']  # Get the logged-in user ID from session
+            user = get_object_or_404(user_registration, id=user_id)
+            product = get_object_or_404(Product, id=product_id)
 
         # Check if the product is in stock
-        if product.stock_quantity == 0:
-            messages.error(request, f'Sorry, {product.name} is out of stock.')
-            return redirect('product_list', category=product.category)  # Redirect with category
-        else:
-            cart_item, created = Cart.objects.get_or_create(user=user, product=product)
-            
-            if not created:
-                if cart_item.quantity + 1 > product.stock_quantity:
-                    messages.error(request, f'Sorry, only {product.stock_quantity} units of {product.name} are available.')
-                else:
-                    cart_item.quantity += 1
-                    cart_item.save()
-                    messages.success(request, f'{product.name} quantity updated in your cart!')
+            if product.stock_quantity == 0:
+                messages.error(request, f'Sorry, {product.name} is out of stock.')
+                return redirect('product_list', category=product.category)  # Redirect with category
             else:
-                messages.success(request, f'{product.name} has been added to your cart!')
+            
+                cart_item, created = Cart.objects.get_or_create(user=user, product=product,size=size)
+            
+                if not created:
+                    if cart_item.quantity + 1 > product.stock_quantity:
+                        messages.error(request, f'Sorry, only {product.stock_quantity} units of {product.name} are available.')
+                    else:
+                        cart_item.quantity += 1
+                        cart_item.save()
+                    messages.success(request, f'{product.name} quantity updated in your cart!')
+                else:
+                    messages.success(request, f'{product.name} has been added to your cart!')
 
-        return redirect('cart')  # Redirect to cart
-    else:
-        messages.error(request, "You need to log in to add items to the cart.")
-        return redirect('login')
+            return redirect('cart')  # Redirect to cart
+        else:
+             messages.error(request, "You need to log in to add items to the cart.")
+             return redirect('login')
   
 def view_cart(request):
     if 'user_id' in request.session:
@@ -684,6 +687,46 @@ def place_order(request):
         return redirect('login')
 
 
+def billing_details(request):
+    if 'user_id' in request.session:
+        user_id = request.session['user_id']
+        user = get_object_or_404(user_registration, id=user_id)
+        user_profile, created = UserProfile.objects.get_or_create(user=user)  # Get or create the profile
+
+        context = {
+            'user_profile': user_profile
+        }
+        return render(request, 'billing_details.html', context)
+    else:
+        return redirect('login')
+
+def save_billing_details(request):
+    if 'user_id' in request.session:
+        user_id = request.session['user_id']
+        user = get_object_or_404(user_registration, id=user_id)
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+
+        if request.method == 'POST':
+            # Update user details
+            user.first_name = request.POST['first_name']
+            user.last_name = request.POST['last_name']
+            user.email = request.POST['email']
+            user.save()
+
+            # Update profile details
+            user_profile.phone = request.POST['phone']
+            user_profile.pincode = request.POST['pincode']
+            user_profile.street = request.POST['street']
+            user_profile.house_no = request.POST['house_no']
+            user_profile.state = request.POST['state']
+            user_profile.save()
+
+            messages.success(request, "Billing details updated successfully!")
+            return redirect('billing_details2')  # Replace with the URL of the next page
+        else:
+            return redirect('billing_details')
+    else:
+        return redirect('login')
 
 def add_to_wishlist(request):
     if 'user_id' not in request.session:
@@ -754,29 +797,45 @@ def product_detail(request, product_id):
         'similar_products': similar_products  # Pass similar products to the template
     })
 
-
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     similar_products = Product.objects.filter(type=product.type).exclude(id=product_id)[:4]
-    
-    if request.method == "POST":
-        form = ReviewForm(request.POST)
-        if form.is_valid():
-            # Create a review but don't save it to the database yet
-            review = form.save(commit=False)
-            review.product = product  # Associate review with the product
-            review.user = request.user  # Set the user to the current user
-            review.save()  # Now save it to the database
-            messages.success(request, "Your review has been submitted successfully!")
-            return redirect('product_detail', product_id=product_id)
-        else:
-            messages.error(request, "There was an error in your review. Please check the form.")
-    
+
+    if request.method == 'POST':
+        if 'add_to_cart' in request.POST:  # Handle Add to Cart form
+            size = request.POST.get('size')
+            quantity = int(request.POST.get('quantity', 1))
+            user = request.user  # Get the logged-in user
+
+            if user.is_authenticated:
+                cart_item, created = Cart.objects.get_or_create(user=user, product=product, size=size)
+                cart_item.quantity += quantity
+                cart_item.save()
+                messages.success(request, 'Product added to cart successfully!')
+                return redirect('cart')
+            else:
+                messages.error(request, 'You need to be logged in to add products to the cart.')
+
+        elif 'submit_review' in request.POST:  # Handle Review submission form
+            form = ReviewForm(request.POST)
+            if form.is_valid():
+                review = form.save(commit=False)
+                review.product = product
+                review.user = request.user
+                review.save()
+                messages.success(request, "Your review has been submitted successfully!")
+                return redirect('product_detail', product_id=product_id)
+            else:
+                messages.error(request, "There was an error in your review. Please check the form.")
+
     else:
         form = ReviewForm()
 
-    return render(request, 'product_detail.html', {'product': product, 'form': form, 'similar_products': similar_products})
-
+    return render(request, 'product_detail.html', {
+        'product': product,
+        'form': form,
+        'similar_products': similar_products
+    })
 #def add_review(request, product_id):
     if request.method == 'POST':
         name = request.POST.get('name')

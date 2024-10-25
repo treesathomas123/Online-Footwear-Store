@@ -31,28 +31,36 @@ class user_registration(models.Model):
         """Return a string representation of the user."""
         return f'{self.first_name} {self.last_name}'
     
-    
 class Product(models.Model):
     CATEGORY_CHOICES = [
-        ('kids', 'Kids'),
-        ('mens', 'Mens'),
-        ('womens', 'Womens'),
-    ]
+                            ('kids', 'Kids'),
+                            ('mens', 'Mens'),
+                            ('womens', 'Womens'),
+                         ]
+    SIZE_CHOICES = [
+            ('6', '6'), ('7', '7'), ('8', '8'), ('9', '9'), ('10', '10')
+                    ]
 
     name = models.CharField(max_length=100)
     description = models.TextField(max_length=1000)
-    material  = models.TextField(max_length=1000)
+    material = models.TextField(max_length=1000)
     brand = models.CharField(max_length=50)
     type = models.CharField(max_length=50)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock_quantity = models.IntegerField()
     image = models.ImageField(upload_to='products/')
-    size = models.CharField(max_length=10)
+    size = models.CharField(max_length=20, default='6', null=True, choices=SIZE_CHOICES)  # Allow null if not provided
     color = models.CharField(max_length=20)
-    category = models.CharField(max_length=10, choices=CATEGORY_CHOICES)  # New field for category
+    category = models.CharField(max_length=10, choices=CATEGORY_CHOICES)
 
     def __str__(self):
         return self.name
+    
+    def get_available_sizes(self):
+        # Assuming size is a CharField with choices,
+        # return the available sizes based on the SIZE_CHOICES
+        return [size[0] for size in self.SIZE_CHOICES]
+
 
 
 class UserProfile(models.Model):
@@ -71,9 +79,10 @@ class Cart(models.Model):
     user = models.ForeignKey(user_registration, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    size = models.CharField(max_length=10)  # New field for size
     saved_for_later = models.BooleanField(default=False)  # New field
     def __str__(self):
-        return f"{self.user.first_name}'s cart - {self.product.name}"
+        return f"{self.user.first_name}'s cart - {self.product.name} (Size: {self.size})"
     
     def total_price(self):
         return self.product.price * self.quantity
@@ -108,3 +117,4 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.rating} stars"
+    

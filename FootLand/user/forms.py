@@ -4,6 +4,7 @@ from .models import UserProfile
 from .models import Review
 
 
+
 class ProductForm(forms.ModelForm):
     CATEGORY_CHOICES = [
         ('mens', 'Mens'),

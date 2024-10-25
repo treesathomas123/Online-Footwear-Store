@@ -46,7 +46,7 @@ urlpatterns = [
     path('cart/', views.view_cart, name='cart'),  # Change 'cart' to 'view_cart'
     path('cart/add/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/update/<int:cart_item_id>/', views.update_cart, name='update_cart'),
-       path('cart/save_for_later/<int:product_id>/', views.save_for_later, name='save_for_later'),
+    path('cart/save_for_later/<int:product_id>/', views.save_for_later, name='save_for_later'),
     path('cart/move_to_cart/<int:product_id>/', views.move_to_cart, name='move_to_cart'),
     path('remove_saved_item/<int:product_id>/', views.remove_saved_item, name='remove_saved_item'),
     path('order/', views.place_order, name='place_order'),
@@ -54,6 +54,10 @@ urlpatterns = [
     #path('confirm-order/', confirm_order, name='confirm_order'),  # Confirm order after verification
     path('analytics/', views.analytics, name='analytics'),
     path('vendors/', views.vendors, name='vendors'),
+     path('billing-details/', views.billing_details, name='billing_details'),
+    path('save-billing-details/', views.save_billing_details, name='save_billing_details'),
+   
+   
      
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

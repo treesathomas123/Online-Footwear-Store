@@ -264,6 +264,11 @@
                     {{ form.color }}
                     <small class="error" id="colorError"></small>
                 </div>
+                <div class="form-group">
+                    <label for="category">Category:</label>
+                    {{ form.category }}
+                    <small class="error" id="categoryError"></small>
+                </div>
                 
                 <button type="submit">Add Product</button>
             </form>
@@ -287,9 +292,10 @@
                 stock_quantity: document.getElementById('id_stock_quantity'),
                 image: document.getElementById('id_image'),
                 size: document.getElementById('id_size'),
-                color: document.getElementById('id_color')
+                color: document.getElementById('id_color'),
+                category: document.getElementById('id_category')  // Added category
             };
-
+        
             const errors = {
                 name: document.getElementById('nameError'),
                 description: document.getElementById('descError'),
@@ -300,9 +306,10 @@
                 stock_quantity: document.getElementById('stockError'),
                 image: document.getElementById('imageError'),
                 size: document.getElementById('sizeError'),
-                color: document.getElementById('colorError')
+                color: document.getElementById('colorError'),
+                category: document.getElementById('categoryError')  // Added category
             };
-
+        
             const validators = {
                 name: (value) => /^[A-Za-z\s]+$/.test(value) ? '' : 'Only alphabets allowed',
                 description: (value) => {
@@ -321,9 +328,10 @@
                     return allowedExtensions.includes(extension) ? '' : 'Only jpg, jpeg, and png formats allowed';
                 },
                 size: (value) => /^[1-9]\d*$/.test(value) ? '' : 'Only positive whole numbers allowed',
-                color: (value) => /^[A-Za-z\s]+$/.test(value) ? '' : 'Only alphabets allowed'
+                color: (value) => /^[A-Za-z\s]+$/.test(value) ? '' : 'Only alphabets allowed',
+                category: (value) => value !== '' ? '' : 'Please select a category'  // Category validator
             };
-
+        
             Object.keys(fields).forEach(field => {
                 fields[field].addEventListener('input', function() {
                     const error = validators[field](this.value);
@@ -332,7 +340,7 @@
                     this.classList.toggle('valid', error === '');
                 });
             });
-
+        
             form.addEventListener('submit', function(event) {
                 let isValid = true;
                 Object.keys(fields).forEach(field => {
@@ -342,12 +350,13 @@
                     fields[field].classList.toggle('valid', error === '');
                     if (error) isValid = false;
                 });
-
+        
                 if (!isValid) {
                     event.preventDefault();
                 }
             });
         });
+        
     </script>
 </body>
 </html>

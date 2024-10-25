@@ -1,0 +1,146 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing Details - FootLand</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        form {
+            display: grid;
+            gap: 20px;
+        }
+        label {
+            font-weight: 500;
+            color: #555;
+        }
+        input[type="text"],
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus,
+        input[type="email"]:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .save-btn,
+        .cancel-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .save-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .save-btn:hover {
+            background-color: #45a049;
+        }
+        .cancel-btn {
+            background-color: #f44336;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .cancel-btn:hover {
+            background-color: #da190b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Billing Details</h2>
+        <form method="post" action="{% url 'save_billing_details' %}">
+            {% csrf_token %}
+            <div>
+                <label for="first_name">First Name:</label>
+                <input type="text" id="first_name" name="first_name" value="{{ user_profile.user.first_name }}" required>
+            </div>
+            
+            <div>
+                <label for="last_name">Last Name:</label>
+                <input type="text" id="last_name" name="last_name" value="{{ user_profile.user.last_name }}" required>
+            </div>
+            
+            <div>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" value="{{ user_profile.user.email }}" required>
+            </div>
+
+            <div>
+                <label for="address">Address:</label>
+                <input type="text" id="address" name="address" value="{{ user_profile.address }}" required>
+            </div>
+
+            <div>
+                <label for="phone">Phone:</label>
+                <input type="text" id="phone" name="phone" value="{{ user_profile.phone }}" required>
+            </div>
+            
+            <div>
+                <label for="pincode">Pincode:</label>
+                <input type="text" id="pincode" name="pincode" value="{{ user_profile.pincode }}" required>
+            </div>
+            
+            <div>
+                <label for="street">Street:</label>
+                <input type="text" id="street" name="street" value="{{ user_profile.street }}" required>
+            </div>
+            
+            <div>
+                <label for="house_no">House Number:</label>
+                <input type="text" id="house_no" name="house_no" value="{{ user_profile.house_no }}" required>
+            </div>
+            
+            <div>
+                <label for="state">State:</label>
+                <input type="text" id="state" name="state" value="{{ user_profile.state }}" required>
+            </div>
+
+            <div class="buttons">
+                <button type="submit" class="save-btn">Save Details</button>
+                <a href="{% url 'cart' %}" class="cancel-btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
