@@ -7,6 +7,8 @@ from . import views
 from .views import product_list  
 from .views import add_profile, change_password
 from .views import add_to_cart, view_cart, update_cart, place_order
+from .views import billing_details, save_billing_details, billing_details2  # Import the new view
+
 urlpatterns = [
     path('', views.home, name='home'),
     path('user_dashboard/', views.user_dashboard, name='user_dashboard'),
@@ -56,6 +58,14 @@ urlpatterns = [
     path('vendors/', views.vendors, name='vendors'),
      path('billing-details/', views.billing_details, name='billing_details'),
     path('save-billing-details/', views.save_billing_details, name='save_billing_details'),
+    path('billing-details2/', billing_details2, name='billing_details2'),  # New URL pattern
+    path('confirm_order/', views.confirm_order, name='confirm_order'),
+    path('confirm_order_final/', views.confirm_order_final, name='confirm_order_final'),
+    path('order_summary/', views.order_summary, name='order_summary'),
+    path('download-order-summary/', views.download_order_summary, name='download_order_summary'),
+     path('online_payment/', views.online_payment, name='online_payment'),  # Add online payment view
+     path('my-orders/', views.my_orders, name='my_orders'),
+    
    
    
      

@@ -144,6 +144,7 @@ nav {
                                 <a href="{% url 'add_profile' %}">Welcome, {{ request.session.username }}</a>                                {% else %}
                                     <a href="{% url 'login' %}">Welcome</a>
                                 {% endif %}
+                                <a href="{% url 'my_orders' %}" id="my_orders">My Orders</a>
                                 <a href="{% url 'logout' %}" id="logout">Logout</a>
                             </div>
                         </li>

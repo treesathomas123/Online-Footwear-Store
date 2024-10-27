@@ -639,6 +639,7 @@
                         {% else %}
                             <a href="{% url 'login' %}">Welcome</a>
                         {% endif %}
+                        <a href="{% url 'my_orders' %}" id="my_orders">My Orders</a>
                         <a href="{% url 'logout' %}">Logout</a>
                     </div>
                 </li>
@@ -674,13 +675,17 @@
                                 <p>Size:  {{ item.size }}</p>
                                 <p>Subtotal: Rs. {{ item.total_price }}</p>
                                 <div class="quantity-form">
-                                    <form method="post" action="{% url 'update_cart' item.id %}">
+                                    <form method="post" action="{% url 'update_cart' item.id %}" id="update-form-{{ item.id }}">
                                         {% csrf_token %}
-                                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="quantity-input">
+                                        <div class="quantity">
+                                            <label for="quantity-{{ item.id }}">Quantity:</label>
+                                            <input type="number" name="quantity" id="quantity-{{ item.id }}" value="{{ item.quantity }}" min="1">
+                                        </div>
+                                        <button type="submit" class="btn update-btn">Update</button>
                                     </form>
                                 </div>
                                 <div class="item-actions">
-                                    <button type="submit" form="update-form-{{ item.id }}" class="btn update-btn">Update</button>
+                                    
                                     <form method="post" action="{% url 'remove_from_cart' item.product.id %}" id="remove-form-{{ item.id }}">
                                         {% csrf_token %}
                                         <button type="submit" class="btn remove-btn">Remove</button>
@@ -699,7 +704,7 @@
             </div>
             <!-- Order summary (right) -->
             <div class="order-summary">
-                <h3>Order Summary</h3>
+                <h3>Payment  Summary</h3>
                 {% if cart_items %}
                     <div class="summary-item">
                         <span>Subtotal:</span>
@@ -714,7 +719,7 @@
                         <span>Rs. {{ platform_fee }}</span>
                     </div>
                     <div class="summary-item">
-                        <span>Tax (10%):</span>
+                        <span>Tax :</span>
                         <span>Rs. {{ tax }}</span>
                     </div>
                     <div class="summary-item total">

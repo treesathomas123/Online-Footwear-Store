@@ -4,7 +4,7 @@ from django.contrib import messages
 from .models import user_registration
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.decorators import login_required
-from .models import Product,Cart,Wishlist, Review
+from .models import Product,Cart,Wishlist, Review,Order
 from .forms import ProductForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -27,6 +27,14 @@ from django.db import transaction
 from decimal import Decimal  # Add this import
 from django.db.models import Q
 from django.contrib.auth import logout
+from django.template.loader import render_to_string
+from django.core.mail import EmailMessage
+import io
+from django.http import FileResponse
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from django.template.loader import render_to_string
+
 logger = logging.getLogger(__name__)
 
 # Dictionary to temporarily store user pins
@@ -166,7 +174,7 @@ def admin_dashboard(request):
     total_products = Product.objects.count()
     total_customers = user_registration.objects.count()
     total_vendors = 0  # You'll need to implement this based on your vendor model
-    total_orders = Cart.objects.values('user').distinct().count()  # Assuming each unique user in Cart represents an order
+    total_orders = Order.objects.count() # Assuming each unique user in Cart represents an order
 
     context = {
         'total_products': total_products,
@@ -566,7 +574,7 @@ def add_to_cart(request, product_id):
         else:
              messages.error(request, "You need to log in to add items to the cart.")
              return redirect('login')
-  
+
 def view_cart(request):
     if 'user_id' in request.session:
         user_id = request.session['user_id']
@@ -576,19 +584,19 @@ def view_cart(request):
         cart_items = Cart.objects.filter(user=user, saved_for_later=False)
         saved_items = Cart.objects.filter(user=user, saved_for_later=True)
 
-        # Calculate the subtotal (ensuring it's a Decimal)
-        subtotal = sum(item.total_price() for item in cart_items)
+        # Calculate the subtotal
+        subtotal = sum(item.product.price * item.quantity for item in cart_items)
         
-        # Shipping charge, platform fee, and tax (using Decimal for tax rate)
-        shipping_charge = Decimal('5') if subtotal > 0 else Decimal('0')
-        platform_fee = Decimal('5')
-        tax_rate = Decimal('0.1')  # Tax rate as Decimal
+        # Define additional charges and tax
+        shipping_charge = Decimal('0') if subtotal > 0 else Decimal('0')
+        platform_fee = Decimal('0')
+        tax_rate = Decimal('0')
         tax = tax_rate * subtotal
         
-        # Calculate total amount
+        # Total calculation
         total_amount = subtotal + shipping_charge + platform_fee + tax
 
-        # Context to pass to the template
+        # Prepare context data for the template
         context = {
             'cart_items': cart_items,
             'saved_items': saved_items,
@@ -601,14 +609,14 @@ def view_cart(request):
         return render(request, 'cart.html', context)
     
     else:
-        # If the user is not logged in, redirect to login page
         messages.error(request, "You need to log in to view your cart.")
         return redirect('login')
-
+    
+    
 def remove_from_cart(request, product_id):
     # Get the logged-in user ID from session
     if 'user_id' in request.session:
-        user_id = request.session['user_id']  # Retrieve user ID from session
+        user_id = request.session['user_id']
         user = get_object_or_404(user_registration, id=user_id)
 
         # Get the cart item for the user and the specific product, then delete it
@@ -624,28 +632,26 @@ def remove_from_cart(request, product_id):
     # Redirect back to the cart page after removing the item
     return redirect('cart')
 
-
 def update_cart(request, cart_item_id):
     if request.method == "POST":
-        user_id = request.session['user_id']  # Get the logged-in user ID from session
+        user_id = request.session['user_id']
         user = get_object_or_404(user_registration, id=user_id)
         cart_item = get_object_or_404(Cart, id=cart_item_id, user=user)
         quantity = int(request.POST.get('quantity'))
 
-        # Check if the desired quantity is greater than the available stock
+        # Check for stock availability and update if valid
         if quantity > cart_item.product.stock_quantity:
-            if cart_item.product.stock_quantity == 0:
-                messages.error(request, f'Sorry, {cart_item.product.name} is out of stock.')
-            else:
-                messages.error(request, f'Sorry, only {cart_item.product.stock_quantity} units of {cart_item.product.name} are available.')
+            messages.error(request, f'Sorry, only {cart_item.product.stock_quantity} units of {cart_item.product.name} are available.')
         elif quantity <= 0:
             messages.error(request, "Quantity must be at least 1.")
         else:
             cart_item.quantity = quantity
-            cart_item.save()
+            cart_item.save()  # Save updated quantity to the database
             messages.success(request, "Cart updated successfully!")
+    
+    # Redirect back to `view_cart` to refresh the order summary with the updated quantity
+    return redirect('cart')
 
-    return redirect('cart')  # Redirect back to the cart view
 
 from django.db import transaction
 
@@ -727,6 +733,326 @@ def save_billing_details(request):
             return redirect('billing_details')
     else:
         return redirect('login')
+
+def billing_details2(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('login')
+    
+    user = get_object_or_404(user_registration, id=user_id)
+    user_profile = user.userprofile
+    cart_items = Cart.objects.filter(user=user, saved_for_later=False)
+    total_price = sum(item.product.price * item.quantity for item in cart_items)
+    
+    context = {
+        'user_profile': user_profile,
+        'cart_items': cart_items,
+        'total_price': total_price,
+    }
+    return render(request, 'billing_details2.html', context)
+
+def confirm_order(request):
+    if request.method == 'POST':
+        payment_method = request.POST.get('payment_method')
+        return render(request, 'confirm_order.html', {'payment_method': payment_method})
+    return redirect('billing_details2')
+
+def confirm_order_final(request):
+    user_id = request.session.get('user_id')
+    if not user_id or request.method != 'POST':
+        return redirect('login')
+
+    user = get_object_or_404(user_registration, id=user_id)
+    confirm_choice = request.POST.get('confirm')
+    payment_method = request.POST.get('payment_method')
+
+    if confirm_choice == 'no':
+        messages.info(request, "Order was canceled.")
+        return redirect('billing_details2')
+
+    cart_items = Cart.objects.filter(user=user, saved_for_later=False)
+    total_price = sum(item.product.price * item.quantity for item in cart_items)
+
+    # Create order entries and update stock
+    orders = []
+    for item in cart_items:
+        order = Order.objects.create(
+            user=user,
+            product=item.product,
+            quantity=item.quantity,
+            size=item.size,
+            total_price=item.product.price * item.quantity,
+            payment_method=payment_method,
+        )
+        orders.append(order)
+        item.product.reduce_stock(item.quantity)
+
+    # Clear cart after order placement
+    cart_items.delete()
+
+    # Prepare order summary for email
+    order_details = "\n".join([
+        f"{order.product.name} - Quantity: {order.quantity} - Total: Rs. {order.total_price}"
+        for order in orders
+    ])
+    email_body = (
+        f"Hello {user.first_name},\n\nYour order has been confirmed.\n\nOrder Summary:\n"
+        f"{order_details}\nTotal: Rs. {total_price}\n\nThank you for shopping with us!"
+    )
+
+    # Send confirmation email
+    send_mail(
+        'Order Confirmation - FootLand',
+        email_body,
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email],
+        fail_silently=False
+    )
+    
+    
+
+    # Redirect based on payment method
+    if payment_method == 'cash_on_delivery':
+        messages.success(request, "Order confirmed! Confirmation email sent.")
+        return redirect('order_summary')
+    else:
+        return redirect('online_payment')
+    
+def order_summary(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('login')
+    
+    # Fetch the user's orders and profile
+    orders = Order.objects.filter(user_id=user_id)
+    user_profile = UserProfile.objects.get(user_id=user_id)
+    
+    return render(request, 'order_summary.html', {'orders': orders, 'user_profile': user_profile})
+
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter, inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.graphics.shapes import Drawing, Line
+from reportlab.graphics.barcode.qr import QrCodeWidget
+from reportlab.graphics import renderPDF
+import qrcode
+from django.contrib.staticfiles import finders
+
+def download_order_summary(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('login')
+
+    orders = Order.objects.filter(user_id=user_id)
+    user_profile = UserProfile.objects.get(user_id=user_id)
+    
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    elements = []
+
+    # Styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'Title',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor=colors.HexColor('#1a237e'),
+        spaceAfter=12,
+        alignment=1
+    )
+    header_style = ParagraphStyle(
+        'Header',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor('#303f9f'),
+        spaceAfter=6
+    )
+    normal_style = ParagraphStyle(
+        'Normal',
+        parent=styles['Normal'],
+        fontSize=10,
+        textColor=colors.HexColor('#424242')
+    )
+
+    # Logo - Find the path of the logo
+    logo_path = finders.find('images/logo.jpg')
+    if logo_path:
+        logo = Image(logo_path, width=1.5*inch, height=1.5*inch)
+        elements.append(logo)
+    else:
+        elements.append(Paragraph("Logo not found", normal_style))  # Fallback if logo is missing
+
+    # Title
+    elements.append(Paragraph("FootLand Order Summary", title_style))
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Horizontal Line
+    d = Drawing(450, 1)
+    d.add(Line(0, 0, 450, 0, strokeColor=colors.HexColor('#3f51b5'), strokeWidth=2))
+    elements.append(d)
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Customer Information
+    elements.append(Paragraph("Customer Information", header_style))
+    customer_info = [
+        f"Name: {user_profile.user.first_name} {user_profile.user.last_name}",
+        f"Email: {user_profile.user.email}",
+        f"Phone: {user_profile.phone}",
+        f"Address: {user_profile.address}, {user_profile.street}, {user_profile.house_no}",
+        f"{user_profile.state}, {user_profile.pincode}"
+    ]
+    for info in customer_info:
+        elements.append(Paragraph(info, normal_style))
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Order Details
+    elements.append(Paragraph("Order Details", header_style))
+    data = [["Product", "Quantity", "Size", "Price", "Total"]]
+    total_amount = 0
+    for order in orders:
+        data.append([
+            order.product.name,
+            str(order.quantity),
+            order.size,
+            f"Rs. {order.product.price}",
+            f"Rs. {order.total_price}"
+        ])
+        total_amount += order.total_price
+
+    table = Table(data, colWidths=[2.5*inch, 1*inch, 1*inch, 1*inch, 1.5*inch])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3f51b5')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#e8eaf6')),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#424242')),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('TOPPADDING', (0, 1), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#c5cae9'))
+    ]))
+    elements.append(table)
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Total Amount
+    elements.append(Paragraph(f"Total Amount: Rs. {total_amount}", header_style))
+    elements.append(Spacer(1, 0.25*inch))
+
+    # QR Code
+    qr = QrCodeWidget(f"Order Summary for {user_profile.user.email}")
+    qr_drawing = Drawing(1*inch, 1*inch, transform=[1*inch/qr.barWidth, 0, 0, 1*inch/qr.barHeight, 0, 0])
+    qr_drawing.add(qr)
+    elements.append(qr_drawing)
+
+    # Footer
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=8,
+        textColor=colors.HexColor('#757575'),
+        alignment=1
+    )
+    elements.append(Spacer(1, 0.5*inch))
+    elements.append(Paragraph("Thank you for shopping with FootLand!", footer_style))
+
+    # Build PDF
+    doc.build(elements)
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename="FootLand_OrderSummary.pdf")
+
+def email_order_summary(user_profile, orders):
+    # Subject and HTML content for the email
+    subject = "Your Order Summary - FootLand"
+    message = render_to_string('order_summary_email.html', {'user_profile': user_profile, 'orders': orders})
+
+    # Generate PDF attachment
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    elements = []
+
+    # Styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=24, textColor=colors.HexColor('#1a237e'), alignment=1)
+    header_style = ParagraphStyle('Header', parent=styles['Heading2'], fontSize=14, textColor=colors.HexColor('#303f9f'))
+    normal_style = ParagraphStyle('Normal', parent=styles['Normal'], fontSize=10, textColor=colors.HexColor('#424242'))
+
+    # Add logo, title, customer info, and order details similar to `download_order_summary`
+    elements.append(Paragraph("FootLand Order Summary", title_style))
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Customer Information
+    elements.append(Paragraph("Customer Information", header_style))
+    customer_info = [
+        f"Name: {user_profile.user.first_name} {user_profile.user.last_name}",
+        f"Email: {user_profile.user.email}",
+        f"Phone: {user_profile.phone}",
+        f"Address: {user_profile.address}, {user_profile.street}, {user_profile.house_no}",
+        f"{user_profile.state}, {user_profile.pincode}"
+    ]
+    for info in customer_info:
+        elements.append(Paragraph(info, normal_style))
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Order Details
+    elements.append(Paragraph("Order Details", header_style))
+    data = [["Product", "Quantity", "Size", "Price", "Total"]]
+    total_amount = 0
+    for order in orders:
+        data.append([
+            order.product.name,
+            str(order.quantity),
+            order.size,
+            f"Rs. {order.product.price}",
+            f"Rs. {order.total_price}"
+        ])
+        total_amount += order.total_price
+
+    table = Table(data, colWidths=[2.5*inch, 1*inch, 1*inch, 1*inch, 1.5*inch])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3f51b5')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#e8eaf6')),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#424242')),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#c5cae9'))
+    ]))
+    elements.append(table)
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Total Amount
+    elements.append(Paragraph(f"Total Amount: Rs. {total_amount}", header_style))
+    elements.append(Spacer(1, 0.25*inch))
+
+    # Footer
+    footer_style = ParagraphStyle('Footer', parent=styles['Normal'], fontSize=8, textColor=colors.HexColor('#757575'), alignment=1)
+    elements.append(Spacer(1, 0.5*inch))
+    elements.append(Paragraph("Thank you for shopping with FootLand!", footer_style))
+
+    # Build PDF
+    doc.build(elements)
+    buffer.seek(0)
+
+    # Create and send email with PDF attachment
+    email = EmailMessage(subject, message, to=[user_profile.user.email])
+    email.attach("FootLand_OrderSummary.pdf", buffer.getvalue(), "application/pdf")
+    email.send()
+    
+    
+def online_payment(request):
+    # Your logic for online payment
+    return render(request, 'online_payment.html')
+       
+
+
 
 def add_to_wishlist(request):
     if 'user_id' not in request.session:
@@ -938,6 +1264,18 @@ def remove_saved_item(request, product_id):
         messages.error(request, "You need to log in to remove saved items.")
     
     return redirect('cart')
+
+
+
+def my_orders(request):
+    user_id = request.session.get('user_id')  # Get the user ID from the session
+    if not user_id:
+        return redirect('login')  # Redirect to login if the user is not logged in
+
+    user = user_registration.objects.get(id=user_id)  # Get the current user
+    orders = Order.objects.filter(user=user).order_by('-order_date')  # Get user's orders, newest first
+
+    return render(request, 'my_orders.html', {'orders': orders})
 
 
 

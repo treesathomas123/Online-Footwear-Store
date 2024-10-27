@@ -1,0 +1,261 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - FootLand</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body, html {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: linear-gradient(135deg, #ffd6d6 0%, #ffd6d6 100%);
+        }
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .header {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px 0;
+            text-align: center;
+            color: #3b426a;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            overflow-y: auto;
+        }
+        .orders-container {
+            max-width: 800px;
+            width: 100%;
+        }
+        .order-card {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .order-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        .order-header {
+            background-color: #3b426a;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .order-body {
+            padding: 20px;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .order-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        .status-pending { background-color: #ffeeba; color: #856404; }
+        .status-shipped { background-color: #b8daff; color: #004085; }
+        .status-delivered { background-color: #c3e6cb; color: #155724; }
+        .order-date {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        .total-price {
+            font-weight: 600;
+            color: #28a745;
+            font-size: 1.2em;
+        }
+        .no-orders {
+            text-align: center;
+            color: #fff;
+            font-size: 1.2em;
+            padding: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .no-orders i {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 768px) {
+            .order-header, .order-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .order-date, .status {
+                margin-top: 10px;
+            }
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #MenuItems {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 120px;
+        }
+
+        #MenuItems li {
+            position: relative;
+        }
+
+        #MenuItems li a {
+            color: rgb(41, 37, 37);
+            text-decoration: none;
+            padding: 10px 15px;
+            transition: background-color 0.3s;
+        }
+
+        #MenuItems li a:hover {
+            background-color: #c0bbbb;
+            border-radius: 5px;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #fdfafa;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #fdf8f8;
+        } 
+
+    </style>
+</head>
+<body>
+<div class="page-container">
+    <header class="header">
+        <nav>
+            <ul id="MenuItems">
+                <li><a href="{% url 'user_dashboard' %}">Home</a></li>
+                <li><a href="{% url 'womens_products' %}">Womens</a></li>
+                <li><a href="{% url 'mens_products' %}">Mens</a></li>
+                <li><a href="{% url 'kids_products' %}">Kids</a></li>
+
+                <li class="dropdown">
+                    <a href="#"><img src="{% static 'images/user.png' %}" width="30px" height="30px"></a>
+                    <div class="dropdown-content">
+                        {% if request.session.user_id %}
+                            <a href="{% url 'add_profile' %}">Welcome, {{ request.session.username }}</a>
+                        {% else %}
+                            <a href="{% url 'login' %}">Welcome</a>
+                        {% endif %}
+                        <a href="{% url 'logout' %}">Logout</a>
+                    </div>
+                </li>
+                <li>
+                    <a href="{% url 'wishlist' %}">
+                        <img src="{% static 'images/heart.png' %}" width="30px" height="30px" alt="Wishlist" class="navbar-wishlist-icon">
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'cart' %}">
+                        <img src="{% static 'images/cart.png' %}" width="30px" height="30px">
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <h1><i class="fas fa-shopping-bag"></i> My Orders</h1>
+    </header>
+    <main class="content">
+        <div class="orders-container">
+            {% if orders %}
+                {% for order in orders %}
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span>Order #{{ order.id }}</span>
+                            <span class="order-date">{{ order.order_date|date:"M d, Y H:i" }}</span>
+                        </div>
+                        <div class="order-body">
+                            <div class="order-item">
+                                <span><strong>{{ order.product.name }}</strong> (Size: {{ order.size }})</span>
+                                <span>Qty: {{ order.quantity }}</span>
+                            </div>
+                            <div class="order-item">
+                                <span>Payment Method</span>
+                                <span>{{ order.payment_method }}</span>
+                            </div>
+                            <div class="order-item">
+                                <span>Status</span>
+                                <span class="status status-{{ order.order_status|lower }}">
+                                    {{ order.order_status }}
+                                </span>
+                            </div>
+                            <div class="order-item">
+                                <span>Total</span>
+                                <span class="total-price">${{ order.total_price }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-orders">
+                    <i class="fas fa-box-open"></i>
+                    <p>You have no orders yet. Start shopping to see your orders here!</p>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>
