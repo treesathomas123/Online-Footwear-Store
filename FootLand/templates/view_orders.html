@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Customers - Footland Admin</title>
+    <title>View Orders - Footland</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
@@ -37,7 +37,7 @@
 
         .sidebar {
             width: 250px;
-            background-color:#4a90e2;
+            background-color:  #4a90e2;
             color: white;
             padding: 20px 0;
         }
@@ -77,96 +77,63 @@
             margin-right: 10px;
         }
 
-        .main-content {
-            flex-grow: 1;
-            padding: 40px;
+        .content {
+            flex: 1;
+            padding: 30px;
         }
 
-        h1 {
-            font-size: 32px;
-            color: var(--primary-color);
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 30px;
-            text-align: center;
-            position: relative;
         }
 
-        h1::after {
-            content: '';
-            display: block;
-            width: 50px;
-            height: 3px;
-            background-color: var(--primary-color);
-            margin: 10px auto 0;
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--primary-color);
         }
 
-        .customer-table {
+        .orders-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0 15px;
-            margin-top: 20px;
         }
 
-        .customer-table th {
+        .orders-table th {
             background-color: var(--primary-color);
             color: white;
-            font-weight: 500;
-            text-align: left;
             padding: 15px;
-            border-radius: 5px 5px 0 0;
+            text-align: left;
+            font-weight: 500;
         }
 
-        .customer-table td {
+        .orders-table td {
             background-color: white;
             padding: 15px;
         }
 
-        .customer-table tr {
+        .orders-table tr {
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
         }
 
-        .customer-table tr:hover {
+        .orders-table tr:hover {
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .customer-table tr td:first-child {
-            border-top-left-radius: 5px;
-            border-bottom-left-radius: 5px;
-        }
-
-        .customer-table tr td:last-child {
-            border-top-right-radius: 5px;
-            border-bottom-right-radius: 5px;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-size: 14px;
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
             font-weight: 500;
         }
 
-        .btn-delete {
-            background-color: var(--accent-color);
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background-color: #c0392b;
-        }
-
-        .no-customers {
-            text-align: center;
-            margin-top: 50px;
-            font-size: 18px;
-            color: #777;
-        }
+        .status-pending { background-color: var(--warning-color); color: white; }
+        .status-shipped { background-color: var(--primary-color); color: white; }
+        .status-delivered { background-color: var(--success-color); color: white; }
 
         .menu .dropdown-content {
             display: none;
@@ -206,72 +173,56 @@
                         <a href="{% url 'view_product' %}">View Products</a>
                     </div>
                 </li>
-                <li><a href="{% url 'view_customers' %}" class="active"><i class="fas fa-users"></i> Customers</a></li>
+                <li><a href="{% url 'view_customers' %}"><i class="fas fa-users"></i> Customers</a></li>
                 <li><a href="{% url 'vendors' %}"><i class="fas fa-store"></i> Vendors</a></li>
-                <li><a href="{% url 'view_orders' %}"><i class="fas fa-shopping-cart"></i> Orders</a></li>
+                <li><a href="{% url 'view_orders' %}" class="active"><i class="fas fa-shopping-cart"></i> Orders</a></li>
                 <li><a href="{% url 'analytics' %}"><i class="fas fa-chart-bar"></i> Analytics</a></li>
                 <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </aside>
-        <main class="main-content">
-            <h1>Customer Management</h1>
-
-            {% if customers %}
-            <table class="customer-table">
+        <main class="content">
+            <div class="header">
+                <h1>View Orders</h1>
+            </div>
+            <table class="orders-table">
                 <thead>
                     <tr>
-                        <th>S.N</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Email</th>
-                        <th>Actions</th>
+                        <th>Order ID</th>
+                        <th>User</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Size</th>
+                        <th>Total Price</th>
+                        <th>Order Date</th>
+                        <th>Payment Method</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for customer in customers %}
+                    {% for order in orders %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td>{{ customer.first_name }}</td>
-                        <td>{{ customer.last_name }}</td>
-                        <td>{{ customer.email }}</td>
-                        <td>
-                            <form action="{% url 'delete_customer' customer.id %}" method="post">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-delete">Delete</button>
-                            </form>
-                        </td>
+                        <td>{{ order.user.first_name }} {{ order.user.last_name }}</td>
+                        <td>{{ order.product.name }}</td>
+                        <td>{{ order.quantity }}</td>
+                        <td>{{ order.size }}</td>
+                        <td>${{ order.total_price }}</td>
+                        <td>{{ order.order_date|date:"Y-m-d H:i" }}</td>
+                        <td>{{ order.payment_method }}</td>
+                        <td><span class="status status-{{ order.order_status|lower }}">{{ order.order_status }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9">No orders found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            {% else %}
-            <div class="no-customers">
-                <p>No customers found.</p>
-            </div>
-            {% endif %}
         </main>
     </div>
-
     <script>
         function toggleDropdown(id) {
-            var dropdown = document.getElementById(id);
-            dropdown.classList.toggle("show");
-            var dropdownLink = dropdown.previousElementSibling;
-            dropdownLink.classList.toggle("active");
-        }
-
-        // Close the dropdown if the user clicks outside of it
-        window.onclick = function(event) {
-            if (!event.target.matches('.dropdown > a')) {
-                var dropdowns = document.getElementsByClassName("dropdown-content");
-                for (var i = 0; i < dropdowns.length; i++) {
-                    var openDropdown = dropdowns[i];
-                    if (openDropdown.classList.contains('show')) {
-                        openDropdown.classList.remove('show');
-                        openDropdown.previousElementSibling.classList.remove("active");
-                    }
-                }
-            }
+            document.getElementById(id).classList.toggle("show");
         }
     </script>
 </body>

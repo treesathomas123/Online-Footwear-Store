@@ -4,259 +4,272 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics - Footland Admin</title>
+    <title>Analytics Dashboard - FootLand</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary-color: #3498db;
+            --primary-color: #4a90e2;
             --secondary-color: #f4f7fc;
             --text-color: #333;
             --accent-color: #e74c3c;
             --success-color: #2ecc71;
             --warning-color: #f39c12;
+            --sidebar-bg: #2c3e50;
+            --card-bg: #ffffff;
         }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: 'Poppins', sans-serif;
             background-color: var(--secondary-color);
             color: var(--text-color);
             line-height: 1.6;
         }
-
         .dashboard {
             display: flex;
             min-height: 100vh;
         }
-
         .sidebar {
             width: 250px;
-            background-color: #2c3e50;
+            background-color: var( --primary-color);
             color: white;
             padding: 20px 0;
+            box-shadow: 2px 0 10px  #4a90e2;
         }
-
         .logo {
             font-size: 24px;
             font-weight: 600;
             text-align: center;
             padding: 20px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--secondary-color);
         }
-
         .menu {
             list-style-type: none;
             padding: 20px 0;
         }
-
         .menu li {
             margin-bottom: 10px;
         }
-
         .menu a {
             color: white;
             text-decoration: none;
             display: flex;
             align-items: center;
-            padding: 10px 20px;
+            padding: 12px 20px;
             transition: 0.3s;
+            border-radius: 5px;
         }
-
         .menu a:hover, .menu a.active {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color:  #4a90e2;
             border-left: 4px solid var(--primary-color);
         }
-
         .menu i {
             margin-right: 10px;
+            font-size: 18px;
         }
-
         .main-content {
-            flex-grow: 1;
-            padding: 40px;
+            flex: 1;
+            padding: 30px;
+            background-color: var(--secondary-color);
         }
-
         h1 {
-            font-size: 32px;
+            font-size: 36px;
+            font-weight: 600;
             color: var(--primary-color);
             margin-bottom: 30px;
             text-align: center;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
-
         .charts-container {
             display: flex;
-            justify-content: space-around;
             flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 40px;
         }
-
         .chart-wrapper {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-bottom: 30px;
-            width: calc(33.33% - 20px);
+            flex: 1 1 calc(50% - 15px);
+            min-width: 300px;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-
+        .chart-wrapper:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
         .chart-wrapper h2 {
-            font-size: 18px;
-            color: var(--primary-color);
-            margin-bottom: 15px;
+            font-size: 22px;
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: 20px;
             text-align: center;
         }
-
-        @media (max-width: 1200px) {
-            .chart-wrapper {
-                width: calc(50% - 20px);
-            }
+        .best-selling {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            padding: 25px;
         }
-
-        @media (max-width: 768px) {
-            .chart-wrapper {
-                width: 100%;
-            }
+        .best-selling h2 {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .best-selling ul {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .best-selling ul li {
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .best-selling ul li:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .best-selling ul li .product-name {
+            font-weight: 500;
+            font-size: 18px;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+        .best-selling ul li .product-sales {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
     <div class="dashboard">
         <aside class="sidebar">
-            <div class="logo">Footland Admin</div>
+            <div class="logo">FootLand Admin</div>
             <ul class="menu">
                 <li><a href="{% url 'admin_dashboard' %}"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li class="dropdown">
-                    <a href="#" onclick="toggleDropdown('productsDropdown')"><i class="fas fa-box"></i> Products</a>
-                    <div id="productsDropdown" class="dropdown-content">
-                        <a href="{% url 'add_product' %}">Add Product</a>
-                        <a href="{% url 'view_product' %}">View Products</a>
-                    </div>
-                </li>
+                <li><a href="{% url 'view_product' %}"><i class="fas fa-box"></i> Products</a></li>
                 <li><a href="{% url 'view_customers' %}"><i class="fas fa-users"></i> Customers</a></li>
                 <li><a href="{% url 'vendors' %}"><i class="fas fa-store"></i> Vendors</a></li>
+                <li><a href="{% url 'view_orders' %}"><i class="fas fa-shopping-cart"></i> Orders</a></li>
                 <li><a href="{% url 'analytics' %}" class="active"><i class="fas fa-chart-bar"></i> Analytics</a></li>
                 <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </aside>
+
         <main class="main-content">
             <h1>Analytics Dashboard</h1>
+
             <div class="charts-container">
                 <div class="chart-wrapper">
                     <h2>User Distribution</h2>
                     <canvas id="userChart"></canvas>
                 </div>
+
                 <div class="chart-wrapper">
-                    <h2>Order Distribution</h2>
+                    <h2>Order Distribution by Category</h2>
                     <canvas id="orderChart"></canvas>
                 </div>
-                <div class="chart-wrapper">
-                    <h2>Vendor Distribution</h2>
-                    <canvas id="vendorChart"></canvas>
-                </div>
+            </div>
+
+          
+            <div class="best-selling">
+                <h2>Top Selling Products</h2>
+                <ul>
+                    {% for product in best_selling_products %}
+                        <li>
+                            <span class="product-name">{{ product.product__name }}</span>
+                            <span class="product-sales">{{ product.total_quantity }} sold</span>
+                        </li>
+                    {% endfor %}
+                </ul>
             </div>
         </main>
     </div>
-
+    <!-- Chart.js Configuration Scripts -->
     <script>
-        // User Chart
-        var userCtx = document.getElementById('userChart').getContext('2d');
-        var userChart = new Chart(userCtx, {
-            type: 'pie',
-            data: {
-                labels: ['Customers', 'Admins'],
-                datasets: [{
-                    data: [{{ customer_count }}, {{ admin_count }}],
-                    backgroundColor: ['#3498db', '#e74c3c'],
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                    },
-                    title: {
-                        display: true,
-                        text: 'User Distribution'
+        console.log("Customer count:", "{{ customer_count|default:'N/A' }}");
+        console.log("Admin count:", "{{ admin_count|default:'N/A' }}");
+    
+        // User Distribution Chart
+        const userChartCtx = document.getElementById('userChart').getContext('2d');
+        try {
+            new Chart(userChartCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Customers', 'Admins'],
+                    datasets: [{
+                        data: [
+                            {{ customer_count|default:0 }},
+                            {{ admin_count|default:0 }}
+                        ],
+                        backgroundColor: ['#4CAF50', '#FF9800']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' }
                     }
                 }
-            }
-        });
-
-        // Order Chart
-        var orderCtx = document.getElementById('orderChart').getContext('2d');
-        var orderChart = new Chart(orderCtx, {
-            type: 'pie',
-            data: {
-                labels: [{% for category, count in order_data.items %}'{{ category }}',{% endfor %}],
-                datasets: [{
-                    data: [{% for category, count in order_data.items %}{{ count }},{% endfor %}],
-                    backgroundColor: [
-                        '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
-                        '#1abc9c', '#34495e', '#16a085', '#27ae60', '#2980b9'
-                    ],
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                    },
-                    title: {
-                        display: true,
-                        text: 'Order Distribution by Category'
-                    }
-                }
-            }
-        });
-
-        // Vendor Chart
-        var vendorCtx = document.getElementById('vendorChart').getContext('2d');
-        var vendorChart = new Chart(vendorCtx, {
-            type: 'pie',
-            data: {
-                labels: ['Active Vendors', 'Inactive Vendors'],
-                datasets: [{
-                    data: [{{ active_vendor_count }}, {{ inactive_vendor_count }}],
-                    backgroundColor: ['#2ecc71', '#95a5a6'],
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                    },
-                    title: {
-                        display: true,
-                        text: 'Vendor Distribution'
-                    }
-                }
-            }
-        });
-
-        function toggleDropdown(id) {
-            var dropdown = document.getElementById(id);
-            dropdown.classList.toggle("show");
+            });
+        } catch (error) {
+            console.error("Error creating User Distribution Chart:", error);
+            document.getElementById('userChart').insertAdjacentHTML('afterend', '<p style="color: red;">Error loading chart. Please check the console for details.</p>');
         }
-
-        window.onclick = function(event) {
-            if (!event.target.matches('.dropdown > a')) {
-                var dropdowns = document.getElementsByClassName("dropdown-content");
-                for (var i = 0; i < dropdowns.length; i++) {
-                    var openDropdown = dropdowns[i];
-                    if (openDropdown.classList.contains('show')) {
-                        openDropdown.classList.remove('show');
+        // Order Distribution Chart
+        const orderChartCtx = document.getElementById('orderChart').getContext('2d');
+        try {
+            const orderData = JSON.parse('{{ order_data|escapejs }}');
+            console.log("Order data:", orderData);
+    
+            new Chart(orderChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(orderData),
+                    datasets: [{
+                        label: 'Orders by Category',
+                        data: Object.values(orderData),
+                        backgroundColor: '#2196F3',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
                     }
                 }
-            }
+            });
+        } catch (error) {
+            console.error("Error creating Order Distribution Chart:", error);
+            document.getElementById('orderChart').insertAdjacentHTML('afterend', '<p style="color: red;">Error loading chart. Please check the console for details.</p>');
         }
     </script>
 </body>

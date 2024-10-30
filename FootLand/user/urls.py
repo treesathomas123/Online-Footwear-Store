@@ -8,6 +8,7 @@ from .views import product_list
 from .views import add_profile, change_password
 from .views import add_to_cart, view_cart, update_cart, place_order
 from .views import billing_details, save_billing_details, billing_details2  # Import the new view
+from .views import admin_dashboard, view_orders 
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -19,7 +20,7 @@ urlpatterns = [
     path('womens/', views.womens, name='womens'), # womens product page
     path('mens/', views.mens, name='mens'),
    # path('kids/', views.kids, name='kids'),
-     path('search/', views.search, name='search'),  # Add this line for search
+    path('search/', views.search, name='search'),  # Add this line for search
     path('products_details/', views.products_details, name='products_details'),
     path('products/', views.products, name='products'),
     path('admin_dashboard/', views.admin_dashboard, name='admin_dashboard'), 
@@ -39,12 +40,12 @@ urlpatterns = [
     path('change_password/', change_password, name='change_password'),
     path('kids/', views.kids_products, name='kids_products'),  # Add this line
     path('kids-products/', views.kids_products, name='kids_products'),
-     path('womens-products/', views.womens_products, name='womens_products'),
-     path('mens-products/', views.mens_products, name='mens_products'),
+    path('womens-products/', views.womens_products, name='womens_products'),
+    path('mens-products/', views.mens_products, name='mens_products'),
     path('add-to-wishlist/', views.add_to_wishlist, name='add_to_wishlist'),
     path('wishlist/', views.wishlist_view, name='wishlist'),
     path('remove-from-wishlist/<int:product_id>/', views.remove_from_wishlist, name='remove_from_wishlist'),
-     path('product/<int:product_id>/', views.product_detail, name='product_detail'),
+    path('product/<int:product_id>/', views.product_detail, name='product_detail'),
     path('cart/', views.view_cart, name='cart'),  # Change 'cart' to 'view_cart'
     path('cart/add/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/update/<int:cart_item_id>/', views.update_cart, name='update_cart'),
@@ -63,8 +64,10 @@ urlpatterns = [
     path('confirm_order_final/', views.confirm_order_final, name='confirm_order_final'),
     path('order_summary/', views.order_summary, name='order_summary'),
     path('download-order-summary/', views.download_order_summary, name='download_order_summary'),
-     path('online_payment/', views.online_payment, name='online_payment'),  # Add online payment view
-     path('my-orders/', views.my_orders, name='my_orders'),
+    path('online_payment/', views.online_payment, name='online_payment'),  # Add online payment view
+    path('my-orders/', views.my_orders, name='my_orders'),
+   path('orders/', views.view_orders, name='view_orders'),
+    
     
    
    

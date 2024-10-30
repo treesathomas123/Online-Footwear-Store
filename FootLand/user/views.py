@@ -321,10 +321,37 @@ def vendors(request):
     return render(request, 'vendors.html')
 
 
-@login_required
+from django.db.models import Count, Sum
+
 def analytics(request):
-  
-    return render(request, 'analytics.html')
+    # User distribution data
+    customer_count = user_registration.objects.filter(user_type='customer').count()
+    admin_count = user_registration.objects.filter(user_type='admin').count()
+
+    # Orders distribution by category
+    order_data = (
+        Order.objects
+        .values('product__category')
+        .annotate(count=Count('product__category'))
+    )
+    order_data_dict = {item['product__category']: item['count'] for item in order_data}
+
+    # Best-selling products data
+    best_selling_products = (
+        Order.objects
+        .values('product__name')
+        .annotate(total_quantity=Sum('quantity'))
+        .order_by('-total_quantity')[:5]
+    )
+
+    context = {
+        'customer_count': customer_count,
+        'admin_count': admin_count,
+        'order_data': json.dumps(order_data_dict),
+        'best_selling_products': best_selling_products,
+    }
+
+    return render(request, 'analytics.html', context)
 
 @login_required
 def product(request):
@@ -1276,6 +1303,16 @@ def my_orders(request):
     orders = Order.objects.filter(user=user).order_by('-order_date')  # Get user's orders, newest first
 
     return render(request, 'my_orders.html', {'orders': orders})
+
+
+def view_orders(request):
+    # Fetch all orders for the custom orders view
+    orders = Order.objects.all()
+    context = {
+        'orders': orders,
+    }
+    return render(request, 'view_orders.html', context)
+
 
 
 

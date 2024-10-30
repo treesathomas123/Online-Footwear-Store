@@ -9,10 +9,19 @@ from django.core.mail import send_mail
 
 # Create your models here.
 class user_registration(models.Model):
-    first_name = models.CharField(max_length=50, default="Anonymous")  # Set a default value
-    last_name = models.CharField(max_length=50, default="User")  # You can set a default for last name too
+    USER_TYPE_CHOICES = [
+        ('customer', 'Customer'),
+        ('admin', 'Admin'),
+        ('vendor', 'Vendor'),
+    ]
+    
+    first_name = models.CharField(max_length=50, default="Anonymous")
+    last_name = models.CharField(max_length=50, default="User")
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=100)
+    user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, default='customer')
+    is_active = models.BooleanField(default=True)
+
 
     def check_password(self, raw_password):
         """Check if the given raw password matches the stored hashed password."""
@@ -114,7 +123,8 @@ class Wishlist(models.Model):
     
 class Review(models.Model):
     product = models.ForeignKey(Product, related_name='reviews', on_delete=models.CASCADE)
-    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)  # Assuming you are using Django's User model
+    user = models.ForeignKey(user_registration, on_delete=models.CASCADE)
+ # Assuming you are using Django's User model
     rating = models.PositiveIntegerField()  # 1 to 5 stars
     comment = models.TextField()
     name = models.CharField(max_length=100)
