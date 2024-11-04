@@ -5,139 +5,185 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration Form</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --error-color: #ef233c;
+            --text-color: #2b2d42;
+            --border-color: #e0e0e0;
+            --background-color: #f8f9fa;
+        }
+
         body {
-            background-color: #f7f7f7;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f5f7fa 100%);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            font-family: Arial, sans-serif;
+            padding: 20px;
         }
 
         .container {
             background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 30px;
+            box-shadow: 0 20px 40px #ffffff;
             overflow: hidden;
             display: flex;
-            max-width: 800px;
-            width: 100%;
-            margin: 20px;
+            max-width: 1100px;
+            width: 95%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
         }
 
         .image {
-            flex: 1;
-            background: url("{% static 'images/men.jpg' %}") no-repeat center center/cover;
-            min-height: 400px;
+            flex: 1.2;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+         
+            z-index: 1;
         }
 
         .form-container {
-            flex: 1;
-            padding: 30px;
+            flex: 0.8;
+            padding: 50px 40px;
+            background-color: #ffffff;
         }
 
-        .form-container h2 {
+        h2 {
             text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .form-container input[type="text"],
-        .form-container input[type="email"],
-        .form-container input[type="password"] {
-            width: calc(100% - 40px);
-            padding: 10px;
-            margin-bottom: 5px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            outline: none;
-            font-size: 16px;
-        }
-
-        .form-container .error-message {
-            color: red;
-            font-size: 12px;
-            margin-bottom: 15px;
-            display: none;
-        }
-
-        .form-container .toggle-password {
-            position: absolute;
-            right: 15px;
-            top: calc(50% - 10px);
-            cursor: pointer;
-        }
-
-        .form-container .password-field {
+            margin-bottom: 30px;
+            font-size: 32px;
+            color: var(--text-color);
             position: relative;
         }
 
-        .form-container .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .form-container .divider::before,
-        .form-container .divider::after {
+        h2:after {
             content: '';
-            flex: 1;
-            height: 1px;
-            background: #ccc;
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border-radius: 2px;
         }
 
-        .form-container .divider:not(:empty)::before {
-            margin-right: .25em;
-        }
-
-        .form-container .divider:not(:empty)::after {
-            margin-left: .25em;
-        }
-
-        .form-container button {
+        input {
             width: 100%;
-            padding: 10px;
-            background-color: #000;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            font-size: 18px;
-            cursor: pointer;
-            margin-bottom: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background-color: var(--background-color);
         }
 
-        .form-container .google-btn {
-            background-color: #4285F4;
+        input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+            background-color: #ffffff;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 12px;
+            margin: -15px 0 15px 5px;
+            display: none;
+        }
+
+        .password-field {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
+
+        .toggle-password:hover {
+            opacity: 1;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button[type="submit"] {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            margin-bottom: 20px;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2);
+        }
+
+        .google-btn {
+            background: white;
+            border: 2px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 10px;
         }
 
-        .form-container .google-btn img {
-            margin-right: 10px;
+        .google-btn:hover {
+            background: var(--background-color);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.1);
         }
 
-        .form-container a {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            color: #000;
-            text-decoration: none;
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            gap: 15px;
         }
 
-        .home-link {
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        .home-link a {
-            color: #000;
-            text-decoration: none;
-            font-size: 16px;
-            display: inline-block;
-            margin-top: 10px;
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--border-color), transparent);
         }
 
         @media (max-width: 768px) {
@@ -146,14 +192,46 @@
             }
 
             .image {
-                min-height: 200px;
+                height: 250px;
+            }
+
+            .form-container {
+                padding: 40px 30px;
             }
         }
+
+        /* Animation for form elements */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        input, button, .divider {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        input:nth-child(1) { animation-delay: 0.2s; }
+        input:nth-child(2) { animation-delay: 0.3s; }
+        input:nth-child(3) { animation-delay: 0.4s; }
+        input:nth-child(4) { animation-delay: 0.5s; }
+        input:nth-child(5) { animation-delay: 0.6s; }
+        button[type="submit"] { animation-delay: 0.7s; }
+        .divider { animation-delay: 0.8s; }
+        .google-btn { animation-delay: 0.9s; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="image"></div>
+        <div class="image">
+            <img src="{% static 'images/men.jpg' %}" alt="Decorative Image" style="width: 100%; height: 100%; object-fit: cover; z-index: 0; position: relative;">
+        </div>
         <div class="form-container">
             <h2>Register</h2>
             <form id="registrationForm" action="{% url 'signup' %}" method="POST">
@@ -184,9 +262,6 @@
                     <p style="color:red">{{ error }}</p>
                 {% endif %}
                 
-    
-
-               
                 <div class="divider">or</div>
                 <button type="button" class="google-btn">
                     <img src="https://img.icons8.com/color/16/000000/google-logo.png"/> Continue with Google
