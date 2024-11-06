@@ -761,6 +761,31 @@ def save_billing_details(request):
     else:
         return redirect('login')
 
+# def billing_details2(request):
+#     user_id = request.session.get('user_id')
+#     if not user_id:
+#         return redirect('login')
+    
+#     user = get_object_or_404(user_registration, id=user_id)
+#     user_profile = user.userprofile
+#     cart_items = Cart.objects.filter(user=user, saved_for_later=False)
+#     total_price = sum(item.product.price * item.quantity for item in cart_items)
+    
+#     context = {
+#         'user_profile': user_profile,
+#         'cart_items': cart_items,
+#         'total_price': total_price,
+#     }
+#     return render(request, 'billing_details2.html', context)
+
+
+
+from django.conf import settings
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Cart, UserProfile, Order, user_registration
+from django.core.mail import send_mail
+
 def billing_details2(request):
     user_id = request.session.get('user_id')
     if not user_id:
@@ -771,12 +796,19 @@ def billing_details2(request):
     cart_items = Cart.objects.filter(user=user, saved_for_later=False)
     total_price = sum(item.product.price * item.quantity for item in cart_items)
     
+    # Convert total price to paise (for Razorpay's smallest currency unit)
+    total_price_in_paise = int(total_price * 100)
+
     context = {
         'user_profile': user_profile,
         'cart_items': cart_items,
         'total_price': total_price,
+        'total_price_in_paise': total_price_in_paise,  # Add this for Razorpay
     }
     return render(request, 'billing_details2.html', context)
+
+
+
 
 def confirm_order(request):
     if request.method == 'POST':
@@ -855,6 +887,9 @@ def order_summary(request):
     user_profile = UserProfile.objects.get(user_id=user_id)
     
     return render(request, 'order_summary.html', {'orders': orders, 'user_profile': user_profile})
+
+
+
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, inch

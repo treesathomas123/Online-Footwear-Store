@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-6w4t3!p8iy(w)bua2@d5zo(xp8wr4bv_-24e_=n9x=$go6cu-=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',  # Essential for `request.user` to work
@@ -78,20 +79,28 @@ WSGI_APPLICATION = 'FootLand.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'footland',
+#         'USER': 'root',
+#         'PASSWORD': '',
+#         'HOST': 'localhost',
+#         'PORT': '3306',
+#     }
+# }
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'footland',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': 'footland_visitfight',
+        'USER': 'footland_visitfight',
+        'PASSWORD': 'e4717962330adfe38cf5695a7607ade11286bdf1',
+        'HOST': 'l94c0.h.filess.io',
+        'PORT': '3307',
     }
 }
-
-
-
-
 
 
 # Password validation
@@ -170,4 +179,6 @@ STATIC_URL = '/static/'
 # Ensure you have this line if you want to serve static files in development
 STATICFILES_DIRS = [BASE_DIR / "static"] 
 
+RAZORPAY_KEY_ID ='rzp_test_akXHnS8r5bnewe'
+RAZORPAY_KEY_SECRET ='wrqZyVTwCxvBp3xl6AjoDTH1'
 

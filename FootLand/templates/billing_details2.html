@@ -140,7 +140,7 @@
         <h2>Confirm Your Order</h2>
         
         <div class="cart-items">
-            <h3><i><b>Item you Orderd</b></i></h3>
+            <h3><i><b>Item you Ordered</b></i></h3>
             <ul>
                 {% for item in cart_items %}
                     <li>
@@ -168,7 +168,7 @@
 
         <div class="payment-method">
             <h3>Select Payment Method</h3>
-            <form method="POST" action="{% url 'confirm_order' %}">
+            <form id="payment-form" method="POST" action="{% url 'confirm_order' %}">
                 {% csrf_token %}
                 <div class="payment-options">
                     <div class="payment-option">
@@ -184,9 +184,52 @@
                         </label>
                     </div>
                 </div>
-                <button type="submit">Confirm Purchase</button>
+                <button type="button" onclick="confirmPurchase()">Confirm Purchase</button>
+            </form>
         </div>
     </div>
-    
+
+    <!-- Razorpay script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    function confirmPurchase() {
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+
+        if (paymentMethod === 'online') {
+            // Initialize Razorpay if online payment is selected
+            var options = {
+                "key": "rzp_test_DRyi6K0A68qkc4",  // Your Razorpay Test Key ID
+                "amount": "{{ total_price_in_paise }}",  // Total amount in paise
+                "currency": "INR",
+                "description": "FootLand Order",
+                "image": "https://example.com/image/rzp.jpg",  // Optional
+                "prefill": {
+                    "email": "{{ user_profile.user.email }}",
+                    "contact": "{{ user_profile.phone }}"
+                },
+                "handler": function (response) {
+                    alert("Payment successful! Payment ID: " + response.razorpay_payment_id);
+                    // Submit form to confirm order after payment success
+                    document.getElementById('payment-form').submit();
+                },
+                "modal": {
+                    "ondismiss": function () {
+                        if (confirm("Are you sure you want to close the payment form?")) {
+                            console.log("Checkout form closed by the user.");
+                        } else {
+                            console.log("Complete the payment.");
+                        }
+                    }
+                }
+            };
+            var rzp1 = new Razorpay(options);
+            rzp1.open();
+        } else {
+            // Submit form for Cash on Delivery
+            document.getElementById('payment-form').submit();
+        }
+    }
+</script>
+
 </body>
 </html>
