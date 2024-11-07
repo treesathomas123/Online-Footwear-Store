@@ -574,6 +574,10 @@ def mens_products(request):
 def add_to_cart(request, product_id):
    if request.method == 'POST':
         size = request.POST.get('size')  
+        if not size:
+            # Handle missing size, e.g., by returning an error response
+            messages.error(request, "Please select a size before adding to the cart.")
+            return redirect('product_detail', product_id=product_id)
         if 'user_id' in request.session:
             user_id = request.session['user_id']  # Get the logged-in user ID from session
             user = get_object_or_404(user_registration, id=user_id)

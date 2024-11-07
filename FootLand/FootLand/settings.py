@@ -79,28 +79,28 @@ WSGI_APPLICATION = 'FootLand.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'footland',
-#         'USER': 'root',
-#         'PASSWORD': '',
-#         'HOST': 'localhost',
-#         'PORT': '3306',
-#     }
-# }
-
-
 DATABASES = {
-    'default': {
+     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'footland_visitfight',
-        'USER': 'footland_visitfight',
-        'PASSWORD': 'e4717962330adfe38cf5695a7607ade11286bdf1',
-        'HOST': 'l94c0.h.filess.io',
-        'PORT': '3307',
-    }
-}
+         'NAME': 'footland',
+         'USER': 'root',
+        'PASSWORD': '',
+        'HOST': 'localhost',
+         'PORT': '3306',
+     }
+ }
+
+
+#DATABASES = {
+#   'default': {
+#       'ENGINE': 'django.db.backends.mysql',
+#       'NAME': 'footland_visitfight',
+#       'USER': 'footland_visitfight',
+#       'PASSWORD': 'e4717962330adfe38cf5695a7607ade11286bdf1',
+#        'HOST': 'l94c0.h.filess.io',
+#        'PORT': '3307',
+#   }
+#}
 
 
 # Password validation
