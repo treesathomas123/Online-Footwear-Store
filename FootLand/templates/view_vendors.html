@@ -1,0 +1,244 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Vendors - Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #4a90e2;
+            color: white;
+        }
+        .button {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            transition: background-color 0.3s;
+            margin-top: 5px;
+        }
+        .activate {
+            background-color: #4CAF50;
+        }
+        .activate:hover {
+            background-color: #45a049;
+        }
+        .deactivate {
+            background-color: #f44336;
+        }
+        .deactivate:hover {
+            background-color: #da190b;
+        }
+        .reject {
+            background-color: #ff5722;
+        }
+        .reject:hover {
+            background-color: #f4511e;
+        }
+        .status {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: 500;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .active {
+            background-color: #e8f5e9;
+            color: #4CAF50;
+        }
+        .inactive {
+            background-color: #ffebee;
+            color: #f44336;
+        }
+        .messages {
+            margin-bottom: 20px;
+        }
+        .alert {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .alert-success {
+            background-color: #e8f5e9;
+            color: #4CAF50;
+        }
+        .alert-warning {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Vendor Management</h1>
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Vendor Name</th>
+                    <th>Shop Name</th>
+                    <th>Contact</th>
+                    <th>Documents</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detail in vendor_details %}
+                <tr>
+                    <td>
+                        <strong>{{ detail.vendor_name }}</strong><br>
+                        {% if detail.vendor %}
+                            <small>Email: {{ detail.vendor.email }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong>{{ detail.shop_name }}</strong><br>
+                        <small>Location: {{ detail.location }}</small>
+                    </td>
+                    <td>
+                        Phone: {{ detail.phone_number }}<br>
+                        Address: {{ detail.address }}<br>
+                        Postal Code: {{ detail.postal_code }}
+                    </td>
+                    <td>
+                        {% if detail.aadhar_card %}
+                            <div style="margin-bottom: 10px;">
+                                <strong>Aadhar Card:</strong><br>
+                                <img src="{% get_media_prefix %}{{ detail.aadhar_card }}" 
+                                     alt="Aadhar Card" 
+                                     style="max-width: 150px; max-height: 150px; margin: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                                <br>
+                                <a href="{% get_media_prefix %}{{ detail.aadhar_card }}" 
+                                   class="button view-docs" 
+                                   target="_blank">View Full Size</a>
+                            </div>
+                        {% endif %}
+                        
+                        {% if detail.shop_license %}
+                            <div style="margin-bottom: 10px;">
+                                <strong>Shop License:</strong><br>
+                                <img src="{% get_media_prefix %}{{ detail.shop_license }}" 
+                                     alt="Shop License" 
+                                     style="max-width: 150px; max-height: 150px; margin: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                                <br>
+                                <a href="{% get_media_prefix %}{{ detail.shop_license }}" 
+                                   class="button view-docs" 
+                                   target="_blank">View Full Size</a>
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="margin-bottom: 15px;">
+                            <span class="status inactive">
+                                Pending
+                            </span>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <a href="#" onclick="activateVendor(event)" class="button activate">Activate</a>
+                            <a href="#" onclick="rejectVendor(event)" class="button reject">Reject</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center;">No vendor details found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function activateVendor(event) {
+            event.preventDefault();
+            const button = event.target;
+            const statusSpan = button.closest('td').querySelector('.status');
+            
+            // Change status to Active
+            statusSpan.textContent = 'Active';
+            statusSpan.classList.remove('inactive');
+            statusSpan.classList.add('active');
+            
+            // Hide the current buttons
+            const actionButtons = button.closest('.action-buttons');
+            actionButtons.innerHTML = '<a href="#" onclick="deactivateVendor(event)" class="button deactivate">Deactivate</a>';
+        }
+        
+        function deactivateVendor(event) {
+            event.preventDefault();
+            const button = event.target;
+            const statusSpan = button.closest('td').querySelector('.status');
+            
+            // Change status back to Pending
+            statusSpan.textContent = 'Pending';
+            statusSpan.classList.remove('active');
+            statusSpan.classList.add('inactive');
+            
+            // Show activate and reject buttons
+            const actionButtons = button.closest('.action-buttons');
+            actionButtons.innerHTML = `
+                <a href="#" onclick="activateVendor(event)" class="button activate">Activate</a>
+                <a href="#" onclick="rejectVendor(event)" class="button reject">Reject</a>
+            `;
+        }
+        
+        function rejectVendor(event) {
+            event.preventDefault();
+            const button = event.target;
+            const statusSpan = button.closest('td').querySelector('.status');
+            
+            // Change status to Rejected
+            statusSpan.textContent = 'Rejected';
+            statusSpan.classList.remove('inactive', 'active');
+            statusSpan.classList.add('inactive');
+            
+            // Hide the current buttons
+            const actionButtons = button.closest('.action-buttons');
+            actionButtons.innerHTML = '<a href="#" onclick="activateVendor(event)" class="button activate">Activate</a>';
+        }
+    </script>
+</body>
+</html>

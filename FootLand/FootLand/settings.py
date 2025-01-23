@@ -79,28 +79,28 @@ WSGI_APPLICATION = 'FootLand.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'footland',
-#          'USER': 'root',
-#        'PASSWORD': '',
-#        'HOST': 'localhost',
-#         'PORT': '3306',
-#     }
-# }
-
-
 DATABASES = {
- 'default': {
-     'ENGINE': 'django.db.backends.mysql',
-     'NAME': 'FOOTLAND_tracewore',
-     'USER': 'FOOTLAND_tracewore',
-     'PASSWORD': '08ab0fb4c391e6c6410bf7196f17e5442796a77e',
-     'HOST': 'pmpqd.h.filess.io',
-     'PORT': '3307',
-  }
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'footland',
+         'USER': 'root',
+       'PASSWORD': '',
+       'HOST': 'localhost',
+        'PORT': '3306',
+    }
 }
+
+
+# DATABASES = {
+#  'default': {
+#      'ENGINE': 'django.db.backends.mysql',
+#      'NAME': 'FOOTLAND_tracewore',
+#      'USER': 'FOOTLAND_tracewore',
+#      'PASSWORD': '08ab0fb4c391e6c6410bf7196f17e5442796a77e',
+#      'HOST': 'pmpqd.h.filess.io',
+#      'PORT': '3307',
+#   }
+# }
 
 
 # Password validation

@@ -256,6 +256,13 @@
                     <span class="toggle-password" onclick="togglePassword('confirm_password')"></span>
                 </div>
                 <div class="error-message" id="confirmPasswordError">Passwords do not match.</div>
+                <label for="user_type">User Type</label>
+                
+<select name="user_type" id="user_type" required>
+    <option value="customer">Customer</option>
+    <option value="vendor">Vendor</option>
+    <option value="delivery_boy">Delivery Boy</option>
+</select>
                 
                 <button type="submit">Register</button>
                 {% if error %}

@@ -34,6 +34,10 @@ from django.http import FileResponse
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from django.template.loader import render_to_string
+from .models import VendorDetails  # Ensure you have a model to store vendor details
+from django.core.files.storage import FileSystemStorage
+import os
+
 
 logger = logging.getLogger(__name__)
 
@@ -70,13 +74,27 @@ def login(request):
 
         try:
             user_obj = user_registration.objects.get(email=email)
+            # Check if the user is a vendor and if their account is active
+            if user_obj.user_type == 'vendor' and not user_obj.is_active:
+                messages.error(request, "Your account is awaiting approval from the admin.")
+                return redirect('login')
 
             # Use check_password to compare the input password with the stored hashed password
             if check_password(password, user_obj.password):
                 # Store user information in the session
                 request.session['user_id'] = user_obj.id
                 request.session['username'] = user_obj.first_name  # Assuming you store full names as first name
-                return redirect('user_dashboard')
+                
+                # Redirect based on user type
+                if user_obj.user_type == 'admin':
+                    return redirect('admin_dashboard')
+                elif user_obj.user_type == 'vendor':
+                    return redirect('vendor')  # New signup dashboard
+                elif user_obj.user_type == 'delivery_boy':
+                    return redirect('delivery_boy_dashboard')  # New delivery boy dashboard
+                else:
+                    return redirect('user_dashboard')
+ 
             else:
                 messages.error(request, "Invalid email or password.")
                 return redirect('login')
@@ -172,8 +190,8 @@ def logout(request):
 
 def admin_dashboard(request):
     total_products = Product.objects.count()
-    total_customers = user_registration.objects.count()
-    total_vendors = 0  # You'll need to implement this based on your vendor model
+    total_customers = user_registration.objects.filter(user_type='customer').count()
+    total_vendors = user_registration.objects.filter(user_type='vendor').count()  # Count all vendors  # You'll need to implement this based on your vendor model
     total_orders = Order.objects.count() # Assuming each unique user in Cart represents an order
 
     context = {
@@ -186,12 +204,14 @@ def admin_dashboard(request):
 
 
 def signup(request):
+    user_type = None 
     if request.method == 'POST':
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
         email = request.POST.get('email')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
+        user_type = request.POST.get('user_type')  # New field for user type
 
         if password != confirm_password:
             messages.error(request, 'Passwords do not match!')
@@ -205,8 +225,11 @@ def signup(request):
             first_name=first_name,
             last_name=last_name,
             email=email,
-            password=make_password(password)
+            password=make_password(password),
+            user_type=user_type  # Set user type
         )
+    if user_type == 'customer':
+            # Save customer and send welcome email  
         new_user.save()
 
         # Customized welcome email
@@ -241,6 +264,23 @@ def signup(request):
             messages.error(request, f'Registration successful, but email failed to send: {str(e)}')
 
         return redirect('user_dashboard')
+    
+    elif user_type == 'vendor':
+            # Save vendor and send approval email
+            new_user.save()
+            subject = 'Vendor Registration Pending Approval'
+            message = f"Hi {first_name},\n\nThank you for registering as a vendor. Please fill out the following form: http://127.0.0.1:8000/submit_vendor_details/"
+            from_email = settings.DEFAULT_FROM_EMAIL
+            recipient_list = [email]
+
+            try:
+                send_mail(subject, message, from_email, recipient_list)
+                messages.success(request, 'Registration successful! Please check your mail for further instructions.')
+            except Exception as e:
+                messages.error(request, f'Registration successful, but email failed to send: {str(e)}')
+
+            return redirect('user_dashboard')
+
 
     return render(request, 'signup.html')
 
@@ -315,10 +355,142 @@ def edit_product(request, product_id):
 
     return render(request, 'edit_product.html', {'form': form, 'product': product})
 
+def approve_vendor(request, vendor_id):
+    vendor = user_registration.objects.get(id=vendor_id)
+    vendor.is_active = True  # Activate the vendor
+    vendor.save()
 
-def vendors(request):
-    # Implement vendors logic
-    return render(request, 'vendors.html')
+    # Send email to vendor with Google Form link
+    subject = 'Vendor Approval'
+    message = f"Hi {vendor.first_name},\n\nYour vendor account has been approved. Please fill out the following form: [Google Form Link]"
+    from_email = settings.DEFAULT_FROM_EMAIL
+    recipient_list = [vendor.email]
+
+    try:
+        send_mail(subject, message, from_email, recipient_list)
+        messages.success(request, 'Vendor approved and email sent!')
+    except Exception as e:
+        messages.error(request, f'Vendor approved, but email failed to send: {str(e)}')
+
+    return redirect('view_vendors')
+
+def view_vendors(request):
+    vendor_details = VendorDetails.objects.select_related('vendor').all()
+    
+    if request.method == 'POST':
+        vendor_id = request.POST.get('vendor_id')
+        action = request.POST.get('action')
+        
+        if vendor_id and action:  # Only proceed if both values exist
+            try:
+                vendor = user_registration.objects.get(id=int(vendor_id))
+                
+                if action == 'activate':
+                    vendor.is_active = True
+                    vendor.save()
+                    messages.success(request, f'Vendor {vendor.first_name} has been activated.')
+                    
+                elif action == 'deactivate':
+                    vendor.is_active = False
+                    vendor.save()
+                    messages.success(request, f'Vendor {vendor.first_name} has been deactivated.')
+                
+            except (user_registration.DoesNotExist, ValueError) as e:
+                messages.error(request, f"Error processing request: {str(e)}")
+    
+    context = {
+        'vendor_details': vendor_details,
+    }
+    return render(request, 'view_vendors.html', context)
+
+
+    return render(request, 'view_vendors.html', {'vendors': vendors, 'vendor_details': vendor_details})
+
+def activate_vendor(request, vendor_id):
+    vendor = get_object_or_404(user_registration, id=vendor_id)
+    vendor.is_active = True
+    vendor.save()
+    
+    # Send email to vendor
+    try:
+        send_mail(
+            'Account Activated - Footland',
+            f'Dear {vendor.first_name},\n\nYour vendor account has been activated. You can now login to your dashboard.',
+            settings.DEFAULT_FROM_EMAIL,
+            [vendor.email],
+            fail_silently=False,
+        )
+        messages.success(request, f'Vendor {vendor.first_name} has been activated and notified via email.')
+    except Exception as e:
+        messages.warning(request, f'Vendor activated but email notification failed: {str(e)}')
+    
+    return redirect('view_vendors')
+
+def deactivate_vendor(request, vendor_id):
+    vendor = get_object_or_404(user_registration, id=vendor_id)
+    vendor.is_active = False
+    vendor.save()
+    
+    # Send email to vendor
+    try:
+        send_mail(
+            'Account Deactivated - Footland',
+            f'Dear {vendor.first_name},\n\nYour vendor account has been deactivated. Please contact support for more information.',
+            settings.DEFAULT_FROM_EMAIL,
+            [vendor.email],
+            fail_silently=False,
+        )
+        messages.success(request, f'Vendor {vendor.first_name} has been deactivated and notified via email.')
+    except Exception as e:
+        messages.warning(request, f'Vendor deactivated but email notification failed: {str(e)}')
+    
+    return redirect('view_vendors')
+
+
+def submit_vendor_details(request):
+    if request.method == 'POST':
+        vendor_name = request.POST.get('vendor_name')
+        shop_name = request.POST.get('shop_name')
+        address = request.POST.get('address')
+        postal_code = request.POST.get('postal_code')
+        phone_number = request.POST.get('phone_number')
+        location = request.POST.get('location')
+        
+        # Handle file uploads
+        aadhar_card = request.FILES['aadhar_card']
+        shop_license = request.FILES['shop_license']
+        shop_photos = request.FILES.getlist('shop_photos')
+
+        # Save vendor details to the database
+        vendor_details = VendorDetails(
+            vendor_name=vendor_name,
+            shop_name=shop_name,
+            address=address,
+            postal_code=postal_code,
+            phone_number=phone_number,
+            location=location,
+            aadhar_card=aadhar_card,
+            shop_license=shop_license,
+        )
+        vendor_details.save()
+
+        # Save shop photos (if needed)
+        for photo in shop_photos:
+            # Assuming you have a model to store photos
+            vendor_details.shop_photos.create(photo=photo)
+
+        messages.success(request, 'Vendor details submitted successfully! Awaiting approval.')
+        return redirect('user_dashboard')  # Redirect to a suitable page
+
+    return render(request, 'vendor_details.html')
+
+def view_vendor_details(request):
+    vendors = VendorDetails.objects.all()  # Fetch all vendor details
+    return render(request, 'view_vendor_details.html', {'vendors': vendors})
+
+def delivery_boy_dashboard(request):
+    # Logic for delivery boy dashboard
+    return render(request, 'delivery_boy_dashboard.html')
 
 
 from django.db.models import Count, Sum
@@ -1351,6 +1523,26 @@ def view_orders(request):
         'orders': orders,
     }
     return render(request, 'view_orders.html', context)
+
+def reject_vendor(request, vendor_id):
+    vendor = get_object_or_404(user_registration, id=vendor_id)
+    vendor.is_active = False
+    vendor.save()
+    
+    try:
+        send_mail(
+            'Vendor Application Rejected - Footland',
+            f'Dear {vendor.first_name},\n\nWe regret to inform you that your vendor application has been rejected.',
+            settings.DEFAULT_FROM_EMAIL,
+            [vendor.email],
+            fail_silently=False,
+        )
+        messages.success(request, f'Vendor {vendor.first_name} has been rejected and notified via email.')
+    except Exception as e:
+        messages.warning(request, f'Vendor rejected but email notification failed: {str(e)}')
+    
+    return redirect('view_vendors')
+
 
 
 

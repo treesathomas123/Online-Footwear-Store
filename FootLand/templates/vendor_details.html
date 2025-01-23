@@ -1,0 +1,200 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Details Form</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="file"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50; /* Green */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error-message {
+            color: red;
+            font-size: 12px;
+            display: none; /* Hidden by default */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Vendor Details Form</h1>
+        <form id="vendorDetailsForm" action="{% url 'vendor_details' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="vendorName">Name of the Vendor</label>
+            <input type="text" id="vendorName" name="vendor_name" required>
+            <div class="error-message" id="vendorNameError">Please enter the vendor's name.</div>
+
+            <label for="shopName">Shop Name</label>
+            <input type="text" id="shopName" name="shop_name" required>
+            <div class="error-message" id="shopNameError">Please enter the shop name.</div>
+
+            <label for="address">Address</label>
+            <textarea id="address" name="address" rows="4" required></textarea>
+            <div class="error-message" id="addressError">Please enter the address.</div>
+
+            <label for="postalCode">Postal Code</label>
+            <input type="text" id="postalCode" name="postal_code" pattern="\d{5}" required>
+            <div class="error-message" id="postalCodeError">Please enter a valid 5-digit postal code.</div>
+
+            <label for="phoneNumber">Phone Number</label>
+            <input type="tel" id="phoneNumber" name="phone_number" pattern="\d{10}" required>
+            <div class="error-message" id="phoneNumberError">Please enter a valid 10-digit phone number.</div>
+
+            <label for="location">Location</label>
+            <input type="text" id="location" name="location" required>
+            <div class="error-message" id="locationError">Please enter the location.</div>
+
+            <label for="aadharCard">Aadhar Card Copy</label>
+            <input type="file" id="aadharCard" name="aadhar_card" accept="image/*" required>
+            <div class="error-message" id="aadharCardError">Please upload the Aadhar card copy.</div>
+
+            <label for="shopLicense">Shop License</label>
+            <input type="file" id="shopLicense" name="shop_license" accept="image/*" required>
+            <div class="error-message" id="shopLicenseError">Please upload the shop license.</div>
+
+            <label for="shopPhotos">Photos of Shop</label>
+            <input type="file" id="shopPhotos" name="shop_photos" accept="image/*" multiple required>
+            <div class="error-message" id="shopPhotosError">Please upload at least one photo of the shop.</div>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('vendorDetailsForm');
+
+        form.addEventListener('submit', function(event) {
+            let hasError = false;
+
+            // Validate vendor name
+            const vendorName = document.getElementById('vendorName');
+            if (!vendorName.value) {
+                document.getElementById('vendorNameError').style.display = 'block';
+                hasError = true;
+            } else {
+                document.getElementById('vendorNameError').style.display = 'none';
+            }
+
+            // Validate shop name
+            const shopName = document.getElementById('shopName');
+            if (!shopName.value) {
+                document.getElementById('shopNameError').style.display = 'block';
+                hasError = true;
+            } else {
+                document.getElementById('shopNameError').style.display = 'none';
+            }
+
+            // Validate address
+            const address = document.getElementById('address');
+            if (!address.value) {
+                document.getElementById('addressError').style.display = 'block';
+                hasError = true;
+            } else {
+                document.getElementById('addressError').style.display = 'none';
+            }
+
+            // Validate postal code
+            const postalCode = document.getElementById('postalCode');
+            if (!postalCode.value.match(/^\d{5}$/)) {
+                document.getElementById('postalCodeError').style.display = 'block';
+                hasError = true;
+            } else {
+                document.getElementById('postalCodeError').style.display = 'none';
+            }
+
+            // Validate phone number
+            const phoneNumber = document.getElementById('phoneNumber');
+            if (!phoneNumber.value.match(/^\d{10}$/)) {
+                document.getElementById('phoneNumberError').style.display = 'block';
+                hasError = true;
+            } else {
+                document.getElementById('phoneNumberError').style.display = 'none';
+            }
+
+            // Validate location
+            const location = document.getElementById('location');
+            if (!location.value) {
+                document.getElementById('locationError').style.display = 'block';
+                hasError = true;
+            } else {
+                document.getElementById('locationError').style.display = 'none';
+            }
+
+            // Validate Aadhar card
+            const aadharCard = document.getElementById('aadharCard');
+            if (!aadharCard.files.length) {
+                document.getElementById('aadharCardError').style.display = 'block';
+                hasError = true;
+            } else {
+                document.getElementById('aadharCardError').style.display = 'none';
+            }
+
+            // Validate shop license
+            const shopLicense = document.getElementById('shopLicense');
+            if (!shopLicense.files.length) {
+                document.getElementById('shopLicenseError').style.display = 'block';
+                hasError = true;
+            } else {
+                document.getElementById('shopLicenseError').style.display = 'none';
+            }
+
+            // Validate shop photos
+            const shopPhotos = document.getElementById('shopPhotos');
+            if (!shopPhotos.files.length) {
+                document.getElementById('shopPhotosError').style.display = 'block';
+                hasError = true;
+            } else {
+                document.getElementById('shopPhotosError').style.display = 'none';
+            }
+
+            if (hasError) {
+                event.preventDefault(); // Prevent form submission if there are validation errors
+            }
+        });
+    </script>
+</body>
+</html> 

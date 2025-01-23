@@ -8,7 +8,8 @@ from .views import product_list
 from .views import add_profile, change_password
 from .views import add_to_cart, view_cart, update_cart, place_order
 from .views import billing_details, save_billing_details, billing_details2  # Import the new view
-from .views import admin_dashboard, view_orders 
+from .views import admin_dashboard, view_orders , view_vendors ,submit_vendor_details , activate_vendor, deactivate_vendor  # Import the new views
+
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -56,7 +57,7 @@ urlpatterns = [
      path('remove_from_cart/<int:product_id>/', views.remove_from_cart, name='remove_from_cart'),
     #path('confirm-order/', confirm_order, name='confirm_order'),  # Confirm order after verification
     path('analytics/', views.analytics, name='analytics'),
-    path('vendors/', views.vendors, name='vendors'),
+     path('view_vendors/', view_vendors, name='view_vendors'),  # Add this line
      path('billing-details/', views.billing_details, name='billing_details'),
     path('save-billing-details/', views.save_billing_details, name='save_billing_details'),
     path('billing-details2/', billing_details2, name='billing_details2'),  # New URL pattern
@@ -67,6 +68,10 @@ urlpatterns = [
     path('online_payment/', views.online_payment, name='online_payment'),  # Add online payment view
     path('my-orders/', views.my_orders, name='my_orders'),
    path('orders/', views.view_orders, name='view_orders'),
+    path('submit_vendor_details/', submit_vendor_details, name='vendor_details'),
+     path('activate_vendor/<int:vendor_id>/', activate_vendor, name='activate_vendor'),
+    path('deactivate_vendor/<int:vendor_id>/', deactivate_vendor, name='deactivate_vendor'),
+    
     
     
    
