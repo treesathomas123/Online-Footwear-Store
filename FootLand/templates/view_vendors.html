@@ -97,7 +97,11 @@
         }
         .action-buttons {
             display: flex;
+            flex-direction: column;
             gap: 10px;
+        }
+        form {
+            display: inline-block;
         }
     </style>
 </head>
@@ -107,9 +111,7 @@
         {% if messages %}
         <div class="messages">
             {% for message in messages %}
-            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-                {{ message }}
-            </div>
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</div>
             {% endfor %}
         </div>
         {% endif %}
@@ -144,41 +146,52 @@
                     </td>
                     <td>
                         {% if detail.aadhar_card %}
-                            <div style="margin-bottom: 10px;">
-                                <strong>Aadhar Card:</strong><br>
-                                <img src="{% get_media_prefix %}{{ detail.aadhar_card }}" 
-                                     alt="Aadhar Card" 
-                                     style="max-width: 150px; max-height: 150px; margin: 5px; border: 1px solid #ddd; border-radius: 4px;">
-                                <br>
-                                <a href="{% get_media_prefix %}{{ detail.aadhar_card }}" 
-                                   class="button view-docs" 
-                                   target="_blank">View Full Size</a>
-                            </div>
+                        <div style="margin-bottom: 10px;">
+                            <strong>Aadhar Card:</strong><br>
+                            <img src="{% get_media_prefix %}{{ detail.aadhar_card }}" 
+                                 alt="Aadhar Card" 
+                                 style="max-width: 150px; max-height: 150px; margin: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                            <br>
+                            <a href="{% get_media_prefix %}{{ detail.aadhar_card }}" 
+                               class="button view-docs" 
+                               target="_blank">View Full Size</a>
+                        </div>
                         {% endif %}
                         
                         {% if detail.shop_license %}
-                            <div style="margin-bottom: 10px;">
-                                <strong>Shop License:</strong><br>
-                                <img src="{% get_media_prefix %}{{ detail.shop_license }}" 
-                                     alt="Shop License" 
-                                     style="max-width: 150px; max-height: 150px; margin: 5px; border: 1px solid #ddd; border-radius: 4px;">
-                                <br>
-                                <a href="{% get_media_prefix %}{{ detail.shop_license }}" 
-                                   class="button view-docs" 
-                                   target="_blank">View Full Size</a>
-                            </div>
+                        <div style="margin-bottom: 10px;">
+                            <strong>Shop License:</strong><br>
+                            <img src="{% get_media_prefix %}{{ detail.shop_license }}" 
+                                 alt="Shop License" 
+                                 style="max-width: 150px; max-height: 150px; margin: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                            <br>
+                            <a href="{% get_media_prefix %}{{ detail.shop_license }}" 
+                               class="button view-docs" 
+                               target="_blank">View Full Size</a>
+                        </div>
                         {% endif %}
                     </td>
                     <td>
                         <div style="margin-bottom: 15px;">
-                            <span class="status inactive">
-                                Pending
+                            <span class="status {% if detail.vendor.is_active %}active{% else %}inactive{% endif %}">
+                                {% if detail.vendor.is_active %}Active{% else %}Pending{% endif %}
                             </span>
                         </div>
                         
                         <div class="action-buttons">
-                            <a href="#" onclick="activateVendor(event)" class="button activate">Activate</a>
-                            <a href="#" onclick="rejectVendor(event)" class="button reject">Reject</a>
+                            <form method="POST" style="display: inline-block; margin-right: 5px;">
+                                {% csrf_token %}
+                                <input type="hidden" name="vendor_id" value="{{ detail.vendor.id }}">
+                                <input type="hidden" name="action" value="activate">
+                                <button type="submit" class="button activate">Activate</button>
+                            </form>
+                            
+                            <form method="POST" style="display: inline-block;">
+                                {% csrf_token %}
+                                <input type="hidden" name="vendor_id" value="{{ detail.vendor.id }}">
+                                <input type="hidden" name="action" value="deactivate">
+                                <button type="submit" class="button deactivate">Deactivate</button>
+                            </form>
                         </div>
                     </td>
                 </tr>
@@ -190,55 +203,5 @@
             </tbody>
         </table>
     </div>
-
-    <script>
-        function activateVendor(event) {
-            event.preventDefault();
-            const button = event.target;
-            const statusSpan = button.closest('td').querySelector('.status');
-            
-            // Change status to Active
-            statusSpan.textContent = 'Active';
-            statusSpan.classList.remove('inactive');
-            statusSpan.classList.add('active');
-            
-            // Hide the current buttons
-            const actionButtons = button.closest('.action-buttons');
-            actionButtons.innerHTML = '<a href="#" onclick="deactivateVendor(event)" class="button deactivate">Deactivate</a>';
-        }
-        
-        function deactivateVendor(event) {
-            event.preventDefault();
-            const button = event.target;
-            const statusSpan = button.closest('td').querySelector('.status');
-            
-            // Change status back to Pending
-            statusSpan.textContent = 'Pending';
-            statusSpan.classList.remove('active');
-            statusSpan.classList.add('inactive');
-            
-            // Show activate and reject buttons
-            const actionButtons = button.closest('.action-buttons');
-            actionButtons.innerHTML = `
-                <a href="#" onclick="activateVendor(event)" class="button activate">Activate</a>
-                <a href="#" onclick="rejectVendor(event)" class="button reject">Reject</a>
-            `;
-        }
-        
-        function rejectVendor(event) {
-            event.preventDefault();
-            const button = event.target;
-            const statusSpan = button.closest('td').querySelector('.status');
-            
-            // Change status to Rejected
-            statusSpan.textContent = 'Rejected';
-            statusSpan.classList.remove('inactive', 'active');
-            statusSpan.classList.add('inactive');
-            
-            // Hide the current buttons
-            const actionButtons = button.closest('.action-buttons');
-            actionButtons.innerHTML = '<a href="#" onclick="activateVendor(event)" class="button activate">Activate</a>';
-        }
-    </script>
 </body>
 </html>

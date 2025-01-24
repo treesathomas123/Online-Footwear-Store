@@ -381,22 +381,29 @@ def view_vendors(request):
         vendor_id = request.POST.get('vendor_id')
         action = request.POST.get('action')
         
-        if vendor_id and action:  # Only proceed if both values exist
+        if vendor_id and action:
             try:
-                vendor = user_registration.objects.get(id=int(vendor_id))
+                # Get the vendor from user_registration table
+                vendor = user_registration.objects.filter(id=int(vendor_id)).first()
                 
-                if action == 'activate':
-                    vendor.is_active = True
-                    vendor.save()
-                    messages.success(request, f'Vendor {vendor.first_name} has been activated.')
+                if vendor:
+                    if action == 'activate':
+                        # Update is_active to True in user_registration table
+                        user_registration.objects.filter(id=vendor.id).update(is_active=True)
+                        messages.success(request, f'Vendor {vendor.first_name} has been activated.')
+                        
+                    elif action == 'deactivate':
+                        # Update is_active to False in user_registration table
+                        user_registration.objects.filter(id=vendor.id).update(is_active=False)
+                        messages.success(request, f'Vendor {vendor.first_name} has been deactivated.')
+                else:
+                    messages.error(request, "Vendor not found.")
                     
-                elif action == 'deactivate':
-                    vendor.is_active = False
-                    vendor.save()
-                    messages.success(request, f'Vendor {vendor.first_name} has been deactivated.')
-                
-            except (user_registration.DoesNotExist, ValueError) as e:
-                messages.error(request, f"Error processing request: {str(e)}")
+            except Exception as e:
+                messages.error(request, f"Error: {str(e)}")
+    
+    # Refresh the queryset after changes
+    vendor_details = VendorDetails.objects.select_related('vendor').all()
     
     context = {
         'vendor_details': vendor_details,
