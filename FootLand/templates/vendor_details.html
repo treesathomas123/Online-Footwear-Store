@@ -62,44 +62,49 @@
 <body>
     <div class="container">
         <h1>Vendor Details Form</h1>
-        <form id="vendorDetailsForm" action="{% url 'vendor_details' %}" method="POST" enctype="multipart/form-data">
+        <form id="vendorDetailsForm" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <label for="vendorName">Name of the Vendor</label>
-            <input type="text" id="vendorName" name="vendor_name" required>
-            <div class="error-message" id="vendorNameError">Please enter the vendor's name.</div>
-
-            <label for="shopName">Shop Name</label>
-            <input type="text" id="shopName" name="shop_name" required>
-            <div class="error-message" id="shopNameError">Please enter the shop name.</div>
-
-            <label for="address">Address</label>
-            <textarea id="address" name="address" rows="4" required></textarea>
-            <div class="error-message" id="addressError">Please enter the address.</div>
-
-            <label for="postalCode">Postal Code</label>
-            <input type="text" id="postalCode" name="postal_code" pattern="\d{5}" required>
-            <div class="error-message" id="postalCodeError">Please enter a valid 5-digit postal code.</div>
-
-            <label for="phoneNumber">Phone Number</label>
-            <input type="tel" id="phoneNumber" name="phone_number" pattern="\d{10}" required>
-            <div class="error-message" id="phoneNumberError">Please enter a valid 10-digit phone number.</div>
-
-            <label for="location">Location</label>
-            <input type="text" id="location" name="location" required>
-            <div class="error-message" id="locationError">Please enter the location.</div>
-
-            <label for="aadharCard">Aadhar Card Copy</label>
-            <input type="file" id="aadharCard" name="aadhar_card" accept="image/*" required>
-            <div class="error-message" id="aadharCardError">Please upload the Aadhar card copy.</div>
-
-            <label for="shopLicense">Shop License</label>
-            <input type="file" id="shopLicense" name="shop_license" accept="image/*" required>
-            <div class="error-message" id="shopLicenseError">Please upload the shop license.</div>
-
-            <label for="shopPhotos">Photos of Shop</label>
-            <input type="file" id="shopPhotos" name="shop_photos" accept="image/*" multiple required>
-            <div class="error-message" id="shopPhotosError">Please upload at least one photo of the shop.</div>
-
+            
+            <div class="form-group">
+                <label for="vendor_name">Vendor Name</label>
+                <input type="text" name="vendor_name" value="{{ vendor_name }}" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="shop_name">Shop Name</label>
+                <input type="text" name="shop_name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="address">Address</label>
+                <input type="text" name="address" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="postal_code">Postal Code</label>
+                <input type="text" name="postal_code" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone_number">Phone Number</label>
+                <input type="text" name="phone_number" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" name="location" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="aadhar_card">Aadhar Card</label>
+                <input type="file" name="aadhar_card" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="shop_license">Shop License</label>
+                <input type="file" name="shop_license" required>
+            </div>
+            
             <button type="submit">Submit</button>
         </form>
     </div>
@@ -111,7 +116,7 @@
             let hasError = false;
 
             // Validate vendor name
-            const vendorName = document.getElementById('vendorName');
+            const vendorName = document.getElementById('vendor_name');
             if (!vendorName.value) {
                 document.getElementById('vendorNameError').style.display = 'block';
                 hasError = true;
@@ -120,7 +125,7 @@
             }
 
             // Validate shop name
-            const shopName = document.getElementById('shopName');
+            const shopName = document.getElementById('shop_name');
             if (!shopName.value) {
                 document.getElementById('shopNameError').style.display = 'block';
                 hasError = true;
@@ -138,7 +143,7 @@
             }
 
             // Validate postal code
-            const postalCode = document.getElementById('postalCode');
+            const postalCode = document.getElementById('postal_code');
             if (!postalCode.value.match(/^\d{5}$/)) {
                 document.getElementById('postalCodeError').style.display = 'block';
                 hasError = true;
@@ -147,7 +152,7 @@
             }
 
             // Validate phone number
-            const phoneNumber = document.getElementById('phoneNumber');
+            const phoneNumber = document.getElementById('phone_number');
             if (!phoneNumber.value.match(/^\d{10}$/)) {
                 document.getElementById('phoneNumberError').style.display = 'block';
                 hasError = true;
@@ -165,7 +170,7 @@
             }
 
             // Validate Aadhar card
-            const aadharCard = document.getElementById('aadharCard');
+            const aadharCard = document.getElementById('aadhar_card');
             if (!aadharCard.files.length) {
                 document.getElementById('aadharCardError').style.display = 'block';
                 hasError = true;
@@ -174,21 +179,12 @@
             }
 
             // Validate shop license
-            const shopLicense = document.getElementById('shopLicense');
+            const shopLicense = document.getElementById('shop_license');
             if (!shopLicense.files.length) {
                 document.getElementById('shopLicenseError').style.display = 'block';
                 hasError = true;
             } else {
                 document.getElementById('shopLicenseError').style.display = 'none';
-            }
-
-            // Validate shop photos
-            const shopPhotos = document.getElementById('shopPhotos');
-            if (!shopPhotos.files.length) {
-                document.getElementById('shopPhotosError').style.display = 'block';
-                hasError = true;
-            } else {
-                document.getElementById('shopPhotosError').style.display = 'none';
             }
 
             if (hasError) {

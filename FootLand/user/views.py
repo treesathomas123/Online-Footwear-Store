@@ -37,7 +37,7 @@ from django.template.loader import render_to_string
 from .models import VendorDetails  # Ensure you have a model to store vendor details
 from django.core.files.storage import FileSystemStorage
 import os
-
+from .forms import ProductForm, VendorDetailsForm
 
 logger = logging.getLogger(__name__)
 
@@ -61,46 +61,38 @@ def user_dashboard(request):
         'user_id': user_id
     })
 
-
-
 def login(request):
     if request.method == 'POST':
         email = request.POST['email']
         password = request.POST['password']
 
-        # Check if it's admin login (hardcoded credentials)
+        # Check if it's admin login
         if email == 'admin@gmail.com' and password == 'admin@123':
+            request.session['user_type'] = 'admin'
             return redirect('admin_dashboard')
 
         try:
             user_obj = user_registration.objects.get(email=email)
-            # Check if the user is a vendor and if their account is active
-            if user_obj.user_type == 'vendor' and not user_obj.is_active:
-                messages.error(request, "Your account is awaiting approval from the admin.")
-                return redirect('login')
-
-            # Use check_password to compare the input password with the stored hashed password
             if check_password(password, user_obj.password):
-                # Store user information in the session
+                # Store ALL necessary session data
                 request.session['user_id'] = user_obj.id
-                request.session['username'] = user_obj.first_name  # Assuming you store full names as first name
+                request.session['username'] = user_obj.first_name
+                request.session['user_type'] = user_obj.user_type
+                request.session['email'] = user_obj.email
+                request.session.modified = True  # Force session save
                 
-                # Redirect based on user type
-                if user_obj.user_type == 'admin':
-                    return redirect('admin_dashboard')
-                elif user_obj.user_type == 'vendor':
-                    return redirect('vendor')  # New signup dashboard
-                elif user_obj.user_type == 'delivery_boy':
-                    return redirect('delivery_boy_dashboard')  # New delivery boy dashboard
-                else:
-                    return redirect('user_dashboard')
- 
+                print(f"Login successful - Session data: {request.session.items()}")  # Debug print
+                
+                if user_obj.user_type == 'vendor':
+                    return redirect('vendor_dashboard')  # Updated this line
+                return redirect('user_dashboard')
+
             else:
                 messages.error(request, "Invalid email or password.")
                 return redirect('login')
 
         except user_registration.DoesNotExist:
-            messages.error(request, "This account doesn't exist. Please sign up first.")
+            messages.error(request, "This account doesn't exist.")
             return redirect('login')
 
     return render(request, 'login.html')
@@ -383,27 +375,43 @@ def view_vendors(request):
         
         if vendor_id and action:
             try:
-                # Get the vendor from user_registration table
-                vendor = user_registration.objects.filter(id=int(vendor_id)).first()
+                # Get the vendor directly
+                vendor = user_registration.objects.get(id=int(vendor_id))
                 
-                if vendor:
-                    if action == 'activate':
-                        # Update is_active to True in user_registration table
-                        user_registration.objects.filter(id=vendor.id).update(is_active=True)
-                        messages.success(request, f'Vendor {vendor.first_name} has been activated.')
-                        
-                    elif action == 'deactivate':
-                        # Update is_active to False in user_registration table
-                        user_registration.objects.filter(id=vendor.id).update(is_active=False)
-                        messages.success(request, f'Vendor {vendor.first_name} has been deactivated.')
-                else:
-                    messages.error(request, "Vendor not found.")
+                if action == 'activate':
+                    # Update both is_active and user_type
+                    vendor.is_active = True
+                    vendor.user_type = 'vendor'
+                    vendor.save()
                     
+                    # Debug print
+                    print(f"Activating vendor {vendor.id}: Status={vendor.is_active}, Type={vendor.user_type}")
+                    
+                    messages.success(request, f'Vendor {vendor.first_name} has been activated.')
+                    
+                elif action == 'deactivate':
+                    vendor.is_active = False
+                    vendor.save()
+                    
+                    # Debug print
+                    print(f"Deactivating vendor {vendor.id}: Status={vendor.is_active}")
+                    
+                    messages.success(request, f'Vendor {vendor.first_name} has been deactivated.')
+                
+            except user_registration.DoesNotExist:
+                messages.error(request, "Vendor not found.")
+                print(f"Vendor not found: {vendor_id}")
             except Exception as e:
                 messages.error(request, f"Error: {str(e)}")
+                print(f"Error processing vendor {vendor_id}: {str(e)}")
     
     # Refresh the queryset after changes
     vendor_details = VendorDetails.objects.select_related('vendor').all()
+    
+    # Debug print all vendors
+    for detail in vendor_details:
+        if detail.vendor:
+            print(f"Vendor {detail.vendor.id}: {detail.vendor.first_name} - Active: {detail.vendor.is_active}")
     
     context = {
         'vendor_details': vendor_details,
@@ -414,86 +422,130 @@ def view_vendors(request):
     return render(request, 'view_vendors.html', {'vendors': vendors, 'vendor_details': vendor_details})
 
 def activate_vendor(request, vendor_id):
-    vendor = get_object_or_404(user_registration, id=vendor_id)
-    vendor.is_active = True
-    vendor.save()
-    
-    # Send email to vendor
     try:
-        send_mail(
-            'Account Activated - Footland',
-            f'Dear {vendor.first_name},\n\nYour vendor account has been activated. You can now login to your dashboard.',
-            settings.DEFAULT_FROM_EMAIL,
-            [vendor.email],
-            fail_silently=False,
-        )
-        messages.success(request, f'Vendor {vendor.first_name} has been activated and notified via email.')
+        vendor = user_registration.objects.get(id=vendor_id)
+        vendor.is_active = True
+        vendor.user_type = 'vendor'  # Ensure user type is set
+        vendor.save()
+        
+        # Debug print
+        print(f"Activated vendor {vendor_id}: Status={vendor.is_active}, Type={vendor.user_type}")
+        
+        # Send email to vendor
+        try:
+            send_mail(
+                'Account Activated - Footland',
+                f'Dear {vendor.first_name},\n\nYour vendor account has been activated. You can now login to your dashboard.',
+                settings.DEFAULT_FROM_EMAIL,
+                [vendor.email],
+                fail_silently=False,
+            )
+            messages.success(request, f'Vendor {vendor.first_name} has been activated and notified via email.')
+        except Exception as e:
+            messages.warning(request, f'Vendor activated but email notification failed: {str(e)}')
+            print(f"Email failed for vendor {vendor_id}: {str(e)}")
+    
+    except user_registration.DoesNotExist:
+        messages.error(request, "Vendor not found.")
+        print(f"Vendor not found: {vendor_id}")
     except Exception as e:
-        messages.warning(request, f'Vendor activated but email notification failed: {str(e)}')
+        messages.error(request, f"Error activating vendor: {str(e)}")
+        print(f"Error activating vendor {vendor_id}: {str(e)}")
     
     return redirect('view_vendors')
 
 def deactivate_vendor(request, vendor_id):
-    vendor = get_object_or_404(user_registration, id=vendor_id)
-    vendor.is_active = False
-    vendor.save()
-    
-    # Send email to vendor
     try:
-        send_mail(
-            'Account Deactivated - Footland',
-            f'Dear {vendor.first_name},\n\nYour vendor account has been deactivated. Please contact support for more information.',
-            settings.DEFAULT_FROM_EMAIL,
-            [vendor.email],
-            fail_silently=False,
-        )
-        messages.success(request, f'Vendor {vendor.first_name} has been deactivated and notified via email.')
+        vendor = user_registration.objects.get(id=vendor_id)
+        vendor.is_active = False
+        vendor.save()
+        
+        # Debug print
+        print(f"Deactivated vendor {vendor_id}: Status={vendor.is_active}")
+        
+        # Send email to vendor
+        try:
+            send_mail(
+                'Account Deactivated - Footland',
+                f'Dear {vendor.first_name},\n\nYour vendor account has been deactivated. Please contact support for more information.',
+                settings.DEFAULT_FROM_EMAIL,
+                [vendor.email],
+                fail_silently=False,
+            )
+            messages.success(request, f'Vendor {vendor.first_name} has been deactivated and notified via email.')
+        except Exception as e:
+            messages.warning(request, f'Vendor deactivated but email notification failed: {str(e)}')
+            print(f"Email failed for vendor {vendor_id}: {str(e)}")
+    
+    except user_registration.DoesNotExist:
+        messages.error(request, "Vendor not found.")
+        print(f"Vendor not found: {vendor_id}")
     except Exception as e:
-        messages.warning(request, f'Vendor deactivated but email notification failed: {str(e)}')
+        messages.error(request, f"Error deactivating vendor: {str(e)}")
+        print(f"Error deactivating vendor {vendor_id}: {str(e)}")
     
     return redirect('view_vendors')
 
 
 def submit_vendor_details(request):
-    if request.method == 'POST':
-        vendor_name = request.POST.get('vendor_name')
-        shop_name = request.POST.get('shop_name')
-        address = request.POST.get('address')
-        postal_code = request.POST.get('postal_code')
-        phone_number = request.POST.get('phone_number')
-        location = request.POST.get('location')
+    print("Starting submit_vendor_details")  # Debug print
+    print(f"Session data: {request.session.items()}")  # Debug print
+    
+    try:
+        # Always get the most recently registered vendor first
+        user = user_registration.objects.filter(
+            user_type='vendor',
+            is_active=False
+        ).order_by('-id').first()  # Changed to order_by('-id').first() for clarity
         
-        # Handle file uploads
-        aadhar_card = request.FILES['aadhar_card']
-        shop_license = request.FILES['shop_license']
-        shop_photos = request.FILES.getlist('shop_photos')
+        if not user:
+            messages.error(request, "No pending vendor registration found")
+            return redirect('login')
+            
+        # Update session with the most recent vendor's details
+        request.session['user_id'] = user.id
+        request.session['username'] = user.first_name
+        request.session['user_type'] = user.user_type
+        request.session['email'] = user.email
+        request.session.modified = True
 
-        # Save vendor details to the database
-        vendor_details = VendorDetails(
-            vendor_name=vendor_name,
-            shop_name=shop_name,
-            address=address,
-            postal_code=postal_code,
-            phone_number=phone_number,
-            location=location,
-            aadhar_card=aadhar_card,
-            shop_license=shop_license,
-        )
-        vendor_details.save()
+        print(f"Found most recent vendor: {user.first_name}, ID: {user.id}, Email: {user.email}")  # Debug print
 
-        # Save shop photos (if needed)
-        for photo in shop_photos:
-            # Assuming you have a model to store photos
-            vendor_details.shop_photos.create(photo=photo)
+        if request.method == 'POST':
+            try:
+                vendor_details = VendorDetails(
+                    vendor=user,
+                    vendor_name=user.first_name,  # Using the correct vendor's name
+                    shop_name=request.POST.get('shop_name'),
+                    address=request.POST.get('address'),
+                    postal_code=request.POST.get('postal_code'),
+                    phone_number=request.POST.get('phone_number'),
+                    location=request.POST.get('location'),
+                    aadhar_card=request.FILES['aadhar_card'],
+                    shop_license=request.FILES['shop_license']
+                )
+                vendor_details.save()
+                print(f"Created vendor details for: {user.first_name}")  # Debug print
 
-        messages.success(request, 'Vendor details submitted successfully! Awaiting approval.')
-        return redirect('user_dashboard')  # Redirect to a suitable page
+                messages.success(request, 'Vendor details submitted successfully! Awaiting approval.')
+                return redirect('vendor')
 
-    return render(request, 'vendor_details.html')
+            except Exception as e:
+                print(f"Error creating vendor details: {str(e)}")  # Debug print
+                messages.error(request, f"Error submitting vendor details: {str(e)}")
 
-def view_vendor_details(request):
-    vendors = VendorDetails.objects.all()  # Fetch all vendor details
-    return render(request, 'view_vendor_details.html', {'vendors': vendors})
+        # For GET request
+        context = {
+            'user': user,
+            'vendor_name': user.first_name,  # Using the correct vendor's name
+            'is_logged_in': True
+        }
+        return render(request, 'vendor_details.html', context)
+
+    except Exception as e:
+        print(f"Error in submit_vendor_details: {str(e)}")  # Debug print
+        messages.error(request, "Error accessing vendor details")
+        return redirect('login')
 
 def delivery_boy_dashboard(request):
     # Logic for delivery boy dashboard
@@ -1549,6 +1601,172 @@ def reject_vendor(request, vendor_id):
         messages.warning(request, f'Vendor rejected but email notification failed: {str(e)}')
     
     return redirect('view_vendors')
+
+from django.db.models import Avg
+
+def vendor_dashboard(request):
+    if 'user_id' not in request.session or request.session.get('user_type') != 'vendor':
+        return redirect('login')
+    
+    user_id = request.session['user_id']
+    try:
+        vendor = user_registration.objects.get(id=user_id)
+        vendor_details = VendorDetails.objects.get(vendor=vendor)
+        
+        # Get products for this vendor
+        products = Product.objects.filter(vendor=vendor)
+        products_count = products.count()
+        
+        # Get orders for vendor's products
+        orders_count = Order.objects.filter(product__in=products).count()
+        
+        # Get average rating for vendor's products
+        average_rating = Review.objects.filter(product__in=products).aggregate(
+            avg_rating=Avg('rating')
+        )['avg_rating'] or 0
+        
+        # Get recent activities (orders and reviews)
+        recent_activities = []
+        
+        # Add recent orders
+        recent_orders = Order.objects.filter(
+            product__in=products
+        ).order_by('-order_date')[:5]
+        for order in recent_orders:
+            recent_activities.append({
+                'date': order.order_date,
+                'description': f'New order for {order.product.name}',
+                'status': order.order_status
+            })
+        
+        # Add recent reviews
+        recent_reviews = Review.objects.filter(
+            product__in=products
+        ).order_by('-created_at')[:5]
+        for review in recent_reviews:
+            recent_activities.append({
+                'date': review.created_at,
+                'description': f'New review for {review.product.name}',
+                'status': f'{review.rating} stars'
+            })
+        
+        # Sort activities by date
+        recent_activities.sort(key=lambda x: x['date'], reverse=True)
+        
+        context = {
+            'vendor': vendor,
+            'vendor_details': vendor_details,
+            'products_count': products_count,
+            'orders_count': orders_count,
+            'average_rating': round(average_rating, 1),
+            'recent_activities': recent_activities[:5]  # Show only 5 most recent activities
+        }
+        return render(request, 'vendor_dashboard.html', context)
+    except (user_registration.DoesNotExist, VendorDetails.DoesNotExist) as e:
+        print(f"Error in vendor_dashboard: {str(e)}")  # Debug print
+        messages.error(request, "Vendor profile not found.")
+        return redirect('login')
+
+def vendor_profile(request):
+    if 'user_id' not in request.session:
+        return redirect('login')
+    
+    user_id = request.session['user_id']
+    try:
+        vendor = user_registration.objects.get(id=user_id)
+        vendor_details = VendorDetails.objects.get(vendor=vendor)
+        
+        if request.method == 'POST':
+            form = VendorDetailsForm(request.POST, request.FILES, instance=vendor_details)
+            if form.is_valid():
+                vendor_details = form.save(commit=False)
+                # Save coordinates and location
+                vendor_details.latitude = request.POST.get('latitude')
+                vendor_details.longitude = request.POST.get('longitude')
+                vendor_details.location = request.POST.get('location')
+                vendor_details.save()
+                messages.success(request, "Profile updated successfully!")
+                return redirect('vendor_profile')
+        else:
+            form = VendorDetailsForm(instance=vendor_details)
+        
+        context = {
+            'form': form,
+            'vendor_details': vendor_details,
+            'vendor': vendor
+        }
+        return render(request, 'vendor_profile.html', context)
+    except (user_registration.DoesNotExist, VendorDetails.DoesNotExist):
+        messages.error(request, "Vendor profile not found.")
+        return redirect('login')
+
+def vendor_change_password(request):
+    if 'user_id' not in request.session:
+        return redirect('login')
+    
+    if request.method == 'POST':
+        current_password = request.POST.get('current_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        user = user_registration.objects.get(id=request.session['user_id'])
+        
+        if not check_password(current_password, user.password):
+            messages.error(request, "Current password is incorrect.")
+            return redirect('vendor_change_password')
+            
+        if new_password != confirm_password:
+            messages.error(request, "New passwords don't match.")
+            return redirect('vendor_change_password')
+            
+        user.password = make_password(new_password)
+        user.save()
+        messages.success(request, "Password changed successfully!")
+        return redirect('vendor_dashboard')
+        
+    return render(request, 'vendor_change_password.html')
+
+def vendor_add_product(request):
+    if 'user_id' not in request.session:
+        return redirect('login')
+
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.vendor = user_registration.objects.get(id=request.session['user_id'])
+            product.save()
+            messages.success(request, "Product added successfully!")
+            return redirect('vendor_view_products')
+    else:
+        form = ProductForm()
+    
+    return render(request, 'vendor_add_product.html', {'form': form})
+
+def vendor_view_products(request):
+    vendor = user_registration.objects.get(id=request.session['user_id'])
+    products = Product.objects.filter(vendor=vendor)
+    return render(request, 'vendor_view_products.html', {'products': products})
+
+def vendor_edit_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id, vendor_id=request.session['user_id'])
+    
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Product updated successfully!")
+            return redirect('vendor_view_products')
+    else:
+        form = ProductForm(instance=product)
+    
+    return render(request, 'vendor_edit_product.html', {'form': form, 'product': product})
+
+def vendor_delete_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id, vendor_id=request.session['user_id'])
+    product.delete()
+    messages.success(request, "Product deleted successfully!")
+    return redirect('vendor_view_products')
 
 
 

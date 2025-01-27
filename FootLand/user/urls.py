@@ -71,7 +71,13 @@ urlpatterns = [
     path('submit_vendor_details/', submit_vendor_details, name='vendor_details'),
      path('activate_vendor/<int:vendor_id>/', activate_vendor, name='activate_vendor'),
     path('deactivate_vendor/<int:vendor_id>/', deactivate_vendor, name='deactivate_vendor'),
-    
+    path('vendor/dashboard/', views.vendor_dashboard, name='vendor_dashboard'),
+    path('vendor/profile/', views.vendor_profile, name='vendor_profile'),
+    path('vendor/change-password/', views.vendor_change_password, name='vendor_change_password'),
+    path('vendor/add-product/', views.vendor_add_product, name='vendor_add_product'),
+    path('vendor/view-products/', views.vendor_view_products, name='vendor_view_products'),
+    path('vendor/edit-product/<int:product_id>/', views.vendor_edit_product, name='vendor_edit_product'),
+    path('vendor/delete-product/<int:product_id>/', views.vendor_delete_product, name='vendor_delete_product'),
     
     
    

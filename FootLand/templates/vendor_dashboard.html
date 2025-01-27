@@ -1,121 +1,255 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendor Dashboard - FootLand</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <title>Vendor Dashboard</title>
+    {% load static %}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .container {
-            display: flex;
-            min-height: 100vh;
-        }
-
         .sidebar {
-            width: 250px;
-            background-color: #2c3e50;
-            color: white;
-            padding: 20px 0;
+            min-height: 100vh;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
         }
-
-        .sidebar-header {
+        
+        .profile-section {
             padding: 20px;
             text-align: center;
-            border-bottom: 1px solid #34495e;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-
-        .sidebar-menu {
-            padding: 20px 0;
+        
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            object-fit: cover;
+            margin-bottom: 15px;
         }
-
-        .menu-item {
-            padding: 15px 25px;
-            display: flex;
-            align-items: center;
-            color: white;
-            text-decoration: none;
-            transition: background-color 0.3s;
+        
+        .nav-link {
+            color: #fff;
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: all 0.3s;
         }
-
-        .menu-item:hover {
-            background-color: #34495e;
+        
+        .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            transform: translateX(5px);
         }
-
-        .menu-item i {
+        
+        .nav-link i {
             margin-right: 10px;
             width: 20px;
-            text-align: center;
         }
-
-        .main-content {
-            flex: 1;
+        
+        .dashboard-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-icon {
+            font-size: 2.5rem;
+            color: #3f51b5;
+        }
+        
+        .welcome-section {
+            background: linear-gradient(135deg, #3f51b5, #2196f3);
+            color: white;
             padding: 20px;
-            background-color: #f5f6fa;
+            border-radius: 10px;
+            margin-bottom: 30px;
         }
 
-        .header {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+        .dropdown-menu {
+            background-color: #343a40;
         }
 
-        .content {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .dropdown-item {
+            color: #fff;
         }
 
-        .active {
-            background-color: #34495e;
+        .dropdown-item:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        /* Add these styles for messages */
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+        }
+
+        .messages li {
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .messages .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .messages .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2>Vendor Panel</h2>
-            </div>
-            <div class="sidebar-menu">
-                <a href="{% url 'vendor_profile' %}" class="menu-item {% if request.resolver_match.url_name == 'vendor_profile' %}active{% endif %}">
-                    <i class="fas fa-user"></i>
-                    Profile
-                </a>
-                <a href="{% url 'vendor_add_product' %}" class="menu-item {% if request.resolver_match.url_name == 'vendor_add_product' %}active{% endif %}">
-                    <i class="fas fa-plus-circle"></i>
-                    Add Product
-                </a>
-                <a href="{% url 'vendor_view_products' %}" class="menu-item {% if request.resolver_match.url_name == 'vendor_view_products' %}active{% endif %}">
-                    <i class="fas fa-list"></i>
-                    View Products
-                </a>
-                <a href="{% url 'logout' %}" class="menu-item">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Logout
-                </a>
-            </div>
+    <div class="container-fluid">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
         </div>
-        <div class="main-content">
-            <div class="header">
-                <h1>{% block header_title %}Vendor Dashboard{% endblock %}</h1>
+        {% endif %}
+
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 bg-dark sidebar">
+                <div class="profile-section">
+                    {% if vendor_details.profile_image %}
+                        <img src="{{ vendor_details.profile_image.url }}" class="profile-image" alt="Profile Image">
+                    {% else %}
+                        <img src="{% static 'images/default-profile.png' %}" class="profile-image" alt="Default Profile">
+                    {% endif %}
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> {{ vendor.first_name }}
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'vendor_profile' %}">
+                                <i class="fas fa-cog"></i> Profile Settings
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'vendor_change_password' %}">
+                                <i class="fas fa-key"></i> Change Password
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <nav class="mt-4">
+                    <a href="{% url 'vendor_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'vendor_dashboard' %}active{% endif %}">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <a href="{% url 'vendor_add_product' %}" class="nav-link {% if request.resolver_match.url_name == 'vendor_add_product' %}active{% endif %}">
+                        <i class="fas fa-plus"></i> Add Product
+                    </a>
+                    <a href="{% url 'vendor_view_products' %}" class="nav-link {% if request.resolver_match.url_name == 'vendor_view_products' %}active{% endif %}">
+                        <i class="fas fa-box"></i> View Products
+                    </a>
+                </nav>
             </div>
-            <div class="content">
-                {% block content %}
-                {% endblock %}
+
+            <!-- Main Content -->
+            <div class="col-md-9 p-4">
+                <div class="welcome-section">
+                    <h2><i class="fas fa-store"></i> Welcome, {{ vendor.first_name }}!</h2>
+                    <p>Manage your products and store settings from your dashboard.</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="card dashboard-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-box card-icon mb-3"></i>
+                                <h5 class="card-title">Total Products</h5>
+                                <p class="card-text display-4">{{ products_count }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <div class="card dashboard-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-shopping-cart card-icon mb-3"></i>
+                                <h5 class="card-title">Total Orders</h5>
+                                <p class="card-text display-4">{{ orders_count|default:"0" }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <div class="card dashboard-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-star card-icon mb-3"></i>
+                                <h5 class="card-title">Average Rating</h5>
+                                <p class="card-text display-4">{{ average_rating|default:"0.0" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Section -->
+                <div class="card mt-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-clock"></i> Recent Activity</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Activity</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if recent_activities %}
+                                        {% for activity in recent_activities %}
+                                            <tr>
+                                                <td>{{ activity.date }}</td>
+                                                <td>{{ activity.description }}</td>
+                                                <td>{{ activity.status }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="3" class="text-center">No recent activity</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    
+    <script>
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
 </body>
 </html>

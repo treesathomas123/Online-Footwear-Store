@@ -2,7 +2,7 @@ from django import forms
 from .models import Product
 from .models import UserProfile
 from .models import Review
-
+from .models import VendorDetails
 
 
 class ProductForm(forms.ModelForm):
@@ -16,7 +16,7 @@ class ProductForm(forms.ModelForm):
 
     class Meta:
         model = Product
-        fields = ['name', 'description','material', 'brand','type', 'price', 'stock_quantity', 'image', 'size', 'color', 'category']
+        fields = ['name', 'description', 'material', 'brand', 'type', 'price', 'stock_quantity', 'image', 'size', 'color', 'category']
 
     def clean_name(self):
         name = self.cleaned_data.get('name')
@@ -88,3 +88,22 @@ class ReviewForm(forms.ModelForm):
         if not email:
             raise forms.ValidationError('Email is required.')
         return email
+    
+   
+class VendorDetailsForm(forms.ModelForm):
+    class Meta:
+        model = VendorDetails
+        fields = ['profile_image', 'vendor_name', 'shop_name', 'address', 
+                 'postal_code', 'phone_number', 'location', 'aadhar_card', 
+                 'shop_license']
+        widgets = {
+            'address': forms.Textarea(attrs={'rows': 3}),
+            'phone_number': forms.TextInput(attrs={'type': 'tel'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make file fields optional
+        self.fields['aadhar_card'].required = False
+        self.fields['shop_license'].required = False
+        self.fields['profile_image'].required = False

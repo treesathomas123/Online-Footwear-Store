@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Profile Settings</title>
+    {% load static %}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css">
+    
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        .profile-section {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+
+        .form-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .preview-image {
+            max-width: 200px;
+            margin-top: 10px;
+        }
+
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+
+        .messages li {
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .messages .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .messages .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Add this new style for the map */
+        #map {
+            height: 400px;
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 bg-dark sidebar">
+                <div class="profile-section">
+                    {% if vendor_details.profile_image %}
+                        <img src="{{ vendor_details.profile_image.url }}" class="profile-image" alt="Profile Image">
+                    {% else %}
+                        <img src="{% static 'images/default-profile.png' %}" class="profile-image" alt="Default Profile">
+                    {% endif %}
+                </div>
+                
+                <nav class="mt-4">
+                    <a href="{% url 'vendor_dashboard' %}" class="nav-link text-white">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 p-4">
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                <div class="form-section">
+                    <h2 class="mb-4"><i class="fas fa-user-edit"></i> Profile Settings</h2>
+                    
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Profile Image Upload -->
+                            <div class="col-md-12 mb-4">
+                                <label class="form-label">Profile Image</label>
+                                <input type="file" name="profile_image" class="form-control" accept="image/*" onchange="previewImage(this);">
+                                <div id="imagePreview">
+                                    {% if vendor_details.profile_image %}
+                                        <img src="{{ vendor_details.profile_image.url }}" class="preview-image mt-2" alt="Current Profile">
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Vendor Details -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Vendor Name</label>
+                                <input type="text" name="vendor_name" class="form-control" value="{{ vendor_details.vendor_name }}" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Shop Name</label>
+                                <input type="text" name="shop_name" class="form-control" value="{{ vendor_details.shop_name }}" required>
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Address</label>
+                                <textarea name="address" class="form-control" rows="3" required>{{ vendor_details.address }}</textarea>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Postal Code</label>
+                                <input type="text" name="postal_code" class="form-control" value="{{ vendor_details.postal_code }}" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" name="phone_number" class="form-control" value="{{ vendor_details.phone_number }}" required>
+                            </div>
+
+                            <!-- Documents -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Aadhar Card</label>
+                                {% if vendor_details.aadhar_card %}
+                                    <p class="text-muted">Current: {{ vendor_details.aadhar_card.name }}</p>
+                                {% endif %}
+                                <input type="file" name="aadhar_card" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Shop License</label>
+                                {% if vendor_details.shop_license %}
+                                    <p class="text-muted">Current: {{ vendor_details.shop_license.name }}</p>
+                                {% endif %}
+                                <input type="file" name="shop_license" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                            </div>
+
+                            <!-- Location -->
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Location</label>
+                                <input type="text" id="searchInput" name="location" class="form-control" 
+                                       value="{{ vendor_details.location }}" required readonly>
+                                <div id="map"></div>
+                                <input type="hidden" id="latitude" name="latitude" 
+                                       value="{{ vendor_details.latitude|default:'11.2588' }}">
+                                <input type="hidden" id="longitude" name="longitude" 
+                                       value="{{ vendor_details.longitude|default:'75.7804' }}">
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    
+    <!-- Map initialization script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get initial coordinates
+            const defaultLat = parseFloat(document.getElementById('latitude').value) || 11.2588;
+            const defaultLng = parseFloat(document.getElementById('longitude').value) || 75.7804;
+            
+            // Initialize map
+            const map = L.map('map').setView([defaultLat, defaultLng], 13);
+            
+            // Add map tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Add marker
+            let marker = L.marker([defaultLat, defaultLng], {
+                draggable: true
+            }).addTo(map);
+            
+            // Add search control
+            const geocoder = L.Control.geocoder({
+                defaultMarkGeocode: false
+            })
+            .on('markgeocode', function(e) {
+                const latlng = e.geocode.center;
+                marker.setLatLng(latlng);
+                map.setView(latlng, 16);
+                updateLocationInfo(latlng.lat, latlng.lng);
+            })
+            .addTo(map);
+            
+            // Update location when marker is dragged
+            marker.on('dragend', function() {
+                const position = marker.getLatLng();
+                updateLocationInfo(position.lat, position.lng);
+            });
+            
+            // Function to update location information
+            function updateLocationInfo(lat, lng) {
+                document.getElementById('latitude').value = lat;
+                document.getElementById('longitude').value = lng;
+                
+                // Get address using reverse geocoding
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.display_name) {
+                            document.getElementById('searchInput').value = data.display_name;
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+            
+            // Initial location update
+            updateLocationInfo(defaultLat, defaultLng);
+        });
+    </script>
+
+    <!-- Your image preview script -->
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var previewDiv = document.getElementById('imagePreview');
+                    previewDiv.innerHTML = '<img src="' + e.target.result + '" class="preview-image mt-2" alt="Profile Preview">';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+</body>
+</html> 

@@ -51,6 +51,13 @@ class Product(models.Model):
     SIZE_CHOICES = [
             ('6', '6'), ('7', '7'), ('8', '8'), ('9', '9'), ('10', '10')
                     ]
+    vendor = models.ForeignKey(
+        user_registration, 
+        on_delete=models.CASCADE, 
+        related_name='products',
+        null=True,  # Add this to make it nullable temporarily
+        blank=True  # Add this to make it optional in forms
+    )
 
     name = models.CharField(max_length=100)
     description = models.TextField(max_length=1000)
@@ -63,7 +70,7 @@ class Product(models.Model):
     size = models.CharField(max_length=20, default='6', null=True, choices=SIZE_CHOICES)  # Allow null if not provided
     color = models.CharField(max_length=20)
     category = models.CharField(max_length=10, choices=CATEGORY_CHOICES)
-
+   
     def __str__(self):
         return self.name
     
@@ -148,23 +155,75 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order for {self.product.name} by {self.user.first_name}"
+    
+# class VendorDetails(models.Model):
+#     vendor = models.OneToOneField(
+#         'user_registration',
+#         on_delete=models.CASCADE,
+#         related_name='vendor_details',
+#         db_column='vendor_id',  # Explicitly specify the database column name
+#         null=False,
+#         blank=True
+#     )
+    
+#     vendor_name = models.CharField(max_length=100)
+#     shop_name = models.CharField(max_length=100)
+#     address = models.TextField()
+#     postal_code = models.CharField(max_length=10)
+#     phone_number = models.CharField(max_length=15)
+#     location = models.CharField(max_length=100)
+#     aadhar_card = models.FileField(upload_to='vendor_documents/')
+#     shop_license = models.FileField(upload_to='vendor_documents/')
+#     shop_photos = models.ManyToManyField('ShopPhoto', blank=True)
+
+#     class Meta:
+#         db_table = 'user_vendordetails'  # Specify the exact table name
+
+#     def __str__(self):
+#         return f"{self.vendor_name} - {self.shop_name}"
+
+#     def get_aadhar_url(self):
+#         if self.aadhar_card:
+#             return self.aadhar_card.url
+#         return None
+
+#     def get_license_url(self):
+#         if self.shop_license:
+#             return self.shop_license.url
+#         return None
+
+# class ShopPhoto(models.Model):
+#     photo = models.ImageField(upload_to='vendor_photos/')
+
+#     def __str__(self):
+#         return f"Photo {self.id}"
+
+
 class VendorDetails(models.Model):
-    vendor = models.OneToOneField(
+    vendor = models.ForeignKey(
         'user_registration',
         on_delete=models.CASCADE,
+        db_column='vendor_id',  # Explicitly specify the column name
         related_name='vendor_details',
-        null=True,  # Allow null values
-        blank=True  # Allow blank in forms
+        null=True,
+        blank=True
     )
+    
     vendor_name = models.CharField(max_length=100)
     shop_name = models.CharField(max_length=100)
     address = models.TextField()
     postal_code = models.CharField(max_length=10)
     phone_number = models.CharField(max_length=15)
-    location = models.CharField(max_length=100)
+    location = models.CharField(max_length=255)  # Increased length for full addresses
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     aadhar_card = models.FileField(upload_to='vendor_documents/')
     shop_license = models.FileField(upload_to='vendor_documents/')
-    shop_photos = models.ManyToManyField('ShopPhoto', blank=True)
+    profile_image = models.ImageField(upload_to='vendor_profiles/', null=True, blank=True)
+    
+
+    class Meta:
+        db_table = 'user_vendordetails'  # Specify the exact table name
 
     def __str__(self):
         return f"{self.vendor_name} - {self.shop_name}"
@@ -178,9 +237,3 @@ class VendorDetails(models.Model):
         if self.shop_license:
             return self.shop_license.url
         return None
-
-class ShopPhoto(models.Model):
-    photo = models.ImageField(upload_to='vendor_photos/')
-
-    def __str__(self):
-        return f"Photo {self.id}"
