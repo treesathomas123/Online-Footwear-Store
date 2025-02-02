@@ -17,6 +17,7 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('signup/', views.signup, name='signup'),
    
+   
     path('product/', views.product, name='product'), # home page product
     path('womens/', views.womens, name='womens'), # womens product page
     path('mens/', views.mens, name='mens'),

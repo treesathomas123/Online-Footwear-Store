@@ -61,14 +61,67 @@ class Product(models.Model):
 
     name = models.CharField(max_length=100)
     description = models.TextField(max_length=1000)
-    material = models.TextField(max_length=1000)
-    brand = models.CharField(max_length=50)
-    type = models.CharField(max_length=50)
+    MATERIAL_CHOICES = [
+        ('leather', 'Leather'),
+        ('textiles', 'Textiles'),
+        ('synthetics', 'Synthetics'),
+        ('rubber', 'Rubber'),
+        ('foam', 'Foam'),
+        ('plastic', 'Plastic'),
+    ]
+    
+    BRAND_CHOICES = [
+        ('adidas', 'Adidas'),
+        ('reebok', 'Reebok'),
+        ('woodland', 'Woodland'),
+        ('skechers', 'Skechers'),
+        ('clarks', 'Clarks'),
+        ('crocs', 'Crocs'),
+        ('red_tape', 'Red Tape'),
+        ('sparx', 'Sparx'),
+        ('liberty', 'Liberty'),
+        ('paragon', 'Paragon'),
+        ('bata', 'Bata'),
+        ('mochi', 'Mochi'),
+        ('metro', 'Metro'),
+        ('marc_loire', 'Marc Loire'),
+        ('shoetopia', 'Shoetopia'),
+        ('xe_looks', 'XE Looks'),
+        ('bata_comfit', 'Bata Comfit'),
+        ('trase', 'TRASE'),
+        ('mosac', 'MOSAC'),
+    ]
+    
+    TYPE_CHOICES = [
+        ('casual_shoes', 'Casual Shoes'),
+        ('formal_shoes', 'Formal Shoes'),
+        ('party_wear', 'Party Wear'),
+        ('heels', 'Heels'),
+        ('slippers', 'Slippers'),
+        ('flats', 'Flats'),
+    ]
+    
+    COLOR_CHOICES = [
+        ('black', 'Black'),
+        ('white', 'White'),
+        ('brown', 'Brown'),
+        ('blue', 'Blue'),
+        ('red', 'Red'),
+        ('green', 'Green'),
+        ('grey', 'Grey'),
+        ('tan', 'Tan'),
+        ('navy', 'Navy'),
+        ('multicolor', 'Multicolor'),
+    ]
+
+    material = models.CharField(max_length=50, choices=MATERIAL_CHOICES)
+    brand = models.CharField(max_length=50, choices=BRAND_CHOICES)
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock_quantity = models.IntegerField()
     image = models.ImageField(upload_to='products/')
     size = models.CharField(max_length=20, default='6', null=True, choices=SIZE_CHOICES)  # Allow null if not provided
-    color = models.CharField(max_length=20)
+    color = models.CharField(max_length=20, choices=COLOR_CHOICES)
     category = models.CharField(max_length=10, choices=CATEGORY_CHOICES)
    
     def __str__(self):

@@ -15,7 +15,7 @@ from django.core.mail import send_mail
 from .models import UserProfile
 from .forms import ProfileForm
 from django.http import JsonResponse
-#from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt
 import json
 import logging
 from django.http import HttpResponseRedirect
@@ -38,6 +38,9 @@ from .models import VendorDetails  # Ensure you have a model to store vendor det
 from django.core.files.storage import FileSystemStorage
 import os
 from .forms import ProductForm, VendorDetailsForm
+from django.core.cache import cache
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -1767,9 +1770,3 @@ def vendor_delete_product(request, product_id):
     product.delete()
     messages.success(request, "Product deleted successfully!")
     return redirect('vendor_view_products')
-
-
-
-
-
-

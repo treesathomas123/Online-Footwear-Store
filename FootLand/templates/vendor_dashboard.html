@@ -109,6 +109,54 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+
+        .whatsapp-chat {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .whatsapp-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #25D366;
+            color: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .whatsapp-button:hover {
+            background-color: #128C7E;
+        }
+
+        .whatsapp-button i {
+            font-size: 24px;
+        }
+
+        .chat-tooltip {
+            display: none;
+            position: absolute;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 999;
+        }
+
+        .whatsapp-button:hover .chat-tooltip {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -251,5 +299,11 @@
             return new bootstrap.Tooltip(tooltipTriggerEl)
         })
     </script>
+    <div class="whatsapp-chat">
+        <a href="https://web.whatsapp.com/send?phone=918590865713" class="whatsapp-button" id="whatsappButton">
+            <i class="fab fa-whatsapp"></i>
+            <span class="chat-tooltip">Chat with us!</span>
+        </a>
+    </div>
 </body>
 </html>

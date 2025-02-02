@@ -225,6 +225,47 @@
         button[type="submit"] { animation-delay: 0.7s; }
         .divider { animation-delay: 0.8s; }
         .google-btn { animation-delay: 0.9s; }
+
+        #verifyEmailBtn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 5px 10px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            height: 70%;
+            margin: 0;
+            line-height: 1;
+            min-height: 25px;
+            max-height: 30px;
+            width: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #verifyEmailBtn:hover {
+            background: var(--secondary-color);
+        }
+
+        #email {
+            padding-right: 70px !important;
+        }
+
+        .email-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        #otpContainer {
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -241,6 +282,7 @@
                 
                 <input type="text" name="last_name" id="lastName" placeholder="Last Name" required>
                 <div class="error-message" id="lastNameError">Last name should start with a capital letter and contain only letters.</div>
+
                 
                 <input type="email" name="email" id="email" placeholder="Email" required>
                 <div class="error-message" id="emailError">Please enter a valid email address.</div>
@@ -351,6 +393,6 @@
                 event.preventDefault();  // Prevent form submission if there are validation errors
             }
         });
-    </script>
+       </script>
 </body>
 </html>
