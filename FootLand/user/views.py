@@ -41,12 +41,18 @@ from .forms import ProductForm, VendorDetailsForm
 from django.core.cache import cache
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+import google.generativeai as genai
 
 logger = logging.getLogger(__name__)
 
 # Dictionary to temporarily store user pins
 user_pins = {}
 
+# Set your Gemini API Key
+API_KEY = "AIzaSyDWn4zpv79RDS6Yz2JkEto_-7Hq3dYlvFg"
+
+# Configure the Generative AI client
+genai.configure(api_key=API_KEY)
 
 def home(request):
     return render(request, 'home.html')
@@ -1323,6 +1329,11 @@ def email_order_summary(user_profile, orders):
         ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
         ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#e8eaf6')),
         ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#424242')),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('TOPPADDING', (0, 1), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
         ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#c5cae9'))
     ]))
     elements.append(table)
@@ -1757,7 +1768,8 @@ def vendor_edit_product(request, product_id):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
-            form.save()
+            product = form.save()  # Save the product instance
+            product.check_stock_alert()  # Check stock after editing
             messages.success(request, "Product updated successfully!")
             return redirect('vendor_view_products')
     else:
@@ -1770,3 +1782,32 @@ def vendor_delete_product(request, product_id):
     product.delete()
     messages.success(request, "Product deleted successfully!")
     return redirect('vendor_view_products')
+
+@csrf_exempt
+def chatbot_response(request):
+    if request.method == 'POST':
+        user_message = request.POST.get('message')
+
+        if not user_message:
+            return JsonResponse({'error': 'No message provided'}, status=400)
+
+        try:
+            # Create the model
+            model = genai.GenerativeModel("gemini-1.5-flash")
+
+            # Generate content using the user message
+            response = model.generate_content(user_message)
+
+            # Extract the AI response
+            ai_message = response.text
+
+            # Log the AI response for debugging
+            logger.info(f"Gemini API response: {ai_message}")
+
+            return JsonResponse({'response': ai_message})
+
+        except Exception as e:
+            logger.error(f"Error fetching response from Gemini API: {str(e)}")
+            return JsonResponse({'error': 'Failed to get response from AI'}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=400)

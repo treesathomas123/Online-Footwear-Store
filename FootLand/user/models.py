@@ -136,9 +136,53 @@ class Product(models.Model):
     def reduce_stock(self, quantity):
         self.stock_quantity -= quantity
         self.save()
+        
+      # Add these new methods
+    def check_stock_alert(self):
+        """Check if stock is low and send alerts."""
+        if self.stock_quantity < 5:  # Threshold for low stock
+            try:
+                self.send_email_alert()
+                # Commenting out the WhatsApp alert
+                # self.send_whatsapp_alert()  # Remove or comment this line
+            except Exception as e:
+                print(f"Error sending alerts: {str(e)}")
 
+    def send_email_alert(self):
+        """Send email alert to vendor."""
+        if self.vendor:
+            subject = f"Low Stock Alert - {self.name}"
+            message = f"""
+            Dear Vendor,
 
+            This is to inform you that the stock for {self.name} is running low.
 
+            Current Stock: {self.stock_quantity}
+            Product Details:
+            - Brand: {self.brand}
+            - Type: {self.type}
+            - Size: {self.size}
+            - Color: {self.color}
+
+            Please take necessary action to replenish the stock.
+
+            Best regards,
+            FootLand Team
+            """
+            
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [self.vendor.email],
+                    fail_silently=False
+                )
+                print(f"Stock alert email sent to {self.vendor.email}")
+            except Exception as e:
+                print(f"Failed to send email: {str(e)}")
+
+   
 class UserProfile(models.Model):
     user = models.OneToOneField(user_registration, on_delete=models.CASCADE)  # Use your custom user model
     address = models.CharField(max_length=255, null=True, blank=True)

@@ -79,7 +79,7 @@ urlpatterns = [
     path('vendor/view-products/', views.vendor_view_products, name='vendor_view_products'),
     path('vendor/edit-product/<int:product_id>/', views.vendor_edit_product, name='vendor_edit_product'),
     path('vendor/delete-product/<int:product_id>/', views.vendor_delete_product, name='vendor_delete_product'),
-    
+    path('chatbot/', views.chatbot_response, name='chatbot_response'),  # URL for the chatbot
     
    
      

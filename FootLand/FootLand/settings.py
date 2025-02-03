@@ -160,13 +160,13 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-# Email settings (configure as per your email provider)
+# Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # Use your SMTP host
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'treesathomas2025@mca.ajce.in'  # Replace with your email
-EMAIL_HOST_PASSWORD = 'Zoom#2023'  # Replace with your email password
+EMAIL_HOST_USER = 'footland2002@gmail.com'  # Your email address
+EMAIL_HOST_PASSWORD = 'oude dgwq cqgf trbj'  # Your App Password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
