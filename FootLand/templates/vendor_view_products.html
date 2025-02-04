@@ -124,7 +124,7 @@
                             <div>
                                 <h5>{{ product.name }}</h5>
                                 <p><strong>Description:</strong> {{ product.description }}</p>
-                                <p><strong>Price:</strong> ${{ product.price }}</p>
+                                <p><strong>Price:</strong> Rs.{{ product.price }}</p>
                                 <p><strong>Stock Quantity:</strong> {{ product.stock_quantity }}</p>
                                 <p><strong>Category:</strong> {{ product.category }}</p>
                                 <a href="{% url 'vendor_edit_product' product.id %}" class="btn btn-warning btn-sm">
