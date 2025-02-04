@@ -17,17 +17,19 @@
             max-width: 600px;
             margin: auto;
             background: white;
-            padding: 20px;
+            padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
         }
         h1 {
             text-align: center;
             margin-bottom: 20px;
+            color: #1a237e; /* Dark blue color */
         }
         label {
             display: block;
-            margin: 10px 0 5px;
+            margin: 15px 0 5px;
+            font-weight: 500;
         }
         input[type="text"],
         input[type="email"],
@@ -35,27 +37,46 @@
         input[type="file"],
         textarea {
             width: 100%;
-            padding: 10px;
-            margin-bottom: 5px;
+            padding: 12px;
+            margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus {
+            border-color: #1a237e; /* Dark blue color on focus */
+            outline: none;
         }
         .error-message {
             color: red;
             font-size: 12px;
             display: none;
+            margin-top: -8px;
+            margin-bottom: 10px;
         }
         button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             background-color: #4CAF50; /* Green */
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #45a049; /* Darker green on hover */
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
@@ -69,120 +90,140 @@
             <input type="text" name="vendor_name" value="{{ vendor_name }}" readonly>
 
             <label for="shop_name">Shop Name</label>
-            <input type="text" name="shop_name" id="shop_name" required minlength="3" maxlength="50">
-            <span class="error-message" id="shopNameError">Shop name must be between 3 and 50 characters.</span>
+            <input type="text" name="shop_name" id="shop_name" required>
+            <span class="error-message" id="shopNameError">Shop name must start with a capital letter and contain only letters.</span>
 
             <label for="address">Address</label>
-            <input type="text" name="address" id="address" required minlength="10" maxlength="100">
-            <span class="error-message" id="addressError">Address must be between 10 and 100 characters.</span>
+            <input type="text" name="address" id="address" required>
+            <span class="error-message" id="addressError">Address must contain letters and numbers only, and be a maximum of 20 characters.</span>
 
             <label for="postal_code">Postal Code</label>
-            <input type="text" name="postal_code" id="postal_code" required pattern="\d{6}">
-            <span class="error-message" id="postalCodeError">Postal Code must be exactly 6 digits.</span>
+            <input type="text" name="postal_code" id="postal_code" required>
+            <span class="error-message" id="postalCodeError">Postal Code must be exactly 6 digits and start with 5, 6, or 7.</span>
 
             <label for="phone_number">Phone Number</label>
-            <input type="text" name="phone_number" id="phone_number" required pattern="\d{10}">
-            <span class="error-message" id="phoneNumberError">Phone Number must be exactly 10 digits.</span>
+            <input type="text" name="phone_number" id="phone_number" required>
+            <span class="error-message" id="phoneNumberError">Phone Number must be exactly 10 digits and contain no letters or special symbols.</span>
 
             <label for="location">Location</label>
-            <input type="text" name="location" id="location" required minlength="3" maxlength="50">
-            <span class="error-message" id="locationError">Location must be between 3 and 50 characters.</span>
+            <input type="text" name="location" id="location" required>
+            <span class="error-message" id="locationError">Location must contain letters and numbers only, and be a maximum of 20 characters.</span>
 
-            <label for="aadhar_card">Aadhar Card (PDF only)</label>
-            <input type="file" name="aadhar_card" id="aadhar_card" required accept=".pdf">
-            <span class="error-message" id="aadharCardError">Only PDF files are allowed.</span>
+            <label for="aadhar_card">Aadhar Card (JPG, PNG, PDF only)</label>
+            <input type="file" name="aadhar_card" id="aadhar_card" required accept=".jpg, .jpeg, .png, .pdf">
+            <span class="error-message" id="aadharCardError">Only JPG, PNG, and PDF files are allowed.</span>
 
-            <label for="shop_license">Shop License (PDF only)</label>
-            <input type="file" name="shop_license" id="shop_license" required accept=".pdf">
-            <span class="error-message" id="shopLicenseError">Only PDF files are allowed.</span>
+            <label for="shop_license">Shop License (JPG, PNG, PDF only)</label>
+            <input type="file" name="shop_license" id="shop_license" required accept=".jpg, .jpeg, .png, .pdf">
+            <span class="error-message" id="shopLicenseError">Only JPG, PNG, and PDF files are allowed.</span>
+
+            <label>
+                <input type="checkbox" id="declaration" required> I declare that I am submitting original documents.
+            </label>
+            <span class="error-message" id="declarationError">You must declare that you are submitting original documents.</span>
 
             <button type="submit">Submit</button>
         </form>
     </div>
 
     <script>
-        document.getElementById('vendorDetailsForm').addEventListener('submit', function(event) {
+        const form = document.getElementById('vendorDetailsForm');
+
+        function validateField(id, regex, errorMessageId) {
+            const field = document.getElementById(id);
+            const errorMessage = document.getElementById(errorMessageId);
+            if (!regex.test(field.value)) {
+                errorMessage.style.display = 'block';
+            } else {
+                errorMessage.style.display = 'none';
+            }
+        }
+
+        // Add event listeners for real-time validation
+        document.getElementById('shop_name').addEventListener('input', function() {
+            validateField('shop_name', /^[A-Z][a-zA-Z]*$/, 'shopNameError');
+        });
+
+        document.getElementById('address').addEventListener('input', function() {
+            validateField('address', /^[a-zA-Z0-9\s]{1,20}$/, 'addressError');
+        });
+
+        document.getElementById('postal_code').addEventListener('input', function() {
+            validateField('postal_code', /^[5-7]\d{5}$/, 'postalCodeError');
+        });
+
+        document.getElementById('phone_number').addEventListener('input', function() {
+            validateField('phone_number', /^\d{10}$/, 'phoneNumberError');
+        });
+
+        document.getElementById('location').addEventListener('input', function() {
+            validateField('location', /^[a-zA-Z0-9\s]{1,20}$/, 'locationError');
+        });
+
+        // Validate file uploads
+        document.getElementById('aadhar_card').addEventListener('change', function() {
+            const file = this.files[0];
+            const errorMessage = document.getElementById('aadharCardError');
+            if (!file) {
+                errorMessage.style.display = 'block';
+            } else {
+                errorMessage.style.display = 'none';
+                if (!/\.(jpg|jpeg|png|pdf)$/i.test(file.name)) {
+                    errorMessage.innerText = 'Only JPG, PNG, and PDF files are allowed.';
+                    errorMessage.style.display = 'block';
+                } else {
+                    errorMessage.style.display = 'none';
+                }
+            }
+        });
+
+        document.getElementById('shop_license').addEventListener('change', function() {
+            const file = this.files[0];
+            const errorMessage = document.getElementById('shopLicenseError');
+            if (!file) {
+                errorMessage.style.display = 'block';
+            } else {
+                errorMessage.style.display = 'none';
+                if (!/\.(jpg|jpeg|png|pdf)$/i.test(file.name)) {
+                    errorMessage.innerText = 'Only JPG, PNG, and PDF files are allowed.';
+                    errorMessage.style.display = 'block';
+                } else {
+                    errorMessage.style.display = 'none';
+                }
+            }
+        });
+
+        // Validate declaration checkbox
+        document.getElementById('declaration').addEventListener('change', function() {
+            const errorMessage = document.getElementById('declarationError');
+            if (!this.checked) {
+                errorMessage.style.display = 'block';
+            } else {
+                errorMessage.style.display = 'none';
+            }
+        });
+
+        form.addEventListener('submit', function(event) {
             let hasError = false;
 
-            function validateField(id, regex, errorMessageId) {
-                const field = document.getElementById(id);
-                if (!regex.test(field.value)) {
-                    document.getElementById(errorMessageId).style.display = 'block';
-                    hasError = true;
-                } else {
-                    document.getElementById(errorMessageId).style.display = 'none';
-                }
-            }
-
-            // Validate shop name length
-            const shopName = document.getElementById('shop_name').value;
-            if (shopName.length < 3 || shopName.length > 50) {
-                document.getElementById('shopNameError').style.display = 'block';
-                hasError = true;
-            } else {
-                document.getElementById('shopNameError').style.display = 'none';
-            }
-
-            // Validate address length
-            const address = document.getElementById('address').value;
-            if (address.length < 10 || address.length > 100) {
-                document.getElementById('addressError').style.display = 'block';
-                hasError = true;
-            } else {
-                document.getElementById('addressError').style.display = 'none';
-            }
-
-            // Validate postal code
-            validateField('postal_code', /^\d{6}$/, 'postalCodeError');
-            // Validate phone number
+            // Validate all fields before submission
+            validateField('shop_name', /^[A-Z][a-zA-Z]*$/, 'shopNameError');
+            validateField('address', /^[a-zA-Z0-9\s]{1,20}$/, 'addressError');
+            validateField('postal_code', /^[5-7]\d{5}$/, 'postalCodeError');
             validateField('phone_number', /^\d{10}$/, 'phoneNumberError');
-            
-            // Validate location length
-            const location = document.getElementById('location').value;
-            if (location.length < 3 || location.length > 50) {
-                document.getElementById('locationError').style.display = 'block';
-                hasError = true;
-            } else {
-                document.getElementById('locationError').style.display = 'none';
-            }
+            validateField('location', /^[a-zA-Z0-9\s]{1,20}$/, 'locationError');
 
-            // Validate file uploads
-            const aadharCardFile = document.getElementById('aadhar_card').files[0];
-            const shopLicenseFile = document.getElementById('shop_license').files[0];
-
-            if (!aadharCardFile) {
-                document.getElementById('aadharCardError').style.display = 'block';
-                hasError = true;
-            } else {
-                document.getElementById('aadharCardError').style.display = 'none';
-                // Check file type
-                if (aadharCardFile.type !== 'application/pdf') {
-                    document.getElementById('aadharCardError').innerText = 'Only PDF files are allowed.';
-                    document.getElementById('aadharCardError').style.display = 'block';
+            // Check if any error messages are displayed
+            const errorMessages = document.querySelectorAll('.error-message');
+            errorMessages.forEach(function(message) {
+                if (message.style.display === 'block') {
                     hasError = true;
                 }
-            }
+            });
 
-            if (!shopLicenseFile) {
-                document.getElementById('shopLicenseError').style.display = 'block';
-                hasError = true;
-            } else {
-                document.getElementById('shopLicenseError').style.display = 'none';
-                // Check file type
-                if (shopLicenseFile.type !== 'application/pdf') {
-                    document.getElementById('shopLicenseError').innerText = 'Only PDF files are allowed.';
-                    document.getElementById('shopLicenseError').style.display = 'block';
-                    hasError = true;
-                }
-            }
-
-            // Placeholder for server-side document verification
+            // Prevent form submission if there are errors
             if (hasError) {
                 event.preventDefault();
-            } else {
-                // Here you can add an AJAX call to verify documents on the server
-                // For example:
-                // verifyDocuments(aadharCardFile, shopLicenseFile);
             }
         });
     </script>
