@@ -36,9 +36,14 @@
         textarea {
             width: 100%;
             padding: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
             border: 1px solid #ccc;
             border-radius: 4px;
+        }
+        .error-message {
+            color: red;
+            font-size: 12px;
+            display: none;
         }
         button {
             width: 100%;
@@ -52,11 +57,6 @@
         button:hover {
             background-color: #45a049;
         }
-        .error-message {
-            color: red;
-            font-size: 12px;
-            display: none; /* Hidden by default */
-        }
     </style>
 </head>
 <body>
@@ -65,77 +65,67 @@
         <form id="vendorDetailsForm" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             
-            <div class="form-group">
-                <label for="vendor_name">Vendor Name</label>
-                <input type="text" name="vendor_name" value="{{ vendor_name }}" readonly>
-            </div>
-            
-            <div class="form-group">
-                <label for="shop_name">Shop Name</label>
-                <input type="text" name="shop_name" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="address">Address</label>
-                <input type="text" name="address" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="postal_code">Postal Code</label>
-                <input type="text" name="postal_code" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="phone_number">Phone Number</label>
-                <input type="text" name="phone_number" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="location">Location</label>
-                <input type="text" name="location" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="aadhar_card">Aadhar Card</label>
-                <input type="file" name="aadhar_card" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="shop_license">Shop License</label>
-                <input type="file" name="shop_license" required>
-            </div>
-            
+            <label for="vendor_name">Vendor Name</label>
+            <input type="text" name="vendor_name" value="{{ vendor_name }}" readonly>
+
+            <label for="shop_name">Shop Name</label>
+            <input type="text" name="shop_name" id="shop_name" required minlength="3" maxlength="50">
+            <span class="error-message" id="shopNameError">Shop name must be between 3 and 50 characters.</span>
+
+            <label for="address">Address</label>
+            <input type="text" name="address" id="address" required minlength="10" maxlength="100">
+            <span class="error-message" id="addressError">Address must be between 10 and 100 characters.</span>
+
+            <label for="postal_code">Postal Code</label>
+            <input type="text" name="postal_code" id="postal_code" required pattern="\d{6}">
+            <span class="error-message" id="postalCodeError">Postal Code must be exactly 6 digits.</span>
+
+            <label for="phone_number">Phone Number</label>
+            <input type="text" name="phone_number" id="phone_number" required pattern="\d{10}">
+            <span class="error-message" id="phoneNumberError">Phone Number must be exactly 10 digits.</span>
+
+            <label for="location">Location</label>
+            <input type="text" name="location" id="location" required minlength="3" maxlength="50">
+            <span class="error-message" id="locationError">Location must be between 3 and 50 characters.</span>
+
+            <label for="aadhar_card">Aadhar Card (PDF only)</label>
+            <input type="file" name="aadhar_card" id="aadhar_card" required accept=".pdf">
+            <span class="error-message" id="aadharCardError">Only PDF files are allowed.</span>
+
+            <label for="shop_license">Shop License (PDF only)</label>
+            <input type="file" name="shop_license" id="shop_license" required accept=".pdf">
+            <span class="error-message" id="shopLicenseError">Only PDF files are allowed.</span>
+
             <button type="submit">Submit</button>
         </form>
     </div>
 
     <script>
-        const form = document.getElementById('vendorDetailsForm');
-
-        form.addEventListener('submit', function(event) {
+        document.getElementById('vendorDetailsForm').addEventListener('submit', function(event) {
             let hasError = false;
 
-            // Validate vendor name
-            const vendorName = document.getElementById('vendor_name');
-            if (!vendorName.value) {
-                document.getElementById('vendorNameError').style.display = 'block';
-                hasError = true;
-            } else {
-                document.getElementById('vendorNameError').style.display = 'none';
+            function validateField(id, regex, errorMessageId) {
+                const field = document.getElementById(id);
+                if (!regex.test(field.value)) {
+                    document.getElementById(errorMessageId).style.display = 'block';
+                    hasError = true;
+                } else {
+                    document.getElementById(errorMessageId).style.display = 'none';
+                }
             }
 
-            // Validate shop name
-            const shopName = document.getElementById('shop_name');
-            if (!shopName.value) {
+            // Validate shop name length
+            const shopName = document.getElementById('shop_name').value;
+            if (shopName.length < 3 || shopName.length > 50) {
                 document.getElementById('shopNameError').style.display = 'block';
                 hasError = true;
             } else {
                 document.getElementById('shopNameError').style.display = 'none';
             }
 
-            // Validate address
-            const address = document.getElementById('address');
-            if (!address.value) {
+            // Validate address length
+            const address = document.getElementById('address').value;
+            if (address.length < 10 || address.length > 100) {
                 document.getElementById('addressError').style.display = 'block';
                 hasError = true;
             } else {
@@ -143,54 +133,58 @@
             }
 
             // Validate postal code
-            const postalCode = document.getElementById('postal_code');
-            if (!postalCode.value.match(/^\d{5}$/)) {
-                document.getElementById('postalCodeError').style.display = 'block';
-                hasError = true;
-            } else {
-                document.getElementById('postalCodeError').style.display = 'none';
-            }
-
+            validateField('postal_code', /^\d{6}$/, 'postalCodeError');
             // Validate phone number
-            const phoneNumber = document.getElementById('phone_number');
-            if (!phoneNumber.value.match(/^\d{10}$/)) {
-                document.getElementById('phoneNumberError').style.display = 'block';
-                hasError = true;
-            } else {
-                document.getElementById('phoneNumberError').style.display = 'none';
-            }
-
-            // Validate location
-            const location = document.getElementById('location');
-            if (!location.value) {
+            validateField('phone_number', /^\d{10}$/, 'phoneNumberError');
+            
+            // Validate location length
+            const location = document.getElementById('location').value;
+            if (location.length < 3 || location.length > 50) {
                 document.getElementById('locationError').style.display = 'block';
                 hasError = true;
             } else {
                 document.getElementById('locationError').style.display = 'none';
             }
 
-            // Validate Aadhar card
-            const aadharCard = document.getElementById('aadhar_card');
-            if (!aadharCard.files.length) {
+            // Validate file uploads
+            const aadharCardFile = document.getElementById('aadhar_card').files[0];
+            const shopLicenseFile = document.getElementById('shop_license').files[0];
+
+            if (!aadharCardFile) {
                 document.getElementById('aadharCardError').style.display = 'block';
                 hasError = true;
             } else {
                 document.getElementById('aadharCardError').style.display = 'none';
+                // Check file type
+                if (aadharCardFile.type !== 'application/pdf') {
+                    document.getElementById('aadharCardError').innerText = 'Only PDF files are allowed.';
+                    document.getElementById('aadharCardError').style.display = 'block';
+                    hasError = true;
+                }
             }
 
-            // Validate shop license
-            const shopLicense = document.getElementById('shop_license');
-            if (!shopLicense.files.length) {
+            if (!shopLicenseFile) {
                 document.getElementById('shopLicenseError').style.display = 'block';
                 hasError = true;
             } else {
                 document.getElementById('shopLicenseError').style.display = 'none';
+                // Check file type
+                if (shopLicenseFile.type !== 'application/pdf') {
+                    document.getElementById('shopLicenseError').innerText = 'Only PDF files are allowed.';
+                    document.getElementById('shopLicenseError').style.display = 'block';
+                    hasError = true;
+                }
             }
 
+            // Placeholder for server-side document verification
             if (hasError) {
-                event.preventDefault(); // Prevent form submission if there are validation errors
+                event.preventDefault();
+            } else {
+                // Here you can add an AJAX call to verify documents on the server
+                // For example:
+                // verifyDocuments(aadharCardFile, shopLicenseFile);
             }
         });
     </script>
 </body>
-</html> 
+</html>
