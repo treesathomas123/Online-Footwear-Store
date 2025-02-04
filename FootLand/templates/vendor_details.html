@@ -168,8 +168,8 @@
                 errorMessage.style.display = 'block';
             } else {
                 errorMessage.style.display = 'none';
-                if (!/\.(jpg|jpeg|png|pdf)$/i.test(file.name)) {
-                    errorMessage.innerText = 'Only JPG, PNG, and PDF files are allowed.';
+                if (!/\.(jpg|jpeg|png)$/i.test(file.name)) {
+                    errorMessage.innerText = 'Only JPG, PNG files are allowed.';
                     errorMessage.style.display = 'block';
                 } else {
                     errorMessage.style.display = 'none';
