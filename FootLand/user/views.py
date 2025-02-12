@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login as auth_login
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import user_registration
+from .models import user_registration, DeliveryBoy
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.decorators import login_required
 from .models import Product,Cart,Wishlist, Review,Order
@@ -42,6 +42,11 @@ from django.core.cache import cache
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 import google.generativeai as genai
+from django.db.models import Count, Sum
+from django.utils import timezone
+from datetime import timedelta
+import random
+import string
 
 logger = logging.getLogger(__name__)
 
@@ -92,8 +97,11 @@ def login(request):
                 
                 print(f"Login successful - Session data: {request.session.items()}")  # Debug print
                 
+                # Updated redirect logic
                 if user_obj.user_type == 'vendor':
-                    return redirect('vendor_dashboard')  # Updated this line
+                    return redirect('vendor_dashboard')
+                elif user_obj.user_type == 'delivery_boy':
+                    return redirect('delivery_boy_dashboard')  # Make sure this URL pattern exists
                 return redirect('user_dashboard')
 
             else:
@@ -1811,3 +1819,195 @@ def chatbot_response(request):
             return JsonResponse({'error': 'Failed to get response from AI'}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+def vendor_performance_analytics(request):
+    if 'user_id' not in request.session or request.session.get('user_type') != 'vendor':
+        return redirect('login')
+
+    user_id = request.session['user_id']
+    vendor = user_registration.objects.get(id=user_id)
+
+    # Best-selling products
+    best_selling_products = Order.objects.values('product__name').annotate(total_sales=Count('id')).order_by('-total_sales')[:5]
+
+    # Revenue trends (daily, weekly, monthly)
+    daily_revenue = Order.objects.filter(order_date__date=timezone.now()).aggregate(Sum('total_price'))['total_price__sum'] or 0
+    weekly_revenue = Order.objects.filter(order_date__gte=timezone.now() - timedelta(days=7)).aggregate(Sum('total_price'))['total_price__sum'] or 0
+    monthly_revenue = Order.objects.filter(order_date__month=timezone.now().month).aggregate(Sum('total_price'))['total_price__sum'] or 0
+
+    # Stock status
+    low_stock_products = Product.objects.filter(stock_quantity__lt=5).values('name', 'stock_quantity')
+
+    context = {
+        'vendor': vendor,
+        'best_selling_products': best_selling_products,
+        'daily_revenue': daily_revenue,
+        'weekly_revenue': weekly_revenue,
+        'monthly_revenue': monthly_revenue,
+        'low_stock_products': low_stock_products,
+    }
+    return render(request, 'vendor_performance_analytics.html', context)
+
+def generate_password():
+    # Generate a random password
+    characters = string.ascii_letters + string.digits + "!@#$%^&*"
+    password = ''.join(random.choice(characters) for i in range(12))
+    # Ensure password contains at least one of each required type
+    password = (random.choice(string.ascii_uppercase) +
+               random.choice(string.ascii_lowercase) +
+               random.choice(string.digits) +
+               random.choice("!@#$%^&*") +
+               password)
+    return password
+
+
+def add_delivery_boy(request):
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+        
+        # Validation
+        if not all([first_name, last_name, email, phone]):
+            messages.error(request, 'All fields are required!')
+            return render(request, 'add_delivery_boy.html')
+        
+        try:
+            validate_email(email)
+        except ValidationError:
+            messages.error(request, 'Invalid email format!')
+            return render(request, 'add_delivery_boy.html')
+            
+        # Improved phone number validation
+        # Remove any spaces or special characters from phone number
+        phone = ''.join(filter(str.isdigit, phone))
+        
+        # Check if phone number is valid (10 digits)
+        if len(phone) != 10:
+            messages.error(request, 'Phone number must be 10 digits!')
+            return render(request, 'add_delivery_boy.html')
+        
+        # Check if email already exists
+        if user_registration.objects.filter(email=email).exists():
+            messages.error(request, 'Email already exists!')
+            return render(request, 'add_delivery_boy.html')
+        
+        # Generate a random password
+        password = generate_password()
+        
+        try:
+            # Create new delivery boy user in user_registration with is_active=True
+            new_user = user_registration(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                password=make_password(password),
+                user_type='delivery_boy',
+                is_active=True  # Set this to True
+            )
+            new_user.save()
+            
+            # Create delivery boy record with is_active=True
+            delivery_boy = DeliveryBoy(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                phone_number=phone,
+                is_active=True  # Make sure this matches user_registration
+            )
+            delivery_boy.save()
+            
+            # Send email with credentials
+            subject = 'Welcome to Footland - Delivery Partner'
+            message = f"""
+            Hello {first_name},
+
+            Welcome to Footland! You have been registered as a delivery partner.
+
+            Your login credentials are:
+            Email: {email}
+            Password: {password}
+
+            Please login using these credentials at: http://127.0.0.1:8000/login
+
+            For security reasons, we recommend changing your password after your first login.
+
+            Best regards,
+            Footland Team
+            """
+            
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+            messages.success(request, 'Delivery boy registered successfully! Login credentials have been sent to their email.')
+            return redirect('view_delivery_boys')
+            
+        except Exception as e:
+            messages.error(request, f'Registration failed: {str(e)}')
+            return render(request, 'add_delivery_boy.html')
+    
+    return render(request, 'add_delivery_boy.html')
+
+
+def view_delivery_boys(request):
+    delivery_boys = DeliveryBoy.objects.all().order_by('-created_at')
+    return render(request, 'view_delivery_boys.html', {'delivery_boys': delivery_boys})
+
+
+def toggle_delivery_boy_status(request, delivery_boy_id):
+    if request.method == 'POST':
+        try:
+            # Get both delivery boy and user records
+            delivery_boy = DeliveryBoy.objects.get(id=delivery_boy_id)
+            user = user_registration.objects.get(email=delivery_boy.email)
+            
+            # Toggle status
+            delivery_boy.is_active = not delivery_boy.is_active
+            delivery_boy.save()
+            
+            # Update user_registration status as well
+            user.is_active = delivery_boy.is_active
+            user.save()
+            
+            status = "unblocked" if delivery_boy.is_active else "blocked"
+            messages.success(request, f'Delivery boy has been {status} successfully.')
+            
+            # Send email notification
+            subject = f'Your Footland Account Status Update'
+            message = f"""
+            Hello {delivery_boy.first_name},
+
+            Your Footland delivery partner account has been {status}.
+            {"You can now login to your account." if delivery_boy.is_active else "Your account access has been temporarily suspended."}
+
+            If you have any questions, please contact the administrator.
+
+            Best regards,
+            Footland Team
+            """
+            
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [delivery_boy.email],
+                    fail_silently=True,
+                )
+            except Exception as e:
+                messages.warning(request, f'Status updated but email notification failed: {str(e)}')
+                
+        except DeliveryBoy.DoesNotExist:
+            messages.error(request, 'Delivery boy not found.')
+        except user_registration.DoesNotExist:
+            messages.error(request, 'User registration not found.')
+        except Exception as e:
+            messages.error(request, f'An error occurred: {str(e)}')
+    
+    return redirect('view_delivery_boys')

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Delivery Boys - Footland</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f4f7fc;
+            --text-color: #333;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+
+        .add-button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .add-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+        }
+
+        tr:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .status-active {
+            color: var(--success-color);
+            font-weight: 500;
+        }
+
+        .status-inactive {
+            color: var(--error-color);
+            font-weight: 500;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-block {
+            background-color: #fff0f0;
+            color: var(--error-color);
+        }
+
+        .btn-unblock {
+            background-color: #f0fff0;
+            color: var(--success-color);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .success {
+            background-color: #e8f5e9;
+            color: var(--success-color);
+            border: 1px solid #c8e6c9;
+        }
+
+        .error {
+            background-color: #fde8e8;
+            color: var(--error-color);
+            border: 1px solid #fbd5d5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-motorcycle"></i> Delivery Boys</h1>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <a href="{% url 'add_delivery_boy' %}" class="add-button">
+            <i class="fas fa-plus"></i> Add New Delivery Boy
+        </a>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-user"></i> Name</th>
+                        <th><i class="fas fa-envelope"></i> Email</th>
+                        <th><i class="fas fa-phone"></i> Phone</th>
+                        <th><i class="fas fa-check-circle"></i> Status</th>
+                        <th><i class="fas fa-calendar"></i> Joined Date</th>
+                        <th><i class="fas fa-cog"></i> Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for delivery_boy in delivery_boys %}
+                    <tr>
+                        <td>{{ delivery_boy.first_name }} {{ delivery_boy.last_name }}</td>
+                        <td>{{ delivery_boy.email }}</td>
+                        <td>{{ delivery_boy.phone_number }}</td>
+                        <td>
+                            {% if delivery_boy.is_active %}
+                            <span class="status-active"><i class="fas fa-check-circle"></i> Active</span>
+                            {% else %}
+                            <span class="status-inactive"><i class="fas fa-ban"></i> Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ delivery_boy.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <form method="POST" action="{% url 'toggle_delivery_boy_status' delivery_boy.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                {% if delivery_boy.is_active %}
+                                    <button type="submit" class="btn btn-block">
+                                        <i class="fas fa-ban"></i> Block
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-unblock">
+                                        <i class="fas fa-check-circle"></i> Unblock
+                                    </button>
+                                {% endif %}
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center;">No delivery boys found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html> 

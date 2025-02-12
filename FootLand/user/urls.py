@@ -9,6 +9,7 @@ from .views import add_profile, change_password
 from .views import add_to_cart, view_cart, update_cart, place_order
 from .views import billing_details, save_billing_details, billing_details2  # Import the new view
 from .views import admin_dashboard, view_orders , view_vendors ,submit_vendor_details , activate_vendor, deactivate_vendor  # Import the new views
+from .views import vendor_performance_analytics
 
 
 urlpatterns = [
@@ -80,9 +81,11 @@ urlpatterns = [
     path('vendor/edit-product/<int:product_id>/', views.vendor_edit_product, name='vendor_edit_product'),
     path('vendor/delete-product/<int:product_id>/', views.vendor_delete_product, name='vendor_delete_product'),
     path('chatbot/', views.chatbot_response, name='chatbot_response'),  # URL for the chatbot
-    
-   
-     
+    path('vendor/performance-analytics/', vendor_performance_analytics, name='vendor_performance_analytics'),
+    path('add_delivery_boy/', views.add_delivery_boy, name='add_delivery_boy'),
+    path('view_delivery_boys/', views.view_delivery_boys, name='view_delivery_boys'),
+    path('toggle_delivery_boy_status/<int:delivery_boy_id>/', views.toggle_delivery_boy_status, name='toggle_delivery_boy_status'),
+    path('delivery_boy_dashboard/', views.delivery_boy_dashboard, name='delivery_boy_dashboard'),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

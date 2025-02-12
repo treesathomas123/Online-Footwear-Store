@@ -208,6 +208,9 @@
                     <a href="{% url 'vendor_view_products' %}" class="nav-link {% if request.resolver_match.url_name == 'vendor_view_products' %}active{% endif %}">
                         <i class="fas fa-box"></i> View Products
                     </a>
+                    <a href="{% url 'vendor_performance_analytics' %}" class="nav-link {% if request.resolver_match.url_name == 'vendor_performance_analytics' %}active{% endif %}">
+                        <i class="fas fa-chart-line"></i> Performance Analytics
+                    </a>
                 </nav>
             </div>
 
@@ -269,9 +272,17 @@
                                     {% if recent_activities %}
                                         {% for activity in recent_activities %}
                                             <tr>
-                                                <td>{{ activity.date }}</td>
+                                                <td>{{ activity.date|date:"Y-m-d H:i" }}</td>
                                                 <td>{{ activity.description }}</td>
-                                                <td>{{ activity.status }}</td>
+                                                <td>
+                                                    {% if activity.status == "Completed" %}
+                                                        <span class="badge bg-success">{{ activity.status }}</span>
+                                                    {% elif activity.status == "Pending" %}
+                                                        <span class="badge bg-warning text-dark">{{ activity.status }}</span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger">{{ activity.status }}</span>
+                                                    {% endif %}
+                                                </td>
                                             </tr>
                                         {% endfor %}
                                     {% else %}
