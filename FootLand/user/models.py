@@ -191,6 +191,7 @@ class UserProfile(models.Model):
     state = models.CharField(max_length=50, null=True, blank=True)
     street = models.CharField(max_length=100, null=True, blank=True)
     house_no = models.CharField(max_length=50, null=True, blank=True)
+    district = models.CharField(max_length=50, null=True, blank=True)  # New field
 
     def __str__(self):
         return f'{self.user.username} Profile'
@@ -348,3 +349,35 @@ class DeliveryBoy(models.Model):
 
     class Meta:
         verbose_name_plural = "Delivery Boys"
+
+class DeliveryBoyProfile(models.Model):
+    delivery_boy = models.OneToOneField(DeliveryBoy, on_delete=models.CASCADE, related_name='profile')
+    profile_picture = models.ImageField(upload_to='delivery_boy_profiles/', null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+    postal_code = models.CharField(max_length=10, null=True, blank=True)
+    district = models.CharField(max_length=50, null=True, blank=True)
+   
+    nationality = models.CharField(max_length=50, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.delivery_boy.first_name}'s Profile"
+
+class DeliveryAssignment(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('out_for_delivery', 'Out for Delivery'),
+        ('delivered', 'Delivered'),
+        ('failed', 'Failed')
+    ]
+    
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    delivery_boy = models.ForeignKey(DeliveryBoy, on_delete=models.CASCADE)
+    assigned_date = models.DateField(auto_now_add=True)
+    delivery_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Order {self.order.id} - {self.delivery_boy.first_name}"
+
+    class Meta:
+        unique_together = ('order', 'delivery_boy', 'assigned_date')

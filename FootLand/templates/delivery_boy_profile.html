@@ -1,0 +1,66 @@
+{% extends 'delivery_boy_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="profile-container">
+    <h2>Delivery Boy Profile</h2>
+    
+    <div class="profile-details">
+        <p><strong>First Name:</strong> {{ delivery_boy.first_name }}</p>
+        <p><strong>Last Name:</strong> {{ delivery_boy.last_name }}</p>
+        <p><strong>Email:</strong> {{ delivery_boy.email }}</p>
+        <p><strong>Phone Number:</strong> {{ delivery_boy.phone_number }}</p>
+        <p><strong>Address:</strong> {{ profile.address|default:"Not provided" }}</p>
+        <p><strong>Postal Code:</strong> {{ profile.postal_code|default:"Not provided" }}</p>
+        <p><strong>District:</strong> {{ profile.district|default:"Not provided" }}</p>
+        <p><strong>Nationality:</strong> {{ profile.nationality|default:"Not provided" }}</p>
+    </div>
+    
+    <div class="action-buttons">
+        <a href="{% url 'delivery_boy_change_password' %}" class="edit-btn">Change Password</a>
+        <a href="{% url 'delivery_boy_profile_edit' %}" class="edit-btn">Edit Profile</a>
+    </div>
+</div>
+
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: #f9f9f9; /* Light background for contrast */
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: #4f46e5; /* Primary color */
+    }
+
+    .profile-details p {
+        margin: 0.5rem 0;
+        font-size: 1.1rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+    }
+
+    .edit-btn {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 0.8rem 2rem;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .edit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %} 

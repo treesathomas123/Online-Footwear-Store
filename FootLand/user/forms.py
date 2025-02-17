@@ -33,9 +33,32 @@ class ProductForm(forms.ModelForm):
         return description
 
 class ProfileForm(forms.ModelForm):
+    DISTRICT_CHOICES = [
+        ('', 'Select District'),
+        ('Alappuzha', 'Alappuzha'),
+        ('Ernakulam', 'Ernakulam'),
+        ('Idukki', 'Idukki'),
+        ('Kannur', 'Kannur'),
+        ('Kasaragod', 'Kasaragod'),
+        ('Kollam', 'Kollam'),
+        ('Kottayam', 'Kottayam'),
+        ('Kozhikode', 'Kozhikode'),
+        ('Malappuram', 'Malappuram'),
+        ('Palakkad', 'Palakkad'),
+        ('Pathanamthitta', 'Pathanamthitta'),
+        ('Thiruvananthapuram', 'Thiruvananthapuram'),
+        ('Thrissur', 'Thrissur'),
+        ('Wayanad', 'Wayanad'),
+    ]
+
+    district = forms.ChoiceField(
+        choices=DISTRICT_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = UserProfile
-        fields = ['address', 'pincode', 'phone', 'state', 'street', 'house_no']
+        fields = ['address', 'pincode', 'phone', 'state', 'street', 'house_no', 'district']
 
         widgets = {
             'address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your address'}),

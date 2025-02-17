@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login as auth_login
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import user_registration, DeliveryBoy
+from .models import user_registration, DeliveryBoy, DeliveryAssignment, Order
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.decorators import login_required
 from .models import Product,Cart,Wishlist, Review,Order
@@ -44,9 +44,11 @@ from django.core.exceptions import ValidationError
 import google.generativeai as genai
 from django.db.models import Count, Sum
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, date
 import random
 import string
+from .models import DeliveryBoyProfile
+from django.core.paginator import Paginator
 
 logger = logging.getLogger(__name__)
 
@@ -565,9 +567,91 @@ def submit_vendor_details(request):
         return redirect('login')
 
 def delivery_boy_dashboard(request):
-    # Logic for delivery boy dashboard
-    return render(request, 'delivery_boy_dashboard.html')
+    if 'email' not in request.session:
+        return redirect('login')
+    
+    delivery_boy = get_object_or_404(DeliveryBoy, email=request.session['email'])
+    context = {
+        'delivery_boy': delivery_boy
+    }
+    return render(request, 'delivery_boy_dashboard.html', context)
 
+def active_deliveries(request):
+    if 'email' not in request.session:
+        return redirect('login')
+    
+    delivery_boy = get_object_or_404(DeliveryBoy, email=request.session['email'])
+    today = date.today()
+    
+    # Get today's assignments count
+    todays_assignments_count = DeliveryAssignment.objects.filter(
+        delivery_boy=delivery_boy,
+        assigned_date=today
+    ).count()
+    
+    # Get active deliveries for today
+    active_deliveries = DeliveryAssignment.objects.filter(
+        delivery_boy=delivery_boy,
+        assigned_date=today,
+        delivery_status__in=['pending', 'out_for_delivery']
+    ).select_related('order')
+    
+    # Auto-assign new orders if less than 10 deliveries
+    if todays_assignments_count < 10:
+        delivery_boy_district = delivery_boy.profile.district
+        
+        # Get unassigned orders from the same district
+        unassigned_orders = Order.objects.filter(
+            user__userprofile__district=delivery_boy_district,
+            order_status='Processing'
+        ).exclude(
+            deliveryassignment__assigned_date=today
+        )[:10 - todays_assignments_count]
+        
+        # Create new assignments
+        for order in unassigned_orders:
+            DeliveryAssignment.objects.create(
+                order=order,
+                delivery_boy=delivery_boy,
+                delivery_status='pending'
+            )
+            order.order_status = 'Out for Delivery'
+            order.save()
+        
+        # Refresh active deliveries after new assignments
+        active_deliveries = DeliveryAssignment.objects.filter(
+            delivery_boy=delivery_boy,
+            assigned_date=today,
+            delivery_status__in=['pending', 'out_for_delivery']
+        ).select_related('order')
+    
+    context = {
+        'active_deliveries': active_deliveries,
+        'delivery_count': todays_assignments_count,
+        'remaining_slots': max(0, 10 - todays_assignments_count)
+    }
+    
+    return render(request, 'active_deliveries.html', context)
+
+def update_delivery_status(request, assignment_id):
+    if request.method == 'POST' and 'email' in request.session:
+        status = request.POST.get('status')
+        assignment = get_object_or_404(DeliveryAssignment, id=assignment_id)
+        
+        if status in ['delivered', 'failed']:
+            assignment.delivery_status = status
+            assignment.save()
+            
+            # Update order status
+            if status == 'delivered':
+                assignment.order.order_status = 'Delivered'
+            else:
+                assignment.order.order_status = 'Delivery Failed'
+            assignment.order.save()
+            
+            messages.success(request, f"Delivery status updated to {status}")
+        
+    return redirect('active_deliveries')
 
 from django.db.models import Count, Sum
 
@@ -1004,6 +1088,7 @@ def save_billing_details(request):
             user_profile.street = request.POST['street']
             user_profile.house_no = request.POST['house_no']
             user_profile.state = request.POST['state']
+            user_profile.district = request.POST['district']
             user_profile.save()
 
             messages.success(request, "Billing details updated successfully!")
@@ -1540,12 +1625,25 @@ def save_for_later(request, product_id):
     if 'user_id' in request.session:
         user_id = request.session['user_id']
         user = get_object_or_404(user_registration, id=user_id)
-        cart_item = get_object_or_404(Cart, user=user, product_id=product_id)
-
-        cart_item.saved_for_later = True
-        cart_item.save()
         
-        messages.success(request, f"{cart_item.product.name} has been saved for later.")
+        try:
+            # Get the first cart item for this product and user
+            cart_item = Cart.objects.filter(
+                user=user, 
+                product_id=product_id, 
+                saved_for_later=False
+            ).first()
+            
+            if cart_item:
+                cart_item.saved_for_later = True
+                cart_item.save()
+                messages.success(request, f"{cart_item.product.name} has been saved for later.")
+            else:
+                messages.error(request, "Item not found in cart.")
+                
+        except Exception as e:
+            messages.error(request, "Error saving item for later.")
+            
         return redirect('cart')
     else:
         messages.error(request, "You need to log in to save items for later.")
@@ -2011,3 +2109,165 @@ def toggle_delivery_boy_status(request, delivery_boy_id):
             messages.error(request, f'An error occurred: {str(e)}')
     
     return redirect('view_delivery_boys')
+
+def delivery_boy_profile_view(request):
+    try:
+        # Get the delivery boy using email from session
+        delivery_boy = DeliveryBoy.objects.get(email=request.session.get('email'))
+        profile, created = DeliveryBoyProfile.objects.get_or_create(delivery_boy=delivery_boy)
+        
+        # Add print statements for debugging
+        print(f"Delivery Boy: {delivery_boy.first_name} {delivery_boy.last_name}")
+        print(f"Email: {delivery_boy.email}")
+        print(f"Phone: {delivery_boy.phone_number}")
+        
+        context = {
+            'delivery_boy': delivery_boy,
+            'profile': profile
+        }
+        return render(request, 'delivery_boy_profile.html', context)
+    except DeliveryBoy.DoesNotExist:
+        messages.error(request, 'Profile not found')
+        return redirect('login')
+
+def delivery_boy_profile_edit(request):
+    try:
+        delivery_boy = DeliveryBoy.objects.get(email=request.session.get('email'))
+        profile, created = DeliveryBoyProfile.objects.get_or_create(delivery_boy=delivery_boy)
+        
+        if request.method == 'POST':
+            # Update delivery boy details
+            delivery_boy.first_name = request.POST.get('first_name')
+            delivery_boy.last_name = request.POST.get('last_name')
+            delivery_boy.phone_number = request.POST.get('phone_number')
+            delivery_boy.save()
+            
+            # Update profile details
+            profile.address = request.POST.get('address')
+            profile.postal_code = request.POST.get('postal_code')
+            profile.district = request.POST.get('district')
+            
+            profile.nationality = request.POST.get('nationality')
+            
+            if 'profile_picture' in request.FILES:
+                profile.profile_picture = request.FILES['profile_picture']
+            
+            profile.save()
+            messages.success(request, 'Profile updated successfully')
+            return redirect('delivery_boy_profile')
+        
+        context = {
+            'profile': profile,
+            'delivery_boy': delivery_boy
+        }
+        return render(request, 'delivery_boy_profile_edit.html', context)
+    except DeliveryBoy.DoesNotExist:
+        messages.error(request, 'Profile not found')
+        return redirect('login')
+
+def delivery_boy_change_password(request):
+    try:
+        # Get the delivery boy instance
+        delivery_boy = DeliveryBoy.objects.get(email=request.session.get('email'))
+        
+        # Get the user_registration instance associated with the delivery boy
+        user = user_registration.objects.get(email=delivery_boy.email)
+        
+        profile = DeliveryBoyProfile.objects.get(delivery_boy=delivery_boy)
+
+        if request.method == 'POST':
+            current_password = request.POST.get('current_password')
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+            
+            # Check the password against the user_registration model
+            if not user.check_password(current_password):
+                messages.error(request, 'Current password is incorrect')
+                return redirect('delivery_boy_change_password')
+                
+            if new_password != confirm_password:
+                messages.error(request, 'New passwords do not match')
+                return redirect('delivery_boy_change_password')
+                
+            user.set_password(new_password)
+            user.save()
+            messages.success(request, 'Password changed successfully')
+            return redirect('delivery_boy_profile')
+
+        context = {
+            'profile': profile,
+            'delivery_boy': delivery_boy
+        }
+        return render(request, 'delivery_boy_change_password.html', context)
+    
+    except DeliveryBoy.DoesNotExist:
+        messages.error(request, 'Delivery Boy not found')
+        return redirect('login')
+    except DeliveryBoyProfile.DoesNotExist:
+        messages.error(request, 'Profile not found')
+        return redirect('login')
+    except user_registration.DoesNotExist:
+        messages.error(request, 'User not found')
+        return redirect('login')
+    
+from datetime import datetime, timedelta
+from django.db.models import Count
+
+def delivery_history(request):
+    if 'email' not in request.session:
+        return redirect('login')
+    
+    delivery_boy = get_object_or_404(DeliveryBoy, email=request.session['email'])
+    
+    # Get filter parameters from request
+    date_filter = request.GET.get('date_filter', 'all')
+    status_filter = request.GET.get('status_filter', 'all')
+    
+    # Base queryset
+    deliveries = DeliveryAssignment.objects.filter(delivery_boy=delivery_boy)
+    
+    # Apply date filter
+    if date_filter == 'today':
+        deliveries = deliveries.filter(assigned_date=date.today())
+    elif date_filter == 'week':
+        week_ago = date.today() - timedelta(days=7)
+        deliveries = deliveries.filter(assigned_date__gte=week_ago)
+    elif date_filter == 'month':
+        month_ago = date.today() - timedelta(days=30)
+        deliveries = deliveries.filter(assigned_date__gte=month_ago)
+    
+    # Apply status filter
+    if status_filter != 'all':
+        deliveries = deliveries.filter(delivery_status=status_filter)
+    
+    # Order by most recent first
+    deliveries = deliveries.order_by('-assigned_date', '-updated_at')
+    
+    # Get delivery statistics
+    stats = {
+        'total_deliveries': deliveries.count(),
+        'successful_deliveries': deliveries.filter(delivery_status='delivered').count(),
+        'failed_deliveries': deliveries.filter(delivery_status='failed').count(),
+        'success_rate': round(
+            (deliveries.filter(delivery_status='delivered').count() / deliveries.count() * 100)
+            if deliveries.count() > 0 else 0,
+            1
+        )
+    }
+    
+    # Pagination
+    paginator = Paginator(deliveries, 10)  # Show 10 deliveries per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'delivery_boy': delivery_boy,
+        'page_obj': page_obj,
+        'stats': stats,
+        'date_filter': date_filter,
+        'status_filter': status_filter
+    }
+    
+    return render(request, 'delivery_history.html', context)
+    
+  

@@ -86,6 +86,12 @@ urlpatterns = [
     path('view_delivery_boys/', views.view_delivery_boys, name='view_delivery_boys'),
     path('toggle_delivery_boy_status/<int:delivery_boy_id>/', views.toggle_delivery_boy_status, name='toggle_delivery_boy_status'),
     path('delivery_boy_dashboard/', views.delivery_boy_dashboard, name='delivery_boy_dashboard'),
+    path('delivery_boy/profile/', views.delivery_boy_profile_view, name='delivery_boy_profile'),
+    path('delivery_boy/profile/edit/', views.delivery_boy_profile_edit, name='delivery_boy_profile_edit'),
+    path('delivery_boy/change_password/', views.delivery_boy_change_password, name='delivery_boy_change_password'),
+    path('delivery_boy/active_deliveries/', views.active_deliveries, name='active_deliveries'),
+    path('delivery_boy/update_status/<int:assignment_id>/', views.update_delivery_status, name='update_delivery_status'),
+    path('delivery_boy/delivery_history/', views.delivery_history, name='delivery_history'),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
