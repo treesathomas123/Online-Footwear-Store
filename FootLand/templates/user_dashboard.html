@@ -326,7 +326,7 @@ nav {
                             <i class="fa fa-star-half-o" ></i>
                             <i class="fa fa-star-o" ></i>
                         </div>
-                        <p>$50.00</p>
+                        <span class="price">₹50.00</span>
                     </div>
                     <div class="col-4">
                         <a href="{% url 'products_details'%}"><img src="{% static 'images/product-2.jpg'%}"></a>
@@ -338,7 +338,7 @@ nav {
                             <i class="fa fa-star" ></i>
                             <i class="fa fa-star-half-o" ></i>
                         </div>
-                        <p>$35.00</p>
+                        <span class="price">₹35.00</span>
                     </div>
                     <div class="col-4">
                         <a href="{% url 'products_details'%}"><img src="{% static 'images/product-3.jpg'%}"></a>
@@ -350,7 +350,7 @@ nav {
                             <i class="fa fa-star" ></i>
                             <i class="fa fa-star-o" ></i>
                         </div>
-                        <p>$15.00</p>
+                        <span class="price">₹15.00</span>
                     </div>
                     <div class="col-4">
                         <a href="{% url 'products_details'%}"><img src="{% static 'images/product-10.jpg'%}"></a>
@@ -362,7 +362,7 @@ nav {
                             <i class="fa fa-star-o" ></i>
                             <i class="fa fa-star-o" ></i>
                         </div>
-                        <p>$48.00</p>
+                        <span class="price">₹48.00</span>
                     </div>  
                 </div>
             
@@ -382,7 +382,7 @@ nav {
                                 {% endif %}
                             {% endfor %}
                         </div>
-                        <p>${{ product.price }}</p>
+                        <span class="price">₹{{ product.price }}</span>
                     </div>
                     {% if forloop.counter|divisibleby:4 and not forloop.last %}
                     </div><div class="row">
