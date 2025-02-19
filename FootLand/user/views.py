@@ -198,7 +198,14 @@ def user_dashboard(request):
         else:
             first_name = 'Guest'
 
-        return render(request, 'user_dashboard.html', {'first_name': first_name})
+        # Get the 8 most recent products
+        latest_products = Product.objects.all().order_by('-id')[:8]
+        
+        context = {
+            'first_name': first_name,
+            'latest_products': latest_products,
+        }
+        return render(request, 'user_dashboard.html', context)
     else:
         return redirect('login')
 

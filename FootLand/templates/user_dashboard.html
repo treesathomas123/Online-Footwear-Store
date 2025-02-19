@@ -367,245 +367,632 @@ nav {
                 </div>
             
             
-             <h2 class="title" >Latest Products</h2>
+             <h2 class="title">Latest Products</h2>
                 <div class="row">
+                    {% for product in latest_products %}
                     <div class="col-4">
-                        <a href="{% url 'products_details'%}"><img src="{% static 'images/product-5.jpg'%}"></a>
-                        <h4>Flat Heel gray hoes</h4>
+                        <a href="{% url 'products_details' %}"><img src="{{ product.image.url }}" alt="{{ product.name }}"></a>
+                        <h4>{{ product.name }}</h4>
                         <div class="rating">
-                            <!--(before this added awesome4 cdn font link to the head)added a cdn link by searching font awesome4 icon and from the site  search the star entering the first option and getting a link of this fa-star*-->
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star-half-o" ></i>
-                            <i class="fa fa-star-o" ></i>
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= product.reviews.all|length %}
+                                    <i class="fa fa-star"></i>
+                                {% else %}
+                                    <i class="fa fa-star-o"></i>
+                                {% endif %}
+                            {% endfor %}
                         </div>
-                        <p>$50.00</p>
+                        <p>${{ product.price }}</p>
                     </div>
-                    <div class="col-4">
-                        <a href="{% url 'products_details'%}"><img src="{% static 'images/product-3.jpg'%}"></a>
-                        <h4>Lace-Fastening black Shoes</h4>
-                        <div class="rating">
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star-half-o" ></i>
-                        </div>
-                        <p>$21.00</p>
-                    </div>
-                    <div class="col-4">
-                        <a href="{% url 'products_details'%}"><img src="{% static 'images/product-7.jpg'%}"></a>
-                        <h4>HRX Men's cotton socks</h4>
-                        <div class="rating">
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star-o" ></i>
-                        </div>
-                        <p>$09.00</p>
-                    </div>
-                    <div class="col-4">
-                        <a href="{% url 'products_details'%}"><img src="{% static 'images/product-2.jpg'%}"></a>
-                        <h4>Lace-Up Running Shoes</h4>
-                        <div class="rating">
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star-o" ></i>
-                            <i class="fa fa-star-o" ></i>
-                        </div>
-                        <p>$35.00</p>
-                    </div>  
-                </div>
-            <!--new row for the latest product-->
-                <div class="row">
-                    <div class="col-4">
-                        <a href="{% url 'products_details'%}"><img src="{% static 'images/product-7.jpg'%}"></a>
-                        <h4>HRX cotton socks</h4>
-                        <div class="rating">
-                            <!--(before this added awesome4 cdn font link to the head)added a cdn link by searching font awesome4 icon and from the site  search the star entering the first option and getting a link of this fa-star*-->
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star-half-o" ></i>
-                            <i class="fa fa-star-o" ></i>
-                        </div>
-                        <p>$10.00</p>
-                    </div>
-                    <div class="col-4">
-                        <a href="{% url 'products_details'%}"><img src="{% static 'images/product-7.jpg'%}"></a>
-                        <h4>Flat Lace-Fastening Shoes</h4>
-                        <div class="rating">
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star-half-o" ></i>
-                        </div>
-                        <p>$48.00</p>
-                    </div>
-                    <div class="col-4">
-                        <a href="{% url 'products_details'%}"><img src="{% static 'images/product-11.jpg'%}"></a>
-                        <h4>Loafers Men (Gray)</h4>
-                        <div class="rating">
-                            <i class="fa fa-star-o" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star-o" ></i>
-                        </div>
-                        <p>$15.00</p>
-                    </div>
-                    <div class="col-4">
-                        <a href="{% url 'products_details'%}"><img src="{% static 'images/product-12.jpg'%}"></a>
-                        <h4>Lace-Fastening white Shoes</h4>
-                        <div class="rating">
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star-o" ></i>
-                            <i class="fa fa-star-o" ></i>
-                        </div>
-                        <p>$21.00</p>
-                    </div>  
+                    {% if forloop.counter|divisibleby:4 and not forloop.last %}
+                    </div><div class="row">
+                    {% endif %}
+                    {% endfor %}
                 </div>
             </div>
         
-        <!--------------------------`   offer   --------------------------------->
-        <div class="offer">
-            <div class="small-container">
-                <div class="row">
-                    <div class="col-2">
-                        <img src="{% static 'images/image1.jpg'%}" class="offer-img">
-                    </div>
-                    <div class="col-2">
-                        <p>Exclusively Available on RedStore</p>
-                        <h1>Sports Shoes</h1>
-                        <small> Buy latest collections of sports shoes online on Redstore at best prices from top brands such as Adidas, Nike, Puma, Asics, and Sparx at your leisure at best prices. </small><br>
-                        <a href="{% url 'products'%}" class="btn">Buy Now &#8594;</a>
-                    </div>
+        <!-- Modern Features Section -->
+<section class="features-section">
+    <div class="container">
+        <h2 class="section-title">Why Choose FootLand?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shipping-fast"></i>
+                </div>
+                <h3>Fast Delivery</h3>
+                <p>Free shipping on orders above ₹499</p>
+                <div class="feature-hover">
+                    <span>24/7 Delivery Service</span>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-medal"></i>
+                </div>
+                <h3>Premium Quality</h3>
+                <p>100% Original Products</p>
+                <div class="feature-hover">
+                    <span>Certified Brands</span>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <h3>Easy Returns</h3>
+                <p>15-Day Return Policy</p>
+                <div class="feature-hover">
+                    <span>Hassle-free Process</span>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3>24/7 Support</h3>
+                <p>Dedicated Customer Service</p>
+                <div class="feature-hover">
+                    <span>Always Here to Help</span>
                 </div>
             </div>
         </div>
+    </div>
+</section>
+
+<style>
+.features-section {
+    padding: 60px 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.section-title {
+    text-align: center;
+    color: #37100d;
+    font-size: 2.5rem;
+    margin-bottom: 50px;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: #a23a33;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    padding: 20px;
+}
+
+.feature-card {
+    background: white;
+    padding: 30px 20px;
+    border-radius: 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.feature-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #37100d 0%, #a23a33 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feature-icon i {
+    font-size: 30px;
+    color: white;
+}
+
+.feature-card h3 {
+    color: #37100d;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.feature-card p {
+    color: #666;
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+.feature-hover {
+    position: absolute;
+    bottom: -40px;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #37100d 0%, #a23a33 100%);
+    padding: 10px;
+    transition: all 0.3s ease;
+    opacity: 0;
+}
+
+.feature-card:hover .feature-hover {
+    bottom: 0;
+    opacity: 1;
+}
+
+.feature-hover span {
+    color: white;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .section-title {
+        font-size: 2rem;
+    }
+
+    .feature-card {
+        padding: 20px 15px;
+    }
+}
+
+/* Animation for icons */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.feature-card:hover .feature-icon {
+    animation: pulse 1s infinite;
+}
+</style>
         
         
-        
-        <!------------------------------Testimonial---------------------------------->
-        <div class="testimonial">
-            <div class="small-container">
-                <div class="row">
-                    <div class="col-3">
-                        <i class="fa fa-quote-left" ></i>
-                        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. </p>
-                        <div class="rating"> 
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star-o" ></i>
+        <!-- Testimonials and Brands Section -->
+        <section class="testimonials-brands">
+            <div class="container">
+                <h2 class="section-title">What Our Customers Say</h2>
+                
+                <!-- Testimonials Slider -->
+                <div class="testimonials-slider">
+                    <div class="testimonial-card">
+                        <div class="quote-icon">
+                            <i class="fas fa-quote-right"></i>
                         </div>
-                        <img src="{% static 'images/user-1.png'%}">
-                        <h3>Sean Parkar</h3>
+                        <p class="testimonial-text">"Amazing collection of shoes! The quality is outstanding and delivery was super fast. Highly recommended!"</p>
+                        <div class="testimonial-author">
+                            <img src="{% static 'images/user1.jpg' %}" alt="Customer">
+                            <div class="author-info">
+                                <h4>Sara Mathew</h4>
+                                <span>Happy Customer</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-3">
-                        <i class="fa fa-quote-left" ></i>
-                        <p>It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English.</p>
-                        <div class="rating">
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star-o" ></i>
+
+                    <div class="testimonial-card">
+                        <div class="quote-icon">
+                            <i class="fas fa-quote-right"></i>
                         </div>
-                        <img src="{% static 'images/user-2.png'%}">
-                        <h3>Mike Smith</h3>
+                        <p class="testimonial-text">"The best shoe shopping experience I've ever had. Great customer service and excellent product range!"</p>
+                        <div class="testimonial-author">
+                            <img src="{% static 'images/user2.jpg' %}" alt="Customer">
+                            <div class="author-info">
+                                <h4>Mike Anderson</h4>
+                                <span>Verified Buyer</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-3">
-                        <i class="fa fa-quote-left" ></i>
-                        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. </p>
-                        <div class="rating"> 
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star" ></i>
-                            <i class="fa fa-star-o" ></i>
+                </div>
+
+                <!-- Trusted Brands -->
+                <div class="trusted-brands">
+                    <h3>Our Trusted Brands</h3>
+                    <div class="brands-slider">
+                        <div class="brand-logo">
+                            <img src="{% static 'images/nike-logo.png' %}" alt="Nike">
                         </div>
-                        <img src="{% static 'images/user-3.png'%}">
-                        <h3>Mabel Joe</h3>
+                        <div class="brand-logo">
+                            <img src="{% static 'images/adidas-logo.png' %}" alt="Adidas">
+                        </div>
+                        <div class="brand-logo">
+                            <img src="{% static 'images/puma-logo.png' %}" alt="Puma">
+                        </div>
+                        <div class="brand-logo">
+                            <img src="{% static 'images/reebok-logo.png' %}" alt="Reebok">
+                        </div>
+                        <div class="brand-logo">
+                            <img src="{% static 'images/skechers-logo.png' %}" alt="Skechers">
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!----------------------------------Brands------------------------------------>
-        <div class="brands">
-            <div class="small-container">
-                <div class="row">
-                    <div class="col-5">
-                        <img src="{% static 'images/logo-godrej.png'%}" alt="">
-                    </div>
-                    <div class="col-5">
-                        <img src="{% static 'images/logo-oppo.png'%}" alt="">
-                    </div>
-                    <div class="col-5">
-                        <img src="{% static 'images/logo-coca-cola.png'%}" alt="">
-                    </div>
-                    <div class="col-5">
-                        <img src="{% static 'images/logo-paypal.png'%}" alt="">
-                    </div>
-                    <div class="col-5">
-                        <img src="{% static 'images/logo-philips.png'%}" alt="">
-                    </div>
-                </div>
-            </div>
-        </div>
+        </section>
+
+        <style>
+        .testimonials-brands {
+            padding: 80px 0;
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+        }
+
+        .section-title {
+            text-align: center;
+            color: #37100d;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: #a23a33;
+        }
+
+        /* Testimonials Styling */
+        .testimonials-slider {
+            display: flex;
+            gap: 30px;
+            overflow-x: auto;
+            padding: 20px 0;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .testimonials-slider::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        .testimonial-card {
+            flex: 0 0 400px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            scroll-snap-align: start;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .quote-icon {
+            color: #a23a33;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .testimonial-text {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .testimonial-author img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .author-info h4 {
+            color: #37100d;
+            margin: 0;
+        }
+
+        .author-info span {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Brands Styling */
+        .trusted-brands {
+            margin-top: 60px;
+            text-align: center;
+        }
+
+        .trusted-brands h3 {
+            color: #37100d;
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+        }
+
+        .brands-slider {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .brand-logo {
+            width: 120px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: grayscale(100%);
+            transition: all 0.3s ease;
+        }
+
+        .brand-logo:hover {
+            filter: grayscale(0%);
+            transform: scale(1.1);
+        }
+
+        .brand-logo img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        @media (max-width: 768px) {
+            .testimonial-card {
+                flex: 0 0 300px;
+                padding: 20px;
+            }
+
+            .brands-slider {
+                gap: 20px;
+            }
+
+            .brand-logo {
+                width: 100px;
+                height: 60px;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+
+        /* Animation for testimonials */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .testimonial-card {
+            animation: fadeIn 0.5s ease-out;
+        }
+        </style>
+
+        <script>
+        // Add smooth scrolling for testimonials
+        document.querySelector('.testimonials-slider').addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const container = e.currentTarget;
+            container.scrollLeft += e.deltaY;
+        });
+        </script>
         
         
         <!----------------------------------footer------------------------------------->
-        <div class ="footer">
-        <div class="container">
-            
-            <div class="row">
-                <div class="footer-col-1">
-                    <h3>Download Our App</h3>
-                    <p>Download App for Android and ios mobile phone.</p>
-                    <div class="app-logo">
-                        <img src="{% static 'images/play-store.png'%}" alt="">
-                        <img src="{% static 'images/app-store.png'%}" alt="">
-                    </div>
-                </div>
-                <div class="footer-col-2">
-                    <img src="{% static 'images/logo-white.png'%}">
-                    <p>Our Purpose Is To Sustainably Make the Pleasure and Benefits of Sports Accessible to the Many.</p>
-                </div>
-                <div class="footer-col-3">
-                    <h3>Useful Links</h3>
-                   <ul>
-                       <li>Coupons</li>
-                       <li>Blog Post</li>
-                       <li>Return Policy</li>
-                       <li>Join Affiliate</li>
-                    </ul>
-                </div>
-                <div class="footer-col-4">
-                    <h3>Follow us</h3>
-                   <ul>
-                       <li>Facebook</li>
-                       <li>Twitter</li>
-                       <li>Instagram</li>
-                       <li>Youtube</li>
-                    </ul>
-                </div>
-                
+        <footer class="modern-footer">
+    <div class="footer-content">
+        <div class="footer-section about">
+            <h3>About FootLand</h3>
+            <p>Your premier destination for stylish and comfortable footwear. We bring you the latest trends in shoes with unmatched quality and service.</p>
+            <div class="socials">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin"></i></a>
             </div>
-            
-            <hr><!--horizontal line-->
-            <p class="copyright">Copyright 2024- Treesa Thomas</p>
-            
+        </div>
+
+        <div class="footer-section contact">
+            <h3>Contact Info</h3>
+            <p>
+                <i class="fas fa-phone"></i> +91 9876543210
+                <br>
+                <i class="fas fa-envelope"></i> treesa@footland.com
+                <br>
+                <i class="fas fa-map-marker-alt"></i> Kerala, India
+            </p>
+        </div>
+
+        <div class="footer-section quick-links">
+            <h3>Quick Links</h3>
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'products' %}">Shop</a></li>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section newsletter">
+            <h3>Newsletter</h3>
+            <form>
+                <input type="email" placeholder="Enter your email">
+                <button type="submit" class="newsletter-btn">Subscribe</button>
+            </form>
         </div>
     </div>
+
+    <div class="footer-bottom">
+        <p>&copy; 2024 FootLand | Designed by Treesa Thomas</p>
+    </div>
+</footer>
+
+<style>
+.modern-footer {
+    background: linear-gradient(135deg, #37100d 0%, #a23a33 100%);
+    color: white;
+    padding: 50px 0 20px;
+    font-family: 'Arial', sans-serif;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+    padding: 0 20px;
+}
+
+.footer-section {
+    margin-bottom: 20px;
+}
+
+.footer-section h3 {
+    color: #fff;
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.footer-section h3::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 50px;
+    height: 2px;
+    background: #fff;
+}
+
+.socials {
+    margin-top: 20px;
+}
+
+.socials a {
+    display: inline-block;
+    width: 35px;
+    height: 35px;
+    background: rgba(255, 255, 255, 0.1);
+    margin-right: 10px;
+    text-align: center;
+    line-height: 35px;
+    border-radius: 50%;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.socials a:hover {
+    background: white;
+    color: #37100d;
+    transform: translateY(-3px);
+}
+
+.footer-section.quick-links ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-section.quick-links ul li {
+    margin-bottom: 10px;
+}
+
+.footer-section.quick-links ul li a {
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.footer-section.quick-links ul li a:hover {
+    color: #ffd700;
+    padding-left: 8px;
+}
+
+.footer-section.newsletter form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer-section.newsletter input {
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.footer-section.newsletter input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.newsletter-btn {
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    background: #ffd700;
+    color: #37100d;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.newsletter-btn:hover {
+    background: white;
+    transform: translateY(-2px);
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 20px;
+    margin-top: 40px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+    .footer-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .footer-section h3::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .socials {
+        justify-content: center;
+    }
+
+    .footer-section.newsletter form {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+}
+</style>
         
         
         <!-----------------------------------js for toggle menu----------------------------------------------->
