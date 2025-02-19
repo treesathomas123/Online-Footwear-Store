@@ -3,6 +3,10 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.conf import settings  # Use this for the custom user model
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.mail import send_mail
+import qrcode
+from io import BytesIO
+from django.core.files import File
+from PIL import Image
 
 
 # Create your models here.
@@ -226,21 +230,7 @@ class Wishlist(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.product.name}'
-    
-class Review(models.Model):
-    product = models.ForeignKey(Product, related_name='reviews', on_delete=models.CASCADE)
-    user = models.ForeignKey(user_registration, on_delete=models.CASCADE)
- # Assuming you are using Django's User model
-    rating = models.PositiveIntegerField()  # 1 to 5 stars
-    comment = models.TextField()
-    name = models.CharField(max_length=100)
-    email = models.EmailField(null=True)  # Allow null values
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.name} - {self.rating} stars"
-    
-
+ 
 class Order(models.Model):
     user = models.ForeignKey(user_registration, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -249,11 +239,31 @@ class Order(models.Model):
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     order_date = models.DateTimeField(auto_now_add=True)
     payment_method = models.CharField(max_length=20)
-    order_status = models.CharField(max_length=50, default="Processing")
+    qr_code = models.ImageField(upload_to='qr_codes/', blank=True, null=True)
+    DELIVERY_STATUS = [
+        ('Processing', 'Processing'),
+        ('Packed', 'Packed'),
+        ('Dispatched', 'Dispatched'),
+        ('Shipped', 'Shipped'),
+        ('Out for Delivery', 'Out for Delivery'),
+        ('Delivered', 'Delivered'),
+        ('Failed', 'Failed')
+    ]
+    delivery_status = models.CharField(max_length=50, choices=DELIVERY_STATUS, default='Processing')
 
     def __str__(self):
         return f"Order for {self.product.name} by {self.user.first_name}"
     
+    def generate_qr_code(self):
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(f'ORDER-{self.id}')
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
+        filename = f'order_qr_{self.id}.png'
+        self.qr_code.save(filename, File(buffer), save=False)
+
 # class VendorDetails(models.Model):
 #     vendor = models.OneToOneField(
 #         'user_registration',
@@ -364,13 +374,15 @@ class DeliveryBoyProfile(models.Model):
 
 class DeliveryAssignment(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
+        ('pending', 'Processing'),
+        ('packed', 'Packed'),
+        ('dispatched', 'Dispatched'),
         ('out_for_delivery', 'Out for Delivery'),
         ('delivered', 'Delivered'),
         ('failed', 'Failed')
     ]
     
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='delivery_assignments')
     delivery_boy = models.ForeignKey(DeliveryBoy, on_delete=models.CASCADE)
     assigned_date = models.DateField(auto_now_add=True)
     delivery_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -380,4 +392,19 @@ class DeliveryAssignment(models.Model):
         return f"Order {self.order.id} - {self.delivery_boy.first_name}"
 
     class Meta:
-        unique_together = ('order', 'delivery_boy', 'assigned_date')
+        unique_together = ('order', 'delivery_boy')
+        
+           
+class Review(models.Model):
+    product = models.ForeignKey(Product, related_name='reviews', on_delete=models.CASCADE)
+    user = models.ForeignKey(user_registration, on_delete=models.CASCADE)
+ # Assuming you are using Django's User model
+    rating = models.PositiveIntegerField()  # 1 to 5 stars
+    comment = models.TextField()
+    name = models.CharField(max_length=100)
+    email = models.EmailField(null=True)  # Allow null values
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.rating} stars"
+    

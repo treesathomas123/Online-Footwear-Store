@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan Delivery QR Code - FootLand</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        #reader {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .status-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Scan Delivery QR Code</h1>
+            <p>Please scan the customer's QR code to confirm delivery</p>
+        </div>
+        
+        <div id="reader"></div>
+        <div id="status-message" class="status-message"></div>
+        
+        <div style="text-align: center;">
+            <a href="{% url 'active_deliveries' %}" class="back-button">Back to Active Deliveries</a>
+        </div>
+    </div>
+
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            // Extract order ID from QR code text (format: "ORDER-{id}")
+            const orderId = decodedText.split('-')[1];
+            
+            // Send to backend for verification
+            fetch('{% url "scan_delivery_qr" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `order_id=${orderId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                const statusDiv = document.getElementById('status-message');
+                if (data.status === 'success') {
+                    statusDiv.className = 'status-message success';
+                    statusDiv.textContent = 'Delivery confirmed successfully!';
+                    setTimeout(() => {
+                        window.location.href = '{% url "active_deliveries" %}';
+                    }, 2000);
+                } else {
+                    statusDiv.className = 'status-message error';
+                    statusDiv.textContent = data.message || 'Error confirming delivery';
+                }
+            })
+            .catch(error => {
+                const statusDiv = document.getElementById('status-message');
+                statusDiv.className = 'status-message error';
+                statusDiv.textContent = 'Error processing QR code';
+            });
+        }
+
+        function onScanFailure(error) {
+            // handle scan failure, usually better to ignore and keep scanning
+            console.warn(`Code scan error = ${error}`);
+        }
+
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            { fps: 10, qrbox: {width: 250, height: 250} },
+            /* verbose= */ false);
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    </script>
+</body>
+</html>

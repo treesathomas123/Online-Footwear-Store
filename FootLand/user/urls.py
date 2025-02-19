@@ -92,6 +92,10 @@ urlpatterns = [
     path('delivery_boy/active_deliveries/', views.active_deliveries, name='active_deliveries'),
     path('delivery_boy/update_status/<int:assignment_id>/', views.update_delivery_status, name='update_delivery_status'),
     path('delivery_boy/delivery_history/', views.delivery_history, name='delivery_history'),
+    path('order/<int:order_id>/', views.order_detail, name='order_detail'),
+    path('order/track/<int:order_id>/', views.track_order, name='track_order'),
+    path('delivery_boy/scan-qr/', views.qr_scanner, name='qr_scanner'),
+    path('delivery_boy/scan-delivery/', views.scan_delivery_qr, name='scan_delivery_qr'),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

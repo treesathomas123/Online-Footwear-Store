@@ -49,6 +49,8 @@ import random
 import string
 from .models import DeliveryBoyProfile
 from django.core.paginator import Paginator
+from django.template.defaulttags import register
+from django.db.models import Exists, OuterRef
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +62,13 @@ API_KEY = "AIzaSyDWn4zpv79RDS6Yz2JkEto_-7Hq3dYlvFg"
 
 # Configure the Generative AI client
 genai.configure(api_key=API_KEY)
+
+@register.filter
+def split(value, key):
+    """
+    Returns the value turned into a list split at key.
+    """
+    return value.split(key)
 
 def home(request):
     return render(request, 'home.html')
@@ -589,23 +598,29 @@ def active_deliveries(request):
         assigned_date=today
     ).count()
     
-    # Get active deliveries for today
+    # Get active deliveries for today - include all statuses except delivered and failed
     active_deliveries = DeliveryAssignment.objects.filter(
         delivery_boy=delivery_boy,
         assigned_date=today,
-        delivery_status__in=['pending', 'out_for_delivery']
+        delivery_status__in=['pending', 'packed', 'dispatched', 'out_for_delivery']  # Include all active statuses
     ).select_related('order')
     
     # Auto-assign new orders if less than 10 deliveries
     if todays_assignments_count < 10:
         delivery_boy_district = delivery_boy.profile.district
         
-        # Get unassigned orders from the same district
+        has_assignment = DeliveryAssignment.objects.filter(
+            order=OuterRef('pk'),
+            assigned_date=today
+        )
+        
         unassigned_orders = Order.objects.filter(
             user__userprofile__district=delivery_boy_district,
-            order_status='Processing'
-        ).exclude(
-            deliveryassignment__assigned_date=today
+            delivery_status='Processing'
+        ).annotate(
+            has_delivery=Exists(has_assignment)
+        ).filter(
+            has_delivery=False
         )[:10 - todays_assignments_count]
         
         # Create new assignments
@@ -615,15 +630,6 @@ def active_deliveries(request):
                 delivery_boy=delivery_boy,
                 delivery_status='pending'
             )
-            order.order_status = 'Out for Delivery'
-            order.save()
-        
-        # Refresh active deliveries after new assignments
-        active_deliveries = DeliveryAssignment.objects.filter(
-            delivery_boy=delivery_boy,
-            assigned_date=today,
-            delivery_status__in=['pending', 'out_for_delivery']
-        ).select_related('order')
     
     context = {
         'active_deliveries': active_deliveries,
@@ -638,19 +644,30 @@ def update_delivery_status(request, assignment_id):
         status = request.POST.get('status')
         assignment = get_object_or_404(DeliveryAssignment, id=assignment_id)
         
-        if status in ['delivered', 'failed']:
+        status_flow = {
+            'pending': 'Processing',
+            'packed': 'Packed',
+            'dispatched': 'Dispatched',
+            'out_for_delivery': 'Out for Delivery',
+            'delivered': 'Delivered',
+            'failed': 'Failed'
+        }
+        
+        if status in status_flow:
+            # Update both assignment and order status
+            old_status = assignment.delivery_status
             assignment.delivery_status = status
             assignment.save()
             
-            # Update order status
-            if status == 'delivered':
-                assignment.order.order_status = 'Delivered'
-            else:
-                assignment.order.order_status = 'Delivery Failed'
-            assignment.order.save()
+            order = assignment.order
+            order.delivery_status = status_flow[status]
+            order.save()
             
-            messages.success(request, f"Delivery status updated to {status}")
-        
+            if status in ['delivered', 'failed']:
+                messages.success(request, f"Order #{order.id} has been marked as {status_flow[status]}")
+            else:
+                messages.success(request, f"Order #{order.id} status updated from {old_status} to {status}")
+    
     return redirect('active_deliveries')
 
 from django.db.models import Count, Sum
@@ -1088,7 +1105,7 @@ def save_billing_details(request):
             user_profile.street = request.POST['street']
             user_profile.house_no = request.POST['house_no']
             user_profile.state = request.POST['state']
-            user_profile.district = request.POST['district']
+            user_profile.district = request.POST.get('district')
             user_profile.save()
 
             messages.success(request, "Billing details updated successfully!")
@@ -2271,3 +2288,93 @@ def delivery_history(request):
     return render(request, 'delivery_history.html', context)
     
   
+    
+from django.utils import timezone
+
+def scan_delivery_qr(request):
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        try:
+            order = Order.objects.get(id=order_id)
+            assignment = DeliveryAssignment.objects.get(
+                order=order,
+                delivery_status='out_for_delivery'
+            )
+            
+            assignment.delivery_status = 'delivered'
+            assignment.save()
+            
+            order.delivery_status = 'Delivered'
+            order.save()
+            
+            return JsonResponse({'status': 'success'})
+        except (Order.DoesNotExist, DeliveryAssignment.DoesNotExist):
+            return JsonResponse({'status': 'error', 'message': 'Invalid order or delivery'})
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+
+def qr_scanner(request):
+    if 'email' not in request.session:
+        return redirect('login')
+    
+    delivery_boy = get_object_or_404(DeliveryBoy, email=request.session['email'])
+    
+    return render(request, 'qr_scanner.html', {'delivery_boy': delivery_boy})
+
+def order_detail(request, order_id):
+    if 'user_id' not in request.session:
+        return redirect('login')
+        
+    order = get_object_or_404(Order, id=order_id)
+    
+    # Ensure the order belongs to the logged-in user
+    if order.user.id != request.session['user_id']:
+        messages.error(request, "You don't have permission to view this order")
+        return redirect('my_orders')
+    
+    # Get delivery assignment if exists
+    try:
+        delivery_assignment = DeliveryAssignment.objects.get(order=order)
+    except DeliveryAssignment.DoesNotExist:
+        delivery_assignment = None
+    
+    # Generate QR code if not exists
+    if not order.qr_code:
+        order.generate_qr_code()
+        order.save()
+    
+    context = {
+        'order': order,
+        'delivery_assignment': delivery_assignment,
+    }
+    
+    return render(request, 'order_detail.html', context)
+
+def track_order(request, order_id):
+    if 'user_id' not in request.session:
+        return redirect('login')
+        
+    order = get_object_or_404(Order, id=order_id)
+    
+    # Ensure the order belongs to the logged-in user
+    if order.user.id != request.session['user_id']:
+        messages.error(request, "You don't have permission to view this order")
+        return redirect('my_orders')
+    
+    # Get delivery assignment if exists
+    try:
+        delivery_assignment = DeliveryAssignment.objects.get(order=order)
+    except DeliveryAssignment.DoesNotExist:
+        delivery_assignment = None
+    
+    # Generate QR code if not exists
+    if not order.qr_code:
+        order.generate_qr_code()
+        order.save()
+    
+    context = {
+        'order': order,
+        'delivery_assignment': delivery_assignment,
+    }
+    
+    return render(request, 'track_order.html', context)

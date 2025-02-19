@@ -15,31 +15,56 @@
         {% if active_deliveries %}
             {% for assignment in active_deliveries %}
             <div class="delivery-card">
-                <div class="order-info">
-                    <div class="customer-info">
-                        <img src="{{ assignment.delivery_boy.profile_picture.url }}" alt="Profile Picture" class="profile-pic" />
-                        <div>
-                            <h3>Order #{{ assignment.order.id }}</h3>
-                            <p><strong>Customer:</strong> {{ assignment.order.user.first_name }} {{ assignment.order.user.last_name }}</p>
-                            <p><strong>Address:</strong> {{ assignment.order.user.userprofile.house_no }},
-                                {{ assignment.order.user.userprofile.street }},
-                                {{ assignment.order.user.userprofile.district }}</p>
-                            <p><strong>Total Amount:</strong> Rs. {{ assignment.order.total_price }}</p>
-                        </div>
+                <div class="order-details">
+                    <h3>Order #{{ assignment.order.id }}</h3>
+                    <div class="customer-details">
+                        <p><strong>Customer:</strong> {{ assignment.order.user.first_name }} {{ assignment.order.user.last_name }}</p>
+                        <p><strong>Address:</strong> {{ assignment.order.user.userprofile.house_no }},
+                            {{ assignment.order.user.userprofile.street }},
+                            {{ assignment.order.user.userprofile.district }}</p>
+                        <p><strong>Total Amount:</strong> Rs. {{ assignment.order.total_price }}</p>
                     </div>
-                    <p><strong>Status:</strong> <span class="status-badge {{ assignment.delivery_status }}">{{ assignment.delivery_status|title }}</span></p>
                 </div>
-                
+
+                <div class="status-timeline">
+                    <div class="status-step {% if assignment.delivery_status == 'pending' or assignment.delivery_status == 'packed' or assignment.delivery_status == 'dispatched' or assignment.delivery_status == 'out_for_delivery' or assignment.delivery_status == 'delivered' %}active{% endif %}">
+                        <div class="step-icon">📦</div>
+                        <p>Processing</p>
+                    </div>
+                    <div class="status-step {% if assignment.delivery_status == 'packed' or assignment.delivery_status == 'dispatched' or assignment.delivery_status == 'out_for_delivery' or assignment.delivery_status == 'delivered' %}active{% endif %}">
+                        <div class="step-icon">📥</div>
+                        <p>Packed</p>
+                    </div>
+                    <div class="status-step {% if assignment.delivery_status == 'dispatched' or assignment.delivery_status == 'out_for_delivery' or assignment.delivery_status == 'delivered' %}active{% endif %}">
+                        <div class="step-icon">🚚</div>
+                        <p>Dispatched</p>
+                    </div>
+                    <div class="status-step {% if assignment.delivery_status == 'out_for_delivery' or assignment.delivery_status == 'delivered' %}active{% endif %}">
+                        <div class="step-icon">🛵</div>
+                        <p>Out for Delivery</p>
+                    </div>
+                    <div class="status-step {% if assignment.delivery_status == 'delivered' %}active{% endif %}">
+                        <div class="step-icon">✅</div>
+                        <p>Delivered</p>
+                    </div>
+                </div>
+
                 <div class="status-update">
                     <form method="POST" action="{% url 'update_delivery_status' assignment.id %}">
                         {% csrf_token %}
                         <select name="status" class="status-select" onchange="this.form.submit()">
-                            <option value="pending" {% if assignment.delivery_status == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="pending" {% if assignment.delivery_status == 'pending' %}selected{% endif %}>Processing</option>
+                            <option value="packed" {% if assignment.delivery_status == 'packed' %}selected{% endif %}>Packed</option>
+                            <option value="dispatched" {% if assignment.delivery_status == 'dispatched' %}selected{% endif %}>Dispatched</option>
                             <option value="out_for_delivery" {% if assignment.delivery_status == 'out_for_delivery' %}selected{% endif %}>Out for Delivery</option>
-                            <option value="delivered" {% if assignment.delivery_status == 'delivered' %}selected{% endif %}>Delivered</option>
-                            <option value="failed" {% if assignment.delivery_status == 'failed' %}selected{% endif %}>Failed</option>
                         </select>
                     </form>
+                    
+                    {% if assignment.delivery_status == 'out_for_delivery' %}
+                    <a href="{% url 'qr_scanner' %}" class="scan-qr-btn">
+                        <i class="fas fa-qrcode"></i> Scan QR to Confirm Delivery
+                    </a>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -52,104 +77,113 @@
 <style>
     .active-deliveries-container {
         padding: 20px;
-        background-color: #f9f9f9;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .header h1 {
-        font-size: 24px;
-        color: #333;
-    }
-
-    .delivery-stats {
-        font-size: 16px;
-        color: #666;
-    }
-
-    .deliveries-list {
-        margin-top: 20px;
+        background-color: #f8f9fa;
     }
 
     .delivery-card {
         background: white;
-        border-radius: 10px;
-        padding: 15px;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .order-details {
+        margin-bottom: 20px;
+    }
+
+    .status-timeline {
         display: flex;
         justify-content: space-between;
+        margin: 30px 0;
+        position: relative;
+        padding: 0 20px;
+    }
+
+    .status-timeline::before {
+        content: '';
+        position: absolute;
+        top: 25px;
+        left: 50px;
+        right: 50px;
+        height: 2px;
+        background: #e9ecef;
+        z-index: 1;
+    }
+
+    .status-step {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
         align-items: center;
-    }
-
-    .delivery-card:hover {
-        transform: translateY(-5px);
-    }
-
-    .order-info {
         flex: 1;
     }
 
-    .customer-info {
-        display: flex;
-        align-items: center;
-    }
-
-    .profile-pic {
+    .step-icon {
         width: 50px;
         height: 50px;
+        background: white;
+        border: 2px solid #dee2e6;
         border-radius: 50%;
-        margin-right: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
     }
 
-    .status-badge {
-        padding: 5px 10px;
-        border-radius: 5px;
-        font-weight: bold;
+    .status-step.active .step-icon {
+        border-color: #28a745;
+        background: #28a745;
         color: white;
     }
 
-    .status-badge.pending {
-        background-color: #f59e0b;
+    .status-step p {
+        font-size: 14px;
+        color: #6c757d;
+        margin: 0;
     }
 
-    .status-badge.out_for_delivery {
-        background-color: #0ea5e9;
-    }
-
-    .status-badge.delivered {
-        background-color: #059669;
-    }
-
-    .status-badge.failed {
-        background-color: #dc2626;
-    }
-
-    .status-update {
-        display: flex;
-        align-items: center;
+    .status-step.active p {
+        color: #28a745;
+        font-weight: bold;
     }
 
     .status-select {
-        padding: 5px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        background-color: #fff;
-        cursor: pointer;
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        background-color: white;
+        font-size: 14px;
+        width: 200px;
     }
 
-    .no-deliveries {
-        text-align: center;
-        font-size: 1.2em;
-        color: #666;
+    .customer-details {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 10px;
+    }
+
+    .customer-details p {
+        margin: 5px 0;
+    }
+
+    .scan-qr-btn {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 8px 16px;
+        background-color: #28a745;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+    
+    .scan-qr-btn i {
+        margin-right: 5px;
     }
 </style>
 {% endblock %} 
