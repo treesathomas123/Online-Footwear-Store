@@ -72,6 +72,18 @@ class Product(models.Model):
         ('rubber', 'Rubber'),
         ('foam', 'Foam'),
         ('plastic', 'Plastic'),
+         ('Natural rubber', 'Natural Rubber'),
+        ('Heavy-duty rubber', 'Heavy-duty Rubber'),
+        ('Non-marking rubber', 'Non-marking Rubber'),
+        ('TPR', 'TPR'),
+        ('PVC', 'PVC'),
+        ('Nitrile rubber', 'Nitrile Rubber'),
+        ('SBR rubber', 'SBR Rubber'),
+        ('EVA', 'EVA'),
+        ('Polyurethane', 'Polyurethane'),
+        ('Neoprene', 'Neoprene'),
+        ('Vibram', 'Vibram'),
+        ('Cork', 'Cork'),
     ]
     
     BRAND_CHOICES = [
@@ -398,12 +410,17 @@ class DeliveryAssignment(models.Model):
 class Review(models.Model):
     product = models.ForeignKey(Product, related_name='reviews', on_delete=models.CASCADE)
     user = models.ForeignKey(user_registration, on_delete=models.CASCADE)
- # Assuming you are using Django's User model
-    rating = models.PositiveIntegerField()  # 1 to 5 stars
+    rating = models.PositiveIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]  # Add validators for 1-5 stars
+    )
     comment = models.TextField()
     name = models.CharField(max_length=100)
-    email = models.EmailField(null=True)  # Allow null values
+    email = models.EmailField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'user_review'  # Specify the table name explicitly
+        ordering = ['-created_at']  # Order by newest first
 
     def __str__(self):
         return f"{self.name} - {self.rating} stars"

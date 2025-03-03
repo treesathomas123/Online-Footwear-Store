@@ -51,6 +51,12 @@ from .models import DeliveryBoyProfile
 from django.core.paginator import Paginator
 from django.template.defaulttags import register
 from django.db.models import Exists, OuterRef
+import speech_recognition as sr
+from PIL import Image
+import torch
+from torchvision import transforms
+import base64
+import io
 
 logger = logging.getLogger(__name__)
 
@@ -592,35 +598,34 @@ def delivery_boy_dashboard(request):
     }
     return render(request, 'delivery_boy_dashboard.html', context)
 
+# def active_deliveries(request):
+
 def active_deliveries(request):
     if 'email' not in request.session:
         return redirect('login')
-    
+   
     delivery_boy = get_object_or_404(DeliveryBoy, email=request.session['email'])
     today = date.today()
     
-    # Get today's assignments count
-    todays_assignments_count = DeliveryAssignment.objects.filter(
-        delivery_boy=delivery_boy,
-        assigned_date=today
-    ).count()
-    
-    # Get active deliveries for today - include all statuses except delivered and failed
+    # Get all undelivered assignments (including from previous days)
     active_deliveries = DeliveryAssignment.objects.filter(
         delivery_boy=delivery_boy,
-        assigned_date=today,
-        delivery_status__in=['pending', 'packed', 'dispatched', 'out_for_delivery']  # Include all active statuses
+        delivery_status__in=['pending', 'packed', 'dispatched', 'out_for_delivery']
     ).select_related('order')
+    
+    # Count today's active assignments
+    todays_assignments_count = active_deliveries.count()
     
     # Auto-assign new orders if less than 10 deliveries
     if todays_assignments_count < 10:
         delivery_boy_district = delivery_boy.profile.district
         
+        # Check for existing assignments
         has_assignment = DeliveryAssignment.objects.filter(
-            order=OuterRef('pk'),
-            assigned_date=today
+            order=OuterRef('pk')
         )
         
+        # Find unassigned orders in the same district
         unassigned_orders = Order.objects.filter(
             user__userprofile__district=delivery_boy_district,
             delivery_status='Processing'
@@ -635,13 +640,23 @@ def active_deliveries(request):
             DeliveryAssignment.objects.create(
                 order=order,
                 delivery_boy=delivery_boy,
-                delivery_status='pending'
+                delivery_status='pending',
+                assigned_date=today  # Set today's date for new assignments
             )
     
+    # Group deliveries by date
+    grouped_deliveries = {}
+    for assignment in active_deliveries:
+        date_str = assignment.assigned_date.strftime('%Y-%m-%d')
+        if date_str not in grouped_deliveries:
+            grouped_deliveries[date_str] = []
+        grouped_deliveries[date_str].append(assignment)
+    
     context = {
-        'active_deliveries': active_deliveries,
+        'grouped_deliveries': grouped_deliveries,
         'delivery_count': todays_assignments_count,
-        'remaining_slots': max(0, 10 - todays_assignments_count)
+        'remaining_slots': max(0, 10 - todays_assignments_count),
+        'today': today.strftime('%Y-%m-%d')
     }
     
     return render(request, 'active_deliveries.html', context)
@@ -734,37 +749,106 @@ def products(request):
     return render(request, 'products.html')
 
 def search(request):
-    query = request.GET.get('q')  # Fetch the search query from the GET request
-    if query:
-        products = Product.objects.filter(name__icontains=query)  # Filter products by name
-    else:
-        products = Product.objects.all()  # If no query, display all products
-
-    context = {
-        'products': products,
-        'query': query
-    }
-    return render(request, 'search_results.html', context)
-
-from django.core.paginator import Paginator
-
-def search(request):
-    query = request.GET.get('q')
-    if query:
-        products = Product.objects.filter(name__icontains=query)
-    else:
-        products = Product.objects.all()
-
-    paginator = Paginator(products, 10)  # Show 10 products per page
+    query = request.GET.get('q', '')
+    category = request.GET.get('category', 'all')
+    search_type = request.GET.get('type', 'text')
+    
+    products = Product.objects.all()
+    
+    if search_type == 'text' and query:
+        products = products.filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query) |
+            Q(brand__icontains=query)
+        )
+    
+    elif search_type == 'voice':
+        # Handle voice search
+        audio_file = request.FILES.get('audio')
+        if audio_file:
+            recognizer = sr.Recognizer()
+            with sr.AudioFile(audio_file) as source:
+                audio = recognizer.record(source)
+                try:
+                    query = recognizer.recognize_google(audio)
+                    products = products.filter(
+                        Q(name__icontains=query) |
+                        Q(description__icontains=query)
+                    )
+                except sr.UnknownValueError:
+                    return JsonResponse({'error': 'Could not understand audio'})
+    
+    elif search_type == 'image':
+        # Handle image search
+        image_file = request.FILES.get('image')
+        if image_file:
+            products = search_by_image(image_file, products)
+    
+    # Handle category filtering
+    if category and category != 'all':
+        products = products.filter(category=category)
+    
+    # Get all unique categories, types, brands for filters
+    all_categories = Product.CATEGORY_CHOICES
+    all_types = Product.TYPE_CHOICES
+    all_brands = Product.BRAND_CHOICES
+    
+    paginator = Paginator(products, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-
+    
     context = {
         'products': page_obj,
-        'query': query
+        'query': query,
+        'category': category,
+        'total_results': products.count(),
+        'all_categories': all_categories,
+        'all_types': all_types,
+        'all_brands': all_brands
     }
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # Return JSON response for AJAX requests
+        return JsonResponse({
+            'html': render_to_string('product_list_partial.html', context),
+            'total': products.count()
+        })
+    
     return render(request, 'search_results.html', context)
 
+def search_by_image(image_file, products):
+    # Convert uploaded image to PIL Image
+    image = Image.open(image_file)
+    
+    # Implement your image similarity search logic here
+    # This is a simplified example
+    similar_products = []
+    for product in products:
+        if product.image:
+            similarity = compare_images(image, Image.open(product.image.path))
+            if similarity > 0.7:  # Threshold for similarity
+                similar_products.append(product)
+    
+    return similar_products
+def compare_images(img1, img2):
+    # Convert images to same size for comparison
+    size = (128, 128)
+    img1 = img1.resize(size)
+    img2 = img2.resize(size)
+    
+    # Convert to grayscale
+    img1 = img1.convert('L')
+    img2 = img2.convert('L')
+    
+    # Convert to array and calculate similarity
+    from numpy import array
+    pixels1 = array(img1).flatten()
+    pixels2 = array(img2).flatten()
+    
+    from numpy.linalg import norm
+    similarity = 1 - (norm(pixels1 - pixels2) / (norm(pixels1) + norm(pixels2)))
+    
+    return similarity
 
 def add_profile(request):
     user_id = request.session.get('user_id')  # Get the user ID from the session
@@ -1749,67 +1833,49 @@ def reject_vendor(request, vendor_id):
 from django.db.models import Avg
 
 def vendor_dashboard(request):
-    if 'user_id' not in request.session or request.session.get('user_type') != 'vendor':
-        return redirect('login')
-    
-    user_id = request.session['user_id']
-    try:
-        vendor = user_registration.objects.get(id=user_id)
-        vendor_details = VendorDetails.objects.get(vendor=vendor)
-        
-        # Get products for this vendor
+    if request.session.get('user_id'):
+        vendor = user_registration.objects.get(id=request.session['user_id'])
+        vendor_details = VendorDetails.objects.filter(vendor=vendor).first()
         products = Product.objects.filter(vendor=vendor)
         products_count = products.count()
         
-        # Get orders for vendor's products
-        orders_count = Order.objects.filter(product__in=products).count()
+        # Get orders count
+        orders_count = Order.objects.filter(product__vendor=vendor).count()
         
-        # Get average rating for vendor's products
-        average_rating = Review.objects.filter(product__in=products).aggregate(
-            avg_rating=Avg('rating')
-        )['avg_rating'] or 0
-        
-        # Get recent activities (orders and reviews)
+        # Get average rating safely
+        try:
+            average_rating = Review.objects.filter(product__in=products).aggregate(
+                avg_rating=models.Avg('rating')
+            )['avg_rating'] or 0.0
+            average_rating = round(float(average_rating), 1)
+        except Exception as e:
+            print(f"Error calculating average rating: {e}")
+            average_rating = 0.0
+
+        # Get recent activities (last 5 orders)
         recent_activities = []
+        recent_orders = Order.objects.filter(product__vendor=vendor).order_by('-order_date')[:5]
         
-        # Add recent orders
-        recent_orders = Order.objects.filter(
-            product__in=products
-        ).order_by('-order_date')[:5]
         for order in recent_orders:
-            recent_activities.append({
+            activity = {
                 'date': order.order_date,
-                'description': f'New order for {order.product.name}',
-                'status': order.order_status
-            })
-        
-        # Add recent reviews
-        recent_reviews = Review.objects.filter(
-            product__in=products
-        ).order_by('-created_at')[:5]
-        for review in recent_reviews:
-            recent_activities.append({
-                'date': review.created_at,
-                'description': f'New review for {review.product.name}',
-                'status': f'{review.rating} stars'
-            })
-        
-        # Sort activities by date
-        recent_activities.sort(key=lambda x: x['date'], reverse=True)
-        
+                'description': f"Order #{order.id} - {order.product.name}",
+                'status': order.delivery_status
+            }
+            recent_activities.append(activity)
+
         context = {
             'vendor': vendor,
             'vendor_details': vendor_details,
             'products_count': products_count,
             'orders_count': orders_count,
-            'average_rating': round(average_rating, 1),
-            'recent_activities': recent_activities[:5]  # Show only 5 most recent activities
+            'average_rating': average_rating,
+            'recent_activities': recent_activities,
         }
+        
         return render(request, 'vendor_dashboard.html', context)
-    except (user_registration.DoesNotExist, VendorDetails.DoesNotExist) as e:
-        print(f"Error in vendor_dashboard: {str(e)}")  # Debug print
-        messages.error(request, "Vendor profile not found.")
-        return redirect('login')
+    
+    return redirect('login')
 
 def vendor_profile(request):
     if 'user_id' not in request.session:
@@ -1928,7 +1994,7 @@ def chatbot_response(request):
             # Generate content using the user message
             response = model.generate_content(user_message)
 
-            # Extract the AI response
+            # Extract the AI response   
             ai_message = response.text
 
             # Log the AI response for debugging
@@ -1943,33 +2009,107 @@ def chatbot_response(request):
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
+from django.db.models import Count, Sum, Avg, F
+from django.db.models.functions import TruncDate
+from django.utils import timezone
+from datetime import timedelta
+from django.shortcuts import render, redirect, get_object_or_404
+from decimal import Decimal
+
 def vendor_performance_analytics(request):
     if 'user_id' not in request.session or request.session.get('user_type') != 'vendor':
         return redirect('login')
 
-    user_id = request.session['user_id']
-    vendor = user_registration.objects.get(id=user_id)
+    try:
+        vendor = get_object_or_404(user_registration, id=request.session['user_id'])
+        
+        # Get vendor's products first
+        vendor_products = Product.objects.filter(vendor=vendor)
+        
+        # Get all orders for vendor's products
+        vendor_orders = Order.objects.filter(product__in=vendor_products)
+        
+        # Calculate total revenue from all time
+        total_revenue = vendor_orders.aggregate(
+            total=Sum('total_price')
+        )['total'] or 0
+        
+        # Get best selling products using product__in
+        best_selling = Order.objects.filter(
+            product__in=vendor_products
+        ).values(
+            'product__name'
+        ).annotate(
+            total_sales=Count('id'),
+            total_revenue=Sum('total_price')
+        ).order_by('-total_sales')[:5]
 
-    # Best-selling products
-    best_selling_products = Order.objects.values('product__name').annotate(total_sales=Count('id')).order_by('-total_sales')[:5]
+        # Weekly revenue calculation
+        today = timezone.now()
+        weekly_revenue = []
+        
+        for i in range(4):
+            start_date = today - timedelta(days=(i+1)*7)
+            end_date = today - timedelta(days=i*7)
+            
+            week_data = vendor_orders.filter(
+                order_date__range=[start_date, end_date]
+            ).aggregate(
+                revenue=Sum('total_price'),
+                orders=Count('id')
+            )
+            
+            weekly_revenue.append({
+                'week': f'Week {4-i}',
+                'revenue': week_data['revenue'] or 0,
+                'orders': week_data['orders'] or 0
+            })
 
-    # Revenue trends (daily, weekly, monthly)
-    daily_revenue = Order.objects.filter(order_date__date=timezone.now()).aggregate(Sum('total_price'))['total_price__sum'] or 0
-    weekly_revenue = Order.objects.filter(order_date__gte=timezone.now() - timedelta(days=7)).aggregate(Sum('total_price'))['total_price__sum'] or 0
-    monthly_revenue = Order.objects.filter(order_date__month=timezone.now().month).aggregate(Sum('total_price'))['total_price__sum'] or 0
+        # Customer metrics using product__in
+        customer_stats = {
+            'total_customers': vendor_orders.values('user').distinct().count(),
+            'repeat_customers': vendor_orders.values('user').annotate(
+                order_count=Count('id')
+            ).filter(order_count__gt=1).count(),
+            'avg_order_value': vendor_orders.aggregate(
+                avg=Avg('total_price')
+            )['avg'] or 0
+        }
 
-    # Stock status
-    low_stock_products = Product.objects.filter(stock_quantity__lt=5).values('name', 'stock_quantity')
+        # Monthly revenue using product__in
+        monthly_revenue = vendor_orders.filter(
+            order_date__month=today.month,
+            order_date__year=today.year
+        ).aggregate(
+            total=Sum('total_price')
+        )['total'] or 0
 
-    context = {
-        'vendor': vendor,
-        'best_selling_products': best_selling_products,
-        'daily_revenue': daily_revenue,
-        'weekly_revenue': weekly_revenue,
-        'monthly_revenue': monthly_revenue,
-        'low_stock_products': low_stock_products,
-    }
-    return render(request, 'vendor_performance_analytics.html', context)
+        # Debug prints
+        print("Debug Info:")
+        print(f"Vendor ID: {vendor.id}")
+        print(f"Total Products: {vendor_products.count()}")
+        print(f"Total Orders: {vendor_orders.count()}")
+        print(f"Total Revenue: {total_revenue}")
+        print(f"Monthly Revenue: {monthly_revenue}")
+        print(f"Customer Stats: {customer_stats}")
+
+        context = {
+            'vendor': vendor,
+            'total_revenue': total_revenue,
+            'monthly_revenue': monthly_revenue,
+            'best_selling': best_selling,
+            'weekly_revenue': weekly_revenue,
+            'customer_stats': customer_stats,
+            'low_stock_products': vendor_products.filter(stock_quantity__lt=5),
+            'total_orders': vendor_orders.count()
+        }
+        
+        return render(request, 'vendor_performance_analytics.html', context)
+    
+    except Exception as e:
+        print(f"Error in vendor_performance_analytics: {str(e)}")
+        messages.error(request, "An error occurred while fetching analytics data.")
+        return redirect('vendor_dashboard')
 
 def generate_password():
     # Generate a random password
@@ -2385,3 +2525,337 @@ def track_order(request, order_id):
     }
     
     return render(request, 'track_order.html', context)
+
+
+
+
+
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
+import joblib
+import os
+
+# Initialize label encoders for categorical variables
+footwear_encoder = LabelEncoder()
+activity_encoder = LabelEncoder()
+surface_encoder = LabelEncoder()
+material_encoder = LabelEncoder()
+usage_frequency_encoder = LabelEncoder()
+temperature_encoder = LabelEncoder()
+condition_encoder = LabelEncoder()
+
+# At the top with other initializations, let's pre-fit the encoders with all possible values
+footwear_encoder.fit(['casual_shoes', 'sports_shoes', 'formal_shoes', 'work_boots', 'safety_shoes'])
+activity_encoder.fit(['walking', 'running', 'standing', 'climbing', 'mixed'])
+usage_frequency_encoder.fit(['daily', 'weekly', 'occasional', 'rare'])
+temperature_encoder.fit(['cold', 'mild', 'warm', 'hot'])
+surface_encoder.fit(['ceramic_tile', 'polished_marble', 'vinyl', 'hardwood', 'concrete', 
+                    'asphalt', 'grass', 'gravel', 'wet_tile', 'inclined', 'metal_grating', 'pool_deck'])
+condition_encoder.fit(['dry', 'wet', 'oily', 'dusty', 'frozen'])
+
+# Update the material encoder initialization and fitting
+material_encoder.fit([
+    'Natural rubber', 'Heavy-duty rubber', 'Non-marking rubber',
+    'TPR', 'PVC', 'Nitrile rubber', 'SBR rubber', 'EVA',
+    'Polyurethane', 'Neoprene', 'Vibram', 'Cork'
+])
+
+# Expand the training data
+sample_training_data = [
+    # Format: age, weight, shoe_size, prev_incidents, footwear_type, activity, usage_freq, temp, surface_type, surface_condition, material
+    [25, 70, 9, 0, 'casual_shoes', 'walking', 'daily', 'mild', 'ceramic_tile', 'dry', 'Natural rubber'],
+    [30, 65, 8, 1, 'sports_shoes', 'running', 'weekly', 'warm', 'concrete', 'wet', 'Heavy-duty rubber'],
+    [45, 80, 10, 0, 'formal_shoes', 'standing', 'daily', 'mild', 'polished_marble', 'dry', 'Non-marking rubber'],
+    [28, 75, 8.5, 0, 'casual_shoes', 'walking', 'daily', 'mild', 'ceramic_tile', 'wet', 'TPR'],
+    [35, 82, 11, 2, 'work_boots', 'standing', 'daily', 'hot', 'concrete', 'oily', 'Nitrile rubber'],
+    [42, 68, 7, 1, 'sports_shoes', 'running', 'weekly', 'cold', 'asphalt', 'wet', 'SBR rubber'],
+    [29, 63, 6.5, 0, 'safety_shoes', 'standing', 'daily', 'warm', 'metal_grating', 'oily', 'Vibram'],
+    [33, 77, 9.5, 1, 'casual_shoes', 'walking', 'occasional', 'mild', 'vinyl', 'wet', 'PVC'],
+    [38, 85, 10.5, 2, 'work_boots', 'standing', 'daily', 'hot', 'metal_grating', 'oily', 'Nitrile rubber'],
+    [27, 72, 8, 0, 'sports_shoes', 'running', 'weekly', 'mild', 'hardwood', 'dry', 'EVA'],
+    [31, 69, 7.5, 1, 'casual_shoes', 'walking', 'daily', 'cold', 'polished_marble', 'wet', 'Natural rubber'],
+    [40, 78, 9, 2, 'safety_shoes', 'standing', 'daily', 'warm', 'concrete', 'oily', 'Heavy-duty rubber'],
+    [36, 73, 8.5, 0, 'formal_shoes', 'walking', 'occasional', 'mild', 'ceramic_tile', 'dry', 'Non-marking rubber'],
+    [34, 81, 10, 1, 'work_boots', 'standing', 'daily', 'hot', 'asphalt', 'oily', 'SBR rubber'],
+    [32, 67, 7, 0, 'sports_shoes', 'running', 'weekly', 'warm', 'grass', 'wet', 'TPR'],
+    [39, 76, 9, 2, 'safety_shoes', 'standing', 'daily', 'mild', 'metal_grating', 'oily', 'Nitrile rubber'],
+    [28, 70, 8, 0, 'casual_shoes', 'walking', 'daily', 'cold', 'polished_marble', 'wet', 'Natural rubber'],
+    [37, 83, 11, 1, 'work_boots', 'standing', 'daily', 'hot', 'concrete', 'oily', 'Heavy-duty rubber'],
+    [41, 74, 8.5, 0, 'formal_shoes', 'walking', 'occasional', 'mild', 'vinyl', 'dry', 'Non-marking rubber'],
+    [30, 79, 9.5, 2, 'safety_shoes', 'standing', 'daily', 'warm', 'metal_grating', 'oily', 'Vibram'],
+    [29, 71, 8.5, 0, 'casual_shoes', 'walking', 'daily', 'mild', 'hardwood', 'dry', 'Natural rubber'],
+    [31, 68, 7.5, 1, 'casual_shoes', 'walking', 'daily', 'warm', 'concrete', 'dry', 'Heavy-duty rubber'],
+    [27, 65, 8.0, 0, 'sports_shoes', 'running', 'weekly', 'mild', 'asphalt', 'dry', 'SBR rubber'],
+    [33, 70, 9.0, 1, 'sports_shoes', 'running', 'daily', 'warm', 'grass', 'dry', 'TPR'],
+    [35, 75, 8.5, 0, 'safety_shoes', 'standing', 'daily', 'mild', 'concrete', 'dry', 'Nitrile rubber'],
+    [40, 80, 10.0, 1, 'work_boots', 'standing', 'daily', 'warm', 'metal_grating', 'oily', 'Heavy-duty rubber'],
+    [28, 70, 8.5, 0, 'sports_shoes', 'climbing', 'weekly', 'mild', 'metal_grating', 'dry', 'Vibram'],
+    [32, 75, 9.0, 1, 'work_boots', 'climbing', 'occasional', 'warm', 'concrete', 'dry', 'Heavy-duty rubber'],
+    [30, 72, 8.0, 0, 'sports_shoes', 'mixed', 'daily', 'mild', 'vinyl', 'dry', 'TPR'],
+    [34, 77, 9.5, 1, 'casual_shoes', 'mixed', 'weekly', 'warm', 'ceramic_tile', 'dry', 'Natural rubber'],
+    [31, 72, 8.5, 0, 'work_boots', 'walking', 'daily', 'mild', 'concrete', 'dusty', 'Heavy-duty rubber'],
+    [29, 68, 7.5, 1, 'safety_shoes', 'standing', 'daily', 'warm', 'metal_grating', 'dusty', 'Nitrile rubber'],
+    [33, 75, 9.0, 0, 'work_boots', 'mixed', 'daily', 'hot', 'asphalt', 'dusty', 'SBR rubber'],
+    [35, 70, 8.0, 1, 'safety_shoes', 'standing', 'daily', 'warm', 'concrete', 'dusty', 'Heavy-duty rubber'],
+    [28, 73, 8.5, 0, 'sports_shoes', 'running', 'weekly', 'mild', 'gravel', 'dusty', 'Vibram'],
+    [32, 77, 9.5, 1, 'work_boots', 'climbing', 'occasional', 'warm', 'metal_grating', 'dusty', 'Heavy-duty rubber'],
+    [30, 69, 8.0, 0, 'safety_shoes', 'standing', 'daily', 'hot', 'concrete', 'dusty', 'Nitrile rubber'],
+    [34, 74, 9.0, 1, 'work_boots', 'mixed', 'daily', 'warm', 'asphalt', 'dusty', 'SBR rubber'],
+    [36, 71, 8.5, 0, 'sports_shoes', 'running', 'weekly', 'mild', 'gravel', 'dusty', 'TPR'],
+    [31, 76, 9.5, 1, 'safety_shoes', 'standing', 'daily', 'hot', 'metal_grating', 'dusty', 'Nitrile rubber'],
+    [27, 70, 8.0, 0, 'work_boots', 'walking', 'daily', 'cold', 'concrete', 'frozen', 'Heavy-duty rubber'],
+    [33, 75, 9.5, 1, 'safety_shoes', 'standing', 'daily', 'cold', 'metal_grating', 'frozen', 'Nitrile rubber'],
+    [29, 72, 8.5, 0, 'sports_shoes', 'running', 'weekly', 'cold', 'asphalt', 'frozen', 'SBR rubber'],
+    [35, 78, 10.0, 1, 'work_boots', 'mixed', 'daily', 'cold', 'concrete', 'frozen', 'Heavy-duty rubber'],
+    [31, 73, 9.0, 0, 'safety_shoes', 'standing', 'daily', 'cold', 'metal_grating', 'frozen', 'Vibram'],
+    [28, 71, 8.5, 1, 'sports_shoes', 'climbing', 'occasional', 'cold', 'concrete', 'frozen', 'Heavy-duty rubber'],
+    [34, 76, 9.5, 0, 'work_boots', 'mixed', 'daily', 'cold', 'asphalt', 'frozen', 'SBR rubber'],
+    [30, 74, 9.0, 1, 'safety_shoes', 'standing', 'daily', 'cold', 'metal_grating', 'frozen', 'Nitrile rubber'],
+    [32, 77, 9.5, 0, 'sports_shoes', 'running', 'weekly', 'cold', 'concrete', 'frozen', 'TPR'],
+    [36, 79, 10.0, 1, 'work_boots', 'climbing', 'occasional', 'cold', 'metal_grating', 'frozen', 'Vibram'],
+    # Pool deck entries
+    # Format: age, weight, shoe_size, prev_incidents, footwear_type, activity, usage_freq, temp, surface_type, surface_condition, material
+    
+    # Pool deck - wet condition (most common)
+    [28, 70, 8.5, 0, 'sports_shoes', 'walking', 'daily', 'warm', 'pool_deck', 'wet', 'Neoprene'],
+    [31, 75, 9.0, 1, 'casual_shoes', 'walking', 'weekly', 'hot', 'pool_deck', 'wet', 'TPR'],
+    [29, 68, 7.5, 0, 'sports_shoes', 'standing', 'daily', 'warm', 'pool_deck', 'wet', 'Non-marking rubber'],
+    [33, 72, 8.0, 1, 'casual_shoes', 'mixed', 'weekly', 'hot', 'pool_deck', 'wet', 'PVC'],
+    [35, 77, 9.5, 0, 'sports_shoes', 'walking', 'daily', 'warm', 'pool_deck', 'wet', 'Neoprene'],
+
+    # Pool deck - dry condition
+    [30, 73, 8.5, 0, 'casual_shoes', 'walking', 'daily', 'warm', 'pool_deck', 'dry', 'Non-marking rubber'],
+    [32, 76, 9.0, 1, 'sports_shoes', 'standing', 'weekly', 'hot', 'pool_deck', 'dry', 'TPR'],
+    [34, 71, 8.0, 0, 'casual_shoes', 'mixed', 'daily', 'warm', 'pool_deck', 'dry', 'PVC'],
+    [27, 69, 7.5, 1, 'sports_shoes', 'walking', 'weekly', 'hot', 'pool_deck', 'dry', 'Non-marking rubber'],
+    [36, 78, 9.5, 0, 'casual_shoes', 'standing', 'daily', 'warm', 'pool_deck', 'dry', 'Neoprene'],
+
+    # Wet tile specific entries (different from regular ceramic tile)
+    # Wet tile - wet condition
+    [29, 71, 8.0, 1, 'casual_shoes', 'walking', 'daily', 'mild', 'wet_tile', 'wet', 'Non-marking rubber'],
+    [31, 74, 8.5, 0, 'sports_shoes', 'standing', 'weekly', 'warm', 'wet_tile', 'wet', 'Natural rubber'],
+    [33, 77, 9.0, 1, 'work_boots', 'mixed', 'daily', 'mild', 'wet_tile', 'wet', 'Heavy-duty rubber'],
+    [28, 70, 7.5, 0, 'safety_shoes', 'standing', 'daily', 'warm', 'wet_tile', 'wet', 'Nitrile rubber'],
+    [35, 73, 8.5, 1, 'casual_shoes', 'walking', 'weekly', 'mild', 'wet_tile', 'wet', 'TPR'],
+
+    # Wet tile - dry condition
+    [30, 72, 8.5, 0, 'casual_shoes', 'walking', 'daily', 'mild', 'wet_tile', 'dry', 'Non-marking rubber'],
+    [32, 75, 9.0, 1, 'sports_shoes', 'standing', 'weekly', 'warm', 'wet_tile', 'dry', 'Natural rubber'],
+    [34, 78, 9.5, 0, 'work_boots', 'mixed', 'daily', 'mild', 'wet_tile', 'dry', 'Heavy-duty rubber'],
+    [27, 69, 7.5, 1, 'safety_shoes', 'standing', 'daily', 'warm', 'wet_tile', 'dry', 'Nitrile rubber'],
+    [36, 74, 8.5, 0, 'casual_shoes', 'walking', 'weekly', 'mild', 'wet_tile', 'dry', 'TPR'],
+
+    # Wet tile - oily condition
+    [31, 73, 8.5, 1, 'safety_shoes', 'standing', 'daily', 'mild', 'wet_tile', 'oily', 'Nitrile rubber'],
+    [29, 71, 8.0, 0, 'work_boots', 'mixed', 'daily', 'warm', 'wet_tile', 'oily', 'Heavy-duty rubber'],
+    [33, 76, 9.0, 1, 'safety_shoes', 'standing', 'weekly', 'mild', 'wet_tile', 'oily', 'SBR rubber'],
+    [35, 72, 8.5, 0, 'work_boots', 'mixed', 'daily', 'warm', 'wet_tile', 'oily', 'Nitrile rubber'],
+    [28, 70, 7.5, 1, 'safety_shoes', 'standing', 'weekly', 'mild', 'wet_tile', 'oily', 'Heavy-duty rubber']
+]
+
+# Add these entries to sample_training_data
+sample_training_data.extend([
+    # Inclined surfaces with various conditions
+    # Format: age, weight, shoe_size, prev_incidents, footwear_type, activity, usage_freq, temp, surface_type, surface_condition, material
+
+    # Inclined - wet condition
+    [29, 70, 8.5, 1, 'safety_shoes', 'climbing', 'daily', 'mild', 'inclined', 'wet', 'Vibram'],
+    [31, 75, 9.0, 0, 'work_boots', 'mixed', 'daily', 'warm', 'inclined', 'wet', 'Heavy-duty rubber'],
+    [33, 72, 8.0, 1, 'sports_shoes', 'climbing', 'weekly', 'mild', 'inclined', 'wet', 'SBR rubber'],
+    [28, 68, 7.5, 0, 'safety_shoes', 'climbing', 'daily', 'warm', 'inclined', 'wet', 'Nitrile rubber'],
+    [35, 77, 9.5, 1, 'work_boots', 'mixed', 'daily', 'mild', 'inclined', 'wet', 'Heavy-duty rubber'],
+
+    # Inclined - oily condition
+    [30, 73, 8.5, 1, 'safety_shoes', 'climbing', 'daily', 'mild', 'inclined', 'oily', 'Nitrile rubber'],
+    [32, 76, 9.0, 0, 'work_boots', 'mixed', 'daily', 'warm', 'inclined', 'oily', 'Heavy-duty rubber'],
+    [34, 71, 8.0, 1, 'safety_shoes', 'climbing', 'daily', 'mild', 'inclined', 'oily', 'SBR rubber'],
+    [27, 69, 7.5, 0, 'work_boots', 'mixed', 'daily', 'warm', 'inclined', 'oily', 'Nitrile rubber'],
+    [36, 78, 9.5, 1, 'safety_shoes', 'climbing', 'daily', 'mild', 'inclined', 'oily', 'Heavy-duty rubber'],
+
+    # Inclined - dusty condition
+    [31, 74, 8.5, 0, 'work_boots', 'climbing', 'daily', 'warm', 'inclined', 'dusty', 'Vibram'],
+    [29, 70, 8.0, 1, 'safety_shoes', 'mixed', 'daily', 'mild', 'inclined', 'dusty', 'Heavy-duty rubber'],
+    [33, 75, 9.0, 0, 'work_boots', 'climbing', 'daily', 'warm', 'inclined', 'dusty', 'SBR rubber'],
+    [35, 72, 8.5, 1, 'safety_shoes', 'mixed', 'daily', 'mild', 'inclined', 'dusty', 'Nitrile rubber'],
+    [28, 69, 7.5, 0, 'work_boots', 'climbing', 'daily', 'warm', 'inclined', 'dusty', 'Heavy-duty rubber'],
+
+    # Inclined - frozen condition
+    [32, 73, 8.5, 1, 'safety_shoes', 'climbing', 'daily', 'cold', 'inclined', 'frozen', 'Vibram'],
+    [34, 77, 9.0, 0, 'work_boots', 'mixed', 'daily', 'cold', 'inclined', 'frozen', 'Heavy-duty rubber'],
+    [30, 71, 8.0, 1, 'safety_shoes', 'climbing', 'daily', 'cold', 'inclined', 'frozen', 'Nitrile rubber'],
+    [36, 76, 9.5, 0, 'work_boots', 'mixed', 'daily', 'cold', 'inclined', 'frozen', 'SBR rubber'],
+    [28, 70, 7.5, 1, 'safety_shoes', 'climbing', 'daily', 'cold', 'inclined', 'frozen', 'Heavy-duty rubber']
+])
+
+def train_model():
+    # Convert training data to numpy arrays
+    X = np.array([[x[0], x[1], x[2], x[3]] for x in sample_training_data])  # Numerical features
+    categorical_features = np.array([[x[4], x[5], x[6], x[7], x[8], x[9]] for x in sample_training_data])
+    y = np.array([x[10] for x in sample_training_data])
+
+    # Encode categorical variables
+    X_cat_encoded = np.column_stack([
+        footwear_encoder.fit_transform(categorical_features[:, 0]),
+        activity_encoder.fit_transform(categorical_features[:, 1]),
+        usage_frequency_encoder.fit_transform(categorical_features[:, 2]),
+        temperature_encoder.fit_transform(categorical_features[:, 3]),
+        surface_encoder.fit_transform(categorical_features[:, 4]),
+        condition_encoder.fit_transform(categorical_features[:, 5])
+    ])
+
+    # Combine numerical and encoded categorical features
+    X_combined = np.column_stack([X, X_cat_encoded])
+    
+    # Train the model
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(X_combined, material_encoder.fit_transform(y))
+    
+    return model
+
+def get_recommendations(age, weight, shoe_size, prev_incidents, footwear_type, activity, 
+                       usage_freq, temperature, surfaces, surface_conditions):
+    try:
+        print("Starting get_recommendations with inputs:", {
+            'age': age, 'weight': weight, 'shoe_size': shoe_size,
+            'prev_incidents': prev_incidents, 'footwear_type': footwear_type,
+            'activity': activity, 'usage_freq': usage_freq,
+            'temperature': temperature, 'surfaces': surfaces,
+            'surface_conditions': surface_conditions
+        })
+
+        # Force retrain the model every time (for development)
+        model = train_model()
+        
+        recommendations = {}
+        activities = ['walking', 'running', 'standing', 'climbing', 'mixed']
+        prev_incidents = int(prev_incidents)
+        numerical_features = np.array([age, weight, shoe_size, prev_incidents])
+        
+        for surface in surfaces:
+            for condition in surface_conditions:
+                surface_predictions = {}
+                
+                # Get predictions for each activity type
+                for act in activities:
+                    try:
+                        categorical_features = np.array([
+                            footwear_encoder.transform([footwear_type])[0],
+                            activity_encoder.transform([act])[0],
+                            usage_frequency_encoder.transform([usage_freq])[0],
+                            temperature_encoder.transform([temperature])[0],
+                            surface_encoder.transform([surface])[0],
+                            condition_encoder.transform([condition])[0]
+                        ])
+                        
+                        X = np.concatenate([numerical_features, categorical_features]).reshape(1, -1)
+                        probabilities = model.predict_proba(X)[0]
+                        top_3_indices = np.argsort(probabilities)[-3:][::-1]
+                        recommended_materials = material_encoder.inverse_transform(top_3_indices)
+                        probs = probabilities[top_3_indices]
+                        descriptions = get_material_descriptions(recommended_materials.tolist())
+                        
+                        # Format the materials info
+                        materials_info = []
+                        for mat, prob in zip(recommended_materials, probs):
+                            materials_info.append({
+                                'name': mat,
+                                'percentage': round(prob * 100, 1),
+                                'description': descriptions[mat]
+                            })
+                        
+                        surface_predictions[act] = {
+                            'materials_info': materials_info
+                        }
+                    except Exception as e:
+                        print(f"Error processing activity {act}: {str(e)}")
+                        continue
+
+                surface_display = surface.replace('_', ' ').title()
+                surface_key = f"{surface_display}_{condition}"
+                recommendations[surface_key] = {
+                    'predictions': surface_predictions,
+                    'condition': condition
+                }
+        
+        return recommendations
+    except Exception as e:
+        print(f"Error in get_recommendations: {str(e)}")
+        return {'error': str(e)}
+
+def get_material_descriptions(materials):
+    descriptions = {
+        'Natural rubber': 'Excellent grip in wet conditions, good durability, and moderate heat resistance.',
+        'Heavy-duty rubber': 'Superior durability and excellent slip resistance, ideal for industrial settings.',
+        'Non-marking rubber': 'Good grip without leaving marks, perfect for indoor surfaces.',
+        'TPR': 'Thermoplastic rubber offering good flexibility and moderate slip resistance.',
+        'PVC': 'Durable and chemical resistant, moderate slip resistance.',
+        'Nitrile rubber': 'Outstanding oil and chemical resistance, excellent for industrial use.',
+        'SBR rubber': 'Good abrasion resistance and grip, economical choice.',
+        'EVA': 'Lightweight and cushioning, moderate slip resistance.',
+        'Polyurethane': 'Excellent wear resistance and good grip, versatile material.',
+        'Neoprene': 'Good chemical resistance and moderate grip, water-friendly.',
+        'Vibram': 'Premium grip and durability, excellent for outdoor use.',
+        'Cork': 'Natural material with good grip when dry, eco-friendly option.'
+    }
+    return {material: descriptions.get(material, 'Properties not specified') for material in materials}
+
+def recommend(request):
+    if request.method == 'POST':
+        try:
+            # Get form data with default values and type conversion
+            age = int(request.POST.get('age', 0))
+            weight = float(request.POST.get('weight', 0))
+            shoe_size = float(request.POST.get('shoeSize', 0))
+            prev_incidents = request.POST.get('previousIncidents')
+            footwear_type = request.POST.get('footwearType')
+            activity = request.POST.get('activity')
+            usage_freq = request.POST.get('usageFrequency')
+            temperature = request.POST.get('temperature')
+            surfaces = request.POST.getlist('surfaces[]')
+            surface_conditions = request.POST.getlist('surfaceConditions[]')
+
+            # Validate required fields
+            if not all([age, weight, shoe_size, prev_incidents, footwear_type, 
+                       activity, usage_freq, temperature, surfaces, surface_conditions]):
+                return render(request, 'index.html', {
+                    'error': 'Please fill in all required fields.'
+                })
+
+            # Validate numeric fields
+            if age <= 0 or weight <= 0 or shoe_size <= 0:
+                return render(request, 'index.html', {
+                    'error': 'Please enter valid numeric values.'
+                })
+
+            recommendations = get_recommendations(
+                age, weight, shoe_size, prev_incidents, footwear_type, 
+                activity, usage_freq, temperature, surfaces, surface_conditions
+            )
+
+            # No additional formatting needed, pass recommendations directly
+            return render(request, 'recommendations.html', {
+                'recommendations': recommendations,
+                'surfaces': surfaces,
+                'conditions': surface_conditions
+            })
+            
+        except (ValueError, TypeError) as e:
+            print(f"Form data error: {e}")
+            print("POST data:", request.POST)
+            return render(request, 'index.html', {
+                'error': 'Please fill in all required fields with valid values.'
+            })
+    
+    return render(request, 'index.html')
+
+def index(request):
+    return render(request, 'index.html')
+
+def slip_resistance(request):
+    """
+    View function for the slip resistance recommender page
+    """
+    return render(request, 'index.html')
+
+

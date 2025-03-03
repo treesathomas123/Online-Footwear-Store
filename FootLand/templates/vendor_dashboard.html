@@ -247,7 +247,13 @@
                             <div class="card-body text-center">
                                 <i class="fas fa-star card-icon mb-3"></i>
                                 <h5 class="card-title">Average Rating</h5>
-                                <p class="card-text display-4">{{ average_rating|default:"0.0" }}</p>
+                                <p class="card-text display-4">
+                                    {% if average_rating %}
+                                        {{ average_rating|floatformat:1 }}
+                                    {% else %}
+                                        No ratings
+                                    {% endif %}
+                                </p>
                             </div>
                         </div>
                     </div>

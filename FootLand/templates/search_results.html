@@ -1,9 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Results</title>
+    <title>Search Products - FootLand</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* General styling */
         body {
@@ -70,6 +72,8 @@
             background-color: #fff;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             transition: box-shadow 0.3s ease;
+            animation: fadeInUp 0.5s ease forwards;
+            animation-delay: calc(var(--order) * 0.1s);
         }
 
         .product-item:hover {
@@ -165,9 +169,231 @@
             font-size: 16px;
             color: #333;
         }
+
+        /* Enhanced search bar styling */
+        .search-header {
+            background: linear-gradient(135deg, #ff6b6b, #ff4081);
+            padding: 40px 0;
+            margin-bottom: 30px;
+            text-align: center;
+            border-radius: 0 0 30px 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .search-form {
+            max-width: 600px;
+            margin: 20px auto;
+            display: flex;
+            gap: 10px;
+            padding: 0 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .search-button {
+            padding: 15px 30px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .search-button:hover {
+            background: #444;
+            transform: translateY(-2px);
+        }
+
+        /* Enhanced product card styling */
+        .product-item {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .product-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-image {
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .product-item:hover .product-image {
+            transform: scale(1.05);
+        }
+
+        .product-info {
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            color: white;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .product-item:hover .product-info {
+            transform: translateY(0);
+        }
+
+        /* Category filters */
+        .filter-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .filter-button {
+            padding: 8px 15px;
+            border: 2px solid #ff4081;
+            border-radius: 20px;
+            background: transparent;
+            color: #ff4081;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-button:hover,
+        .filter-button.active {
+            background: #ff4081;
+            color: white;
+        }
+
+        /* Animation for products */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .search-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .search-option-btn {
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: none;
+            background: #f0f0f0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .search-option-btn:hover {
+            background: #e0e0e0;
+        }
     </style>
 </head>
 <body>
+    <div class="search-header">
+        <h1>Find Your Perfect Footwear</h1>
+        <form class="search-form" method="GET" action="{% url 'search' %}" id="searchForm">
+            <input type="text" name="q" class="search-input" placeholder="Search for shoes..." value="{{ query|default:'' }}">
+            <input type="hidden" name="type" value="text" id="searchType">
+            <button type="submit" class="search-button">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </form>
+        
+        <div class="search-options">
+            <button class="search-option-btn" onclick="startVoiceSearch()">
+                <i class="fas fa-microphone"></i> Voice Search
+            </button>
+            <label class="search-option-btn">
+                <i class="fas fa-camera"></i> Image Search
+                <input type="file" hidden accept="image/*" onchange="handleImageSearch(this)">
+            </label>
+        </div>
+    </div>
+
+    <div class="filter-section">
+        <div class="filter-group">
+            <h3>Categories</h3>
+            <div class="filter-options">
+                <button class="filter-button {% if not category %}active{% endif %}" 
+                        onclick="filterProducts('category', 'all')">All</button>
+                {% for cat_value, cat_label in all_categories %}
+                    <button class="filter-button {% if category == cat_value %}active{% endif %}"
+                            onclick="filterProducts('category', '{{ cat_value }}')">
+                        {{ cat_label }}
+                    </button>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="filter-group">
+            <h3>Types</h3>
+            <div class="filter-options">
+                {% for type_value, type_label in all_types %}
+                    <button class="filter-button" onclick="filterProducts('type', '{{ type_value }}')">
+                        {{ type_label }}
+                    </button>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="filter-group">
+            <h3>Brands</h3>
+            <div class="filter-options">
+                {% for brand_value, brand_label in all_brands %}
+                    <button class="filter-button" onclick="filterProducts('brand', '{{ brand_value }}')">
+                        {{ brand_label }}
+                    </button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
     <div class="search-container">
         <h1>Search Results for "{{ query }}"</h1>
         <a href="javascript:history.back()" class="back-button">Back to Previous Page</a>
@@ -192,7 +418,11 @@
                 {% endfor %}
             </ul>
         {% else %}
-            <p class="no-results">No products found matching your search.</p>
+            <div class="no-results">
+                <i class="fas fa-search" style="font-size: 48px; color: #ddd;"></i>
+                <h2>No products found</h2>
+                <p>Try adjusting your search terms or browse our categories</p>
+            </div>
         {% endif %}
 
         {% if products.has_other_pages %}
@@ -211,5 +441,74 @@
             </div>
         {% endif %}
     </div>
+
+    <script>
+        // Voice Search
+        function startVoiceSearch() {
+            if ('webkitSpeechRecognition' in window) {
+                const recognition = new webkitSpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                
+                recognition.onresult = function(event) {
+                    const text = event.results[0][0].transcript;
+                    document.querySelector('.search-input').value = text;
+                    document.getElementById('searchType').value = 'voice';
+                    document.getElementById('searchForm').submit();
+                };
+                
+                recognition.start();
+            } else {
+                alert('Voice search is not supported in your browser');
+            }
+        }
+
+        // Image Search
+        function handleImageSearch(input) {
+            const file = input.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('image', file);
+                formData.append('type', 'image');
+                
+                fetch('{% url "search" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.html) {
+                        document.querySelector('.product-list').innerHTML = data.html;
+                    }
+                });
+            }
+        }
+
+        // Filter Products
+        function filterProducts(filterType, value) {
+            const url = new URL(window.location);
+            url.searchParams.set(filterType, value);
+            
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.html) {
+                    document.querySelector('.product-list').innerHTML = data.html;
+                    // Update active states
+                    document.querySelectorAll('.filter-button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    event.target.classList.add('active');
+                }
+            });
+        }
+    </script>
 </body>
 </html>

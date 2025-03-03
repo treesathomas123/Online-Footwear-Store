@@ -13,48 +13,216 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     
         <style>
-            /* Navigation and dropdown styling */
-nav {
+            /* Update the header styling to remove white space at top */
+.header {
+    background: #f1f1f1;
+    margin: 0;
+    padding: 0;
+}
+
+/* Ensure the navbar extends to the top of the page */
+.navbar {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: center;
+    padding: 15px 0;
+    background: linear-gradient(135deg, #37100d, #7e1f1a);
+    box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+    width: 100%;
+    margin: 0;
+    position: relative;
+    left: 0;
+    right: 0;
+    top: 0;
 }
 
+/* Add this to ensure body has no default margin */
+body {
+    margin: 0;
+    padding: 0;
+}
+
+/* Improve spacing between icons */
 #MenuItems {
-    list-style: none;
     display: flex;
     align-items: center;
-    gap: 20px;
+    justify-content: flex-end;
+    gap: 40px; /* Increased from 30px to 40px for more space between icons */
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
 }
 
-#MenuItems li {
-    position: relative;
+/* Make icons slightly larger and add consistent spacing */
+.navbar-icon {
+    font-size: 24px;
+    padding: 10px; /* Increased padding */
+    display: inline-block;
+    margin: 0 5px; /* Added horizontal margin */
+}
+
+/* Ensure all icons have the same hover effect */
+.navbar-icon:hover {
+    transform: scale(1.15);
+    transition: transform 0.3s ease;
+}
+
+.logo {
+    margin-left: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.logo:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.logo img {
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+}
+
+nav {
+    flex: 1;
+    text-align: right;
+    margin-right: 50px; /* Increased right margin to move icons left */
+}
+
+#MenuItems li a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 15px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+#MenuItems li a:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateY(-2px);
 }
 
 .dropdown-content {
     display: none;
     position: absolute;
     right: 0;
-    background-color: #fff;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-    z-index: 1;
+    top: 120%;
+    background: white;
+    min-width: 200px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    animation: dropdownFade 0.3s ease;
+    z-index: 100;
 }
 
-.dropdown-content a {
-    color: #333;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-    text-align: left;
+.dropdown {
+    position: relative;
 }
 
 .dropdown:hover .dropdown-content {
     display: block;
 }
 
+@keyframes dropdownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-content a {
+    color: #333 !important;
+    padding: 12px 20px !important;
+    border-bottom: 1px solid #eee;
+    transition: all 0.3s ease !important;
+    display: block;
+}
+
+.dropdown-content a:last-child {
+    border-bottom: none;
+}
+
 .dropdown-content a:hover {
-    background-color: #f1f1f1;
+    background-color: #f8f9fa !important;
+    padding-left: 25px !important;
+    color: #a23a33 !important;
+}
+
+.navbar-wishlist-icon {
+    transition: transform 0.3s ease;
+}
+
+.navbar-wishlist-icon:hover {
+    transform: scale(1.15);
+}
+
+.sr-icon {
+    position: relative;
+    padding: 8px 15px !important;
+}
+
+.sr-points {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background: #ff4b4b;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 15px;
+    font-size: 12px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.menu-icon {
+    display: none;
+    cursor: pointer;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #MenuItems {
+        position: absolute;
+        top: 70px;
+        left: 0;
+        background: #37100d;
+        width: 100%;
+        overflow: hidden;
+        transition: max-height 0.5s;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0;
+        z-index: 100;
+    }
+    
+    #MenuItems li {
+        display: block;
+        margin: 10px 20px;
+    }
+    
+    .menu-icon {
+        display: block;
+        margin-right: 20px;
+    }
+    
+    .sr-points {
+        display: none;
+    }
+    
+    .logo {
+        margin-left: 20px;
+    }
 }
    /* Search bar styling */
    .search-input {
@@ -107,10 +275,6 @@ nav {
 }
 
 /* Navbar wishlist icon */
-.navbar-wishlist-icon {
-    margin-left: 15px; /* Space between icons */
-    cursor: pointer;
-}
 .chatbot-icon {
     position: fixed;
     bottom: 20px;
@@ -235,36 +399,71 @@ nav {
     }
 }
 
+/* Shopping Rewards Icon Styling */
+.sr-icon {
+    position: relative;
+    display: inline-block;
+    color: #37100d;
+    font-size: 24px;
+    padding: 5px;
+    transition: color 0.3s ease;
+}
+
+.sr-icon:hover {
+    color: #a23a33;
+}
+
+.sr-points {
+    position: absolute;
+    top: -8px;
+    right: -120px;
+    background-color: #a23a33;
+    color: white;
+    border-radius: 15px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+/* Add this to your existing CSS */
+.navbar img.icon {
+    filter: brightness(0) invert(1);
+    transition: transform 0.3s ease;
+}
+
+.navbar img.icon:hover {
+    transform: scale(1.15);
+}
+
         </style>
     </head>
     <body>
        
-        <div class ="header">
-        <div class="container">
+        <div class="header">
             <div class="navbar">
                 <div class="logo">
-                    <a href="{%url 'home'%}"><img src="{%static 'images/logo2.png'%}" width="125px"></a>
+                    <a href="{% url 'home' %}"><img src="{% static 'images/logo2.png' %}" width="125px"></a>
                 </div>
                 <nav>
                     <ul id="MenuItems">
                         <li><a href="{% url 'user_dashboard' %}">Home</a></li>
-                        
                         <li><a href="{% url 'womens_products' %}">Womens</a></li>
                         <li><a href="{% url 'mens_products' %}">Mens</a></li>
-                        <li><a href="{% url 'kids_products' %}">Kids </a></li>
+                        <li><a href="{% url 'kids_products' %}">Kids</a></li>
                         <li>
-                            <form action="{% url 'search' %}" method="get">
-                                <input type="text" name="q" placeholder="Search..." class="search-input">
-                                <button type="submit" class="search-btn">
-                                    <img src="{% static 'images/search.png' %}" width="20px" height="20px">
-                                </button>
-                            </form>
+                            <a href="{% url 'search' %}" class="navbar-icon">
+                                <i class="fa fa-search" aria-hidden="true"></i>
+                            </a>
                         </li>
                         <li class="dropdown">
-                            <a href="#"><img src="{% static 'images/user.png' %}" width="30px" height="30px"id="image"></a>
+                            <a href="#" class="navbar-icon">
+                                <i class="fa fa-user" aria-hidden="true" style="color: white; font-size: 24px;"></i>
+                            </a>
                             <div class="dropdown-content">
                                 {% if request.session.user_id %}
-                                <a href="{% url 'add_profile' %}" id="welcome">Welcome, {{ request.session.username }}</a>                                {% else %}
+                                    <a href="{% url 'add_profile' %}" id="welcome">Welcome, {{ request.session.username }}</a>
+                                {% else %}
                                     <a href="{% url 'login' %}">Welcome</a>
                                 {% endif %}
                                 <a href="{% url 'my_orders' %}" id="my_orders">My Orders</a>
@@ -272,27 +471,37 @@ nav {
                             </div>
                         </li>
                         <li>
-                            <a href="{% url 'wishlist' %}">
-                                <img src="{% static 'images/heart.png' %}" width="30px" height="30px" alt="Wishlist" class="navbar-wishlist-icon">
+                            <a href="{% url 'wishlist' %}" class="navbar-icon">
+                                <img src="{% static 'images/heart.png' %}" width="30px" height="30px" alt="Wishlist" class="navbar-wishlist-icon icon">
                             </a>
                         </li>
-                        
-               
-                <a href="{%url 'cart'%}"><img src="{% static 'images/cart.png'%}" width="30px" height="30px"></a>
-                <img src="{% static 'images/menu.png'%}" class="menu-icon" onClick="menutoggle()" >
+                        <li>
+                            <a href="{% url 'recommend' %}" class="navbar-icon" title="Recommendations">
+                                <i class="fa fa-lightbulb-o" aria-hidden="true" style="color: white;"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'cart' %}" class="navbar-icon">
+                                <img src="{% static 'images/cart.png' %}" width="30px" height="30px" class="icon">
+                            </a>
+                        </li>
+                    </ul>
+                    <img src="{% static 'images/menu.png' %}" class="menu-icon" onClick="menutoggle()">
+                </nav>
             </div>
-            <div class="row">
-                <div class="col-2">
-                    <h1>Cute Shoes, Happier  <br>with footwears!</h1>
-                    <p>Walk in Style, Everywhere You Go.. Own the Streets with Style.<br>Find Your Feet's Perfect Match</p>
-                    <a href="{%url 'product'%}" class="btn">Explore Now &#8594;</a>
-                </div>
-                <div class="col-2">
-                    <img src="{% static 'images/men.jpg'%}">
+            <div class="container">
+                <div class="row">
+                    <div class="col-2">
+                        <h1>Cute Shoes, Happier  <br>with footwears!</h1>
+                        <p>Walk in Style, Everywhere You Go.. Own the Streets with Style.<br>Find Your Feet's Perfect Match</p>
+                        <a href="{%url 'product'%}" class="btn">Explore Now &#8594;</a>
+                    </div>
+                    <div class="col-2">
+                        <img src="{% static 'images/men.jpg'%}">
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
         
         <!------------------------------ featured categories------------------------------>
         <div class="categories">

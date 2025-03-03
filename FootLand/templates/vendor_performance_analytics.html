@@ -1,287 +1,338 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendor Performance Analytics</title>
-    {% load static %}
+    <title>Vendor Analytics | FootLand</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --sidebar-width: 250px;
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --sidebar-bg: #1a1a2e;
+        }
+
         body {
-            background-color: #f4f7fa; /* Light background for better contrast */
-            font-family: 'Arial', sans-serif; /* Professional font */
+            background: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
+            margin-left: var(--sidebar-width);
         }
+
+        /* Sidebar Styling */
         .sidebar {
-            min-height: 100vh;
-            background: #2c3e50; /* Darker background for sidebar */
-            padding: 25px 15px;
-            position: fixed; /* Fixed sidebar */
-            width: 250px; /* Fixed width */
-            box-shadow: 4px 0 10px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            padding: 20px;
+            color: white;
+            z-index: 1000;
         }
+
         .sidebar-header {
-            color: #ffffff; /* White text for sidebar title */
-            font-size: 1.5rem;
-            font-weight: bold;
-            text-align: center;
             padding: 20px 0;
-            margin-bottom: 30px;
+            text-align: center;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        .sidebar a {
-            color: #ffffff; /* White text for links */
-            padding: 12px 20px;
-            display: flex; /* Flexbox for icon and text alignment */
-            align-items: center; /* Center align items vertically */
-            border-radius: 8px;
+
+        .sidebar-menu {
+            margin-top: 30px;
+        }
+
+        .menu-item {
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            border-radius: 10px;
+            margin-bottom: 5px;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+
+        .menu-item i {
+            width: 20px;
+        }
+
+        /* Dashboard Styling */
+        .dashboard-container {
+            padding: 2rem;
+        }
+
+        .analytics-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
-            margin-bottom: 10px; /* Space between links */
-            text-decoration: none; /* Remove underline */
         }
-        .sidebar a:hover {
-            background: rgba(255,255,255,0.1); /* Darker background on hover */
-            transform: translateX(5px); /* Slight movement on hover */
+
+        .analytics-card:hover {
+            transform: translateY(-5px);
         }
-        .sidebar a.active {
-            background: #3498db; /* Active link background */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Shadow for active link */
+
+        .metric {
+            text-align: center;
+            padding: 15px;
         }
-        .sidebar a i {
-            margin-right: 12px; /* Space between icon and text */
-            font-size: 1.2rem; /* Icon size */
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
         }
-        .container {
-            margin-left: 270px; /* Space for sidebar */
-            padding: 30px; /* Padding for content */
+
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 14px;
         }
-        .page-title {
-            color: #2c3e50; /* Darker color for headings */
-            font-size: 2rem; /* Larger font size for title */
-            font-weight: bold; /* Bold for emphasis */
-            margin-bottom: 40px; /* Space below title */
-            padding-bottom: 15px; /* Padding below title */
-            border-bottom: 2px solid #3498db; /* Underline for title */
-        }
-        .stat-card {
-            background: white; /* White background for cards */
-            border-radius: 10px; /* Rounded corners */
-            padding: 25px; /* Padding for cards */
-            margin-bottom: 30px; /* Space below cards */
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Shadow for cards */
-            transition: transform 0.3s ease; /* Smooth transition */
-        }
-        .stat-card:hover {
-            transform: translateY(-5px); /* Lift effect on hover */
-        }
-        .stat-icon {
-            font-size: 2rem; /* Icon size */
-            margin-bottom: 15px; /* Space below icon */
-            color: #3498db; /* Color for icons */
-        }
-        .chart-container {
-            background: white; /* White background for charts */
-            border-radius: 10px; /* Rounded corners */
-            padding: 25px; /* Padding for charts */
-            margin-bottom: 40px; /* Space below charts */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Shadow for charts */
-        }
-        .section-title {
-            color: #2c3e50; /* Darker color for section titles */
-            font-size: 1.5rem; /* Font size for section titles */
-            margin-bottom: 25px; /* Space below section titles */
-            display: flex; /* Flexbox for icon and text alignment */
-            align-items: center; /* Center align items vertically */
-        }
-        .section-title i {
-            margin-right: 10px; /* Space between icon and text */
-            color: #3498db; /* Color for section icons */
-        }
+
+        /* Table Styling */
         .table {
-            background: white; /* White background for tables */
-            border-radius: 10px; /* Rounded corners */
-            overflow: hidden; /* Prevent overflow */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Shadow for tables */
+            margin: 0;
         }
-        .table thead th {
-            background: #3498db; /* Primary color for table headers */
-            color: white; /* White text for contrast */
-            border: none; /* No border for headers */
-            padding: 15px; /* Padding for headers */
-            font-weight: bold; /* Bold for emphasis */
+
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
         }
-        .table td {
-            padding: 15px; /* Padding for table cells */
-            vertical-align: middle; /* Center align table cells */
+
+        .badge {
+            padding: 8px 12px;
+            border-radius: 20px;
         }
-        @media (max-width: 768px) {
-            .container {
-                margin-left: 0; /* Remove margin for smaller screens */
-                padding: 20px; /* Adjust padding for smaller screens */
+
+        /* Animation */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
             }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .analytics-card {
+            animation: slideIn 0.5s ease forwards;
         }
     </style>
 </head>
 <body>
+    <!-- Sidebar -->
     <div class="sidebar">
-        <div class="sidebar-header">Vendor Dashboard</div>
-        
-        <a href="{% url 'vendor_dashboard' %}">
-            <i class="fas fa-home"></i> Dashboard
-        </a>
-        <a href="{% url 'vendor_view_products' %}">
-            <i class="fas fa-boxes"></i> Products
-        </a>
-        <a href="{% url 'vendor_add_product' %}">
-            <i class="fas fa-plus-circle"></i> Add Product
-        </a>
-        <a href="{% url 'vendor_performance_analytics' %}" class="active">
-            <i class="fas fa-chart-bar"></i> Analytics
-        </a>
-        <a href="{% url 'vendor_profile' %}">
-            <i class="fas fa-user-circle"></i> Profile
-        </a>
-        <a href="{% url 'vendor_change_password' %}">
-            <i class="fas fa-lock"></i> Password
-        </a>
-        <a href="{% url 'logout' %}">
-            <i class="fas fa-sign-out-alt"></i> Logout
-        </a>
+        <div class="sidebar-header">
+            <img src="{% static 'images/logo2.png' %}" alt="FootLand" style="max-width: 150px;">
+        </div>
+        <div class="sidebar-menu">
+            <a href="{% url 'vendor_dashboard' %}" class="menu-item">
+                <i class="fas fa-home"></i>
+                Dashboard
+            </a>
+          
+            
+            
+        </div>
     </div>
 
-    <div class="container">
-        <h1 class="page-title">Performance Analytics</h1>
+    <!-- Main Content -->
+    <div class="dashboard-container">
+        <!-- Header Section -->
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="display-4">Analytics Dashboard</h1>
+                <p class="text-muted">Welcome back, {{ vendor.first_name }}</p>
+            </div>
+        </div>
 
+        <!-- Key Metrics -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="analytics-card metric">
+                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                    <div class="metric-value">{{ customer_stats.total_customers }}</div>
+                    <div class="metric-label">Total Customers</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="analytics-card metric">
+                    <i class="fas fa-user-check fa-2x text-success mb-2"></i>
+                    <div class="metric-value">{{ customer_stats.repeat_customers }}</div>
+                    <div class="metric-label">Repeat Customers</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="analytics-card metric">
+                    <i class="fas fa-shopping-cart fa-2x text-info mb-2"></i>
+                    <div class="metric-value">₹{{ customer_stats.avg_order_value|floatformat:2 }}</div>
+                    <div class="metric-label">Average Order Value</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="analytics-card metric">
+                    <i class="fas fa-calendar fa-2x text-warning mb-2"></i>
+                    <div class="metric-value">₹{{ monthly_revenue|floatformat:2 }}</div>
+                    <div class="metric-label">Monthly Revenue</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Overview -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="analytics-card">
+                    <h4>Total Revenue</h4>
+                    <div class="metric-value">₹{{ total_revenue|floatformat:2 }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="analytics-card">
+                    <h4>Total Orders</h4>
+                    <div class="metric-value">{{ total_orders }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
         <div class="row">
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <i class="fas fa-shopping-cart stat-icon"></i>
-                    <h3>Total Sales</h3>
-                    <p class="h2 mb-0">{{ total_sales }}</p>
+            <div class="col-md-6">
+                <div class="analytics-card">
+                    <h4>Best Selling Products</h4>
+                    <canvas id="bestSellingChart"></canvas>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <i class="fas fa-dollar-sign stat-icon"></i>
-                    <h3>Revenue</h3>
-                    <p class="h2 mb-0">RS {{ total_revenue }}</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <i class="fas fa-box stat-icon"></i>
-                    <h3>Products</h3>
-                    <p class="h2 mb-0">{{ total_products }}</p>
+            <div class="col-md-6">
+                <div class="analytics-card">
+                    <h4>Weekly Revenue Trend</h4>
+                    <canvas id="revenueChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <h2 class="section-title">
-            <i class="fas fa-crown"></i> Best-Selling Products
-        </h2>
-        <div class="chart-container">
-            <canvas id="bestSellingProductsChart"></canvas>
-        </div>
-
-        <h2 class="section-title">
-            <i class="fas fa-money-bill-wave"></i> Revenue Trends
-        </h2>
-        <div class="chart-container">
-            <canvas id="revenueTrendsChart"></canvas>
-        </div>
-
-        <h2 class="section-title">
-            <i class="fas fa-exclamation-triangle"></i> Low Stock Products
-        </h2>
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th><i class="fas fa-box"></i> Product Name</th>
-                        <th><i class="fas fa-layer-group"></i> Stock Quantity</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for product in low_stock_products %}
-                    <tr>
-                        <td>{{ product.name }}</td>
-                        <td>{{ product.stock_quantity }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <!-- Low Stock Alert -->
+        <div class="analytics-card mt-4">
+            <h4><i class="fas fa-exclamation-triangle text-warning"></i> Low Stock Products</h4>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Current Stock</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in low_stock_products %}
+                        <tr>
+                            <td>{{ product.name }}</td>
+                            <td>{{ product.stock_quantity }}</td>
+                            <td>₹{{ product.price }}</td>
+                            <td>
+                                {% if product.stock_quantity == 0 %}
+                                    <span class="badge bg-danger">Out of Stock</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Low Stock</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
-        // Best-Selling Products Chart
-        const bestSellingProductsCtx = document.getElementById('bestSellingProductsChart').getContext('2d');
-        const bestSellingProductsChart = new Chart(bestSellingProductsCtx, {
+        // Best Selling Products Chart
+        const bestSellingData = [
+            {% for product in best_selling %}
+                {
+                    name: "{{ product.product__name }}",
+                    sales: {{ product.total_sales }},
+                    revenue: {{ product.total_revenue|default:0 }}
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        const bestSellingCtx = document.getElementById('bestSellingChart').getContext('2d');
+        new Chart(bestSellingCtx, {
             type: 'bar',
             data: {
-                labels: [{% for product in best_selling_products %}'{{ product.product__name }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+                labels: bestSellingData.map(item => item.name),
                 datasets: [{
-                    label: 'Total Sales',
-                    data: [{% for product in best_selling_products %}{{ product.total_sales }}{% if not forloop.last %}, {% endif %}{% endfor %}],
-                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
+                    label: 'Sales Count',
+                    data: bestSellingData.map(item => item.sales),
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)'
+                }, {
+                    label: 'Revenue (₹)',
+                    data: bestSellingData.map(item => item.revenue),
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)'
                 }]
             },
             options: {
                 responsive: true,
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Sales Count'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Products'
-                        }
-                    }
+                    y: { beginAtZero: true }
                 }
             }
         });
 
-        // Revenue Trends Chart
-        const revenueTrendsCtx = document.getElementById('revenueTrendsChart').getContext('2d');
-        const revenueTrendsChart = new Chart(revenueTrendsCtx, {
+        // Weekly Revenue Chart
+        const weeklyData = [
+            {% for week in weekly_revenue %}
+                {
+                    week: "{{ week.week }}",
+                    revenue: {{ week.revenue }},
+                    orders: {{ week.orders }}
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
             type: 'line',
             data: {
-                labels: ['Daily', 'Weekly', 'Monthly'],
+                labels: weeklyData.map(item => item.week),
                 datasets: [{
-                    label: 'Revenue',
-                    data: [{{ daily_revenue }}, {{ weekly_revenue }}, {{ monthly_revenue }}],
-                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 2,
-                    fill: true
+                    label: 'Weekly Revenue (₹)',
+                    data: weeklyData.map(item => item.revenue),
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
                 }]
             },
             options: {
                 responsive: true,
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Revenue (RS)'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Time Period'
-                        }
-                    }
+                    y: { beginAtZero: true }
                 }
             }
+        });
+
+        // Add this for sidebar active state
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const menuItems = document.querySelectorAll('.menu-item');
+            
+            menuItems.forEach(item => {
+                if(item.getAttribute('href') === currentPath) {
+                    item.classList.add('active');
+                }
+            });
         });
     </script>
 </body>

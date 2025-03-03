@@ -96,6 +96,7 @@ urlpatterns = [
     path('order/track/<int:order_id>/', views.track_order, name='track_order'),
     path('delivery_boy/scan-qr/', views.qr_scanner, name='qr_scanner'),
     path('delivery_boy/scan-delivery/', views.scan_delivery_qr, name='scan_delivery_qr'),
+    path('recommend/', views.recommend, name='recommend'),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

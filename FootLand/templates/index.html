@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foot Land - Slip Resistance Recommender</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .surface-option {
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 10px;
+            text-align: center;
+            padding: 10px;
+        }
+        .surface-option:hover {
+            transform: scale(1.05);
+        }
+        .surface-option img {
+            width: 120px;
+            height: 120px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            object-fit: cover;
+        }
+        .surface-option.selected {
+            border: 3px solid #007bff;
+            border-radius: 10px;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .surface-category {
+            margin-bottom: 40px;
+        }
+        .condition-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+        }
+        .required-field::after {
+            content: '*';
+            color: red;
+            margin-left: 4px;
+            transition: color 0.3s ease;
+        }
+        
+        .required-note {
+            color: red;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        .is-invalid {
+            border-color: #dc3545 !important;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+
+        .invalid-feedback {
+            display: block;
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+        }
+
+        /* Add styles for valid state */
+        .form-control:valid + .required-field::after,
+        .form-select:valid + .required-field::after,
+        .is-valid + .required-field::after {
+            color: #198754;  /* Bootstrap's success color */
+        }
+
+        /* Add this to move the asterisk to the label */
+        .form-label.required-field {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Add validation styles for surface selections */
+        .surface-category.is-valid .required-note {
+            color: #198754;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="text-center mb-5">Slip Resistance Recommender</h1>
+        
+        {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+        
+        <form action="{% url 'recommend' %}" method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            
+            <!-- Add this div for validation messages -->
+            <div id="validationAlert" class="mb-4"></div>
+            
+            <div class="required-note mb-4">
+                Fields marked with an asterisk (*) are required
+            </div>
+            
+            <!-- Personal Details Section -->
+            <div class="form-section">
+                <h3 class="mb-4">Personal Details</h3>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label for="age" class="form-label required-field">Age</label>
+                            <input type="number" class="form-control" id="age" name="age" required>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label for="weight" class="form-label required-field">Weight (kg)</label>
+                            <input type="number" class="form-control" id="weight" name="weight" required>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label for="shoeSize" class="form-label required-field">Shoe Size</label>
+                            <input type="number" class="form-control" id="shoeSize" name="shoeSize" step="0.5" required>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label for="previousIncidents" class="form-label required-field">Previous Slip Incidents</label>
+                            <select class="form-select" id="previousIncidents" name="previousIncidents" required>
+                                <option value="">Select...</option>
+                                <option value="0">None</option>
+                                <option value="1">1-2 times</option>
+                                <option value="2">3-5 times</option>
+                                <option value="3">More than 5 times</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Usage Pattern Row -->
+                <div class="row mt-3">
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label for="footwearType" class="form-label required-field">Footwear Type</label>
+                            <select class="form-select" id="footwearType" name="footwearType" required>
+                                <option value="">Select...</option>
+                                <option value="casual_shoes">Casual Shoes</option>
+                                <option value="sports_shoes">Sports Shoes</option>
+                                <option value="formal_shoes">Formal Shoes</option>
+                                <option value="work_boots">Work Boots</option>
+                                <option value="safety_shoes">Safety Shoes</option>
+                                <option value="indoor_slippers">Indoor Slippers</option>
+                                <option value="outdoor_slippers">Outdoor Slippers</option>
+                                <option value="bath_slippers">Bath/Pool Slippers</option>
+                               
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label for="activity" class="form-label required-field">Primary Activity</label>
+                            <select class="form-select" id="activity" name="activity" required onchange="updateActivityPredictions()">
+                                <option value="">Select...</option>
+                                <option value="walking" data-prediction="Regular walking on various surfaces">Walking</option>
+                                <option value="running" data-prediction="High-impact activities with rapid movements">Running</option>
+                                <option value="standing" data-prediction="Extended periods of stationary position">Standing</option>
+                                <option value="climbing" data-prediction="Vertical movement on inclined surfaces">Climbing</option>
+                                <option value="mixed" data-prediction="Combination of different movement patterns">Mixed Activities</option>
+                            </select>
+                            <div id="activityPrediction" class="form-text text-muted mt-2" style="display: none;"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label for="usageFrequency" class="form-label required-field">Usage Frequency</label>
+                            <select class="form-select" id="usageFrequency" name="usageFrequency" required>
+                                <option value="">Select...</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">2-3 times/week</option>
+                                <option value="occasional">Occasional</option>
+                                <option value="rare">Rare</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label for="temperature" class="form-label required-field">Temperature Range (°C)</label>
+                            <select class="form-select" id="temperature" name="temperature" required>
+                                <option value="">Select...</option>
+                                <option value="cold">Cold (Below 10°C)</option>
+                                <option value="mild">Mild (10-25°C)</option>
+                                <option value="warm">Warm (25-35°C)</option>
+                                <option value="hot">Hot (Above 35°C)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Surface Selection Section -->
+            <div class="form-section">
+                <h3 class="mb-4">Select Surface Types</h3>
+                <p class="text-muted mb-4">Click on multiple surfaces if needed</p>
+                <p class="required-note">At least one surface type must be selected</p>
+
+                <!-- Indoor Surfaces -->
+                <div class="surface-category">
+                    <h4 class="mb-3">Indoor Surfaces</h4>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="ceramic_tile">
+                                <span class="condition-badge">Dry/Wet</span>
+                                <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace" alt="Ceramic Tile">
+                                <p>Ceramic Tile</p>
+                                <input type="checkbox" name="surfaces[]" value="ceramic_tile" style="display: none;">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="polished_marble">
+                                <span class="condition-badge">Slippery</span>
+                                <img src="https://images.unsplash.com/photo-1603665301175-57ba46f392bf" alt="Polished Marble">
+                                <p>Polished Marble</p>
+                                <input type="checkbox" name="surfaces[]" value="polished_marble" style="display: none;">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="vinyl">
+                                <span class="condition-badge">Smooth</span>
+                                <img src="https://images.unsplash.com/photo-1581858726788-75bc0f6a952d" alt="Vinyl">
+                                <p>Vinyl Flooring</p>
+                                <input type="checkbox" name="surfaces[]" value="vinyl" style="display: none;">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="hardwood">
+                                <span class="condition-badge">Polished</span>
+                                <img src="https://images.unsplash.com/photo-1594940208308-e7dfcdb0bd3e" alt="Hardwood">
+                                <p>Hardwood</p>
+                                <input type="checkbox" name="surfaces[]" value="hardwood" style="display: none;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Outdoor Surfaces -->
+                <div class="surface-category">
+                    <h4 class="mb-3">Outdoor Surfaces</h4>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="concrete">
+                                <span class="condition-badge">Rough</span>
+                                <img src="https://images.unsplash.com/photo-1601128533718-374ffcca299b" alt="Concrete">
+                                <p>Concrete</p>
+                                <input type="checkbox" name="surfaces[]" value="concrete" style="display: none;">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="asphalt">
+                                <span class="condition-badge">Textured</span>
+                                <img src="https://images.unsplash.com/photo-1617195920950-1145d3d4ec90" alt="Asphalt">
+                                <p>Asphalt</p>
+                                <input type="checkbox" name="surfaces[]" value="asphalt" style="display: none;">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="grass">
+                                <span class="condition-badge">Natural</span>
+                                <img src="https://images.unsplash.com/photo-1592991538534-00972b6f599ab" alt="Grass">
+                                <p>Grass</p>
+                                <input type="checkbox" name="surfaces[]" value="grass" style="display: none;">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="gravel">
+                                <span class="condition-badge">Loose</span>
+                                <img src="https://images.unsplash.com/photo-1626259809786-a2fecd0d5ba5" alt="Gravel">
+                                <p>Gravel</p>
+                                <input type="checkbox" name="surfaces[]" value="gravel" style="display: none;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Special Conditions -->
+                <div class="surface-category">
+                    <h4 class="mb-3">Special Conditions</h4>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="wet_tile">
+                                <span class="condition-badge">Wet</span>
+                                <img src="https://images.unsplash.com/photo-1527089001920-e56a29bf5999" alt="Wet Tile">
+                                <p>Wet Tile</p>
+                                <input type="checkbox" name="surfaces[]" value="wet_tile" style="display: none;">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="inclined">
+                                <span class="condition-badge">Slope</span>
+                                <img src="https://images.unsplash.com/photo-1624890240392-8e7087991ccb" alt="Inclined Surface">
+                                <p>Inclined Surface</p>
+                                <input type="checkbox" name="surfaces[]" value="inclined" style="display: none;">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="metal_grating">
+                                <span class="condition-badge">Industrial</span>
+                                <img src="https://images.unsplash.com/photo-1597484662317-9bd7bdda2eb5" alt="Metal Grating">
+                                <p>Metal Grating</p>
+                                <input type="checkbox" name="surfaces[]" value="metal_grating" style="display: none;">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="pool_deck">
+                                <span class="condition-badge">Wet/Slippery</span>
+                                <img src="https://images.unsplash.com/photo-1562841857-1a4323ce6fb7" alt="Pool Deck">
+                                <p>Pool Deck</p>
+                                <input type="checkbox" name="surfaces[]" value="pool_deck" style="display: none;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Update Surface Selection to include condition -->
+                <div class="surface-category surface-conditions">
+                    <h4 class="mb-3">Surface Conditions</h4>
+                    <p class="required-note">At least one surface condition must be selected</p>
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label">Surface Condition</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="conditionDry" name="surfaceConditions[]" value="dry">
+                                    <label class="form-check-label" for="conditionDry">Dry</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="conditionWet" name="surfaceConditions[]" value="wet">
+                                    <label class="form-check-label" for="conditionWet">Wet</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="conditionOily" name="surfaceConditions[]" value="oily">
+                                    <label class="form-check-label" for="conditionOily">Oily</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="conditionDusty" name="surfaceConditions[]" value="dusty">
+                                    <label class="form-check-label" for="conditionDusty">Dusty</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="conditionFrozen" name="surfaceConditions[]" value="frozen">
+                                    <label class="form-check-label" for="conditionFrozen">Frozen</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    Get Recommendations
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function toggleSelection(element) {
+            element.classList.toggle('selected');
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            updateValidationStatus();
+        }
+
+        // Replace the form submission code
+        document.querySelector('form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            let isValid = true;
+            let errorMessages = [];
+
+            // Clear previous validation states
+            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            document.querySelectorAll('.border-danger').forEach(el => el.classList.remove('border-danger', 'p-3'));
+
+            // Validate numeric fields
+            const numericFields = [
+                { id: 'age', name: 'Age', min: 1 },
+                { id: 'weight', name: 'Weight', min: 1 },
+                { id: 'shoeSize', name: 'Shoe Size', min: 1 }
+            ];
+
+            numericFields.forEach(field => {
+                const input = document.getElementById(field.id);
+                const value = parseFloat(input.value);
+                if (isNaN(value) || value < field.min) {
+                    isValid = false;
+                    errorMessages.push(`Please enter a valid ${field.name}`);
+                    input.classList.add('is-invalid');
+                }
+            });
+
+            // Validate select fields
+            const selectFields = [
+                { id: 'previousIncidents', name: 'Previous Incidents' },
+                { id: 'footwearType', name: 'Footwear Type' },
+                { id: 'activity', name: 'Primary Activity' },
+                { id: 'usageFrequency', name: 'Usage Frequency' },
+                { id: 'temperature', name: 'Temperature Range' }
+            ];
+
+            selectFields.forEach(field => {
+                const select = document.getElementById(field.id);
+                if (!select.value || select.value === "Select...") {
+                    isValid = false;
+                    errorMessages.push(`Please select ${field.name}`);
+                    select.classList.add('is-invalid');
+                }
+            });
+
+            // Validate surface selection
+            const surfaces = document.querySelectorAll('input[name="surfaces[]"]:checked');
+            if (surfaces.length === 0) {
+                isValid = false;
+                errorMessages.push('Please select at least one surface type');
+                document.querySelectorAll('.surface-category').forEach(category => {
+                    if (!category.classList.contains('surface-conditions')) {
+                        category.classList.add('border', 'border-danger', 'p-3');
+                    }
+                });
+            }
+
+            // Validate surface conditions
+            const conditions = document.querySelectorAll('input[name="surfaceConditions[]"]:checked');
+            if (conditions.length === 0) {
+                isValid = false;
+                errorMessages.push('Please select at least one surface condition');
+                document.querySelector('.surface-conditions').classList.add('border', 'border-danger', 'p-3');
+            }
+
+            const alertDiv = document.getElementById('validationAlert');
+            
+            if (!isValid) {
+                const errorHtml = errorMessages.map(msg => `<li>${msg}</li>`).join('');
+                alertDiv.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <strong>Please correct the following errors:</strong>
+                        <ul class="mb-0">${errorHtml}</ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                alertDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
+
+            // If validation passes, submit the form
+            alertDiv.innerHTML = '';
+            this.submit();
+        });
+
+        // Add this to clear validation styling when user makes changes
+        document.addEventListener('DOMContentLoaded', function() {
+            // Clear validation on input change
+            document.querySelectorAll('input, select').forEach(element => {
+                element.addEventListener('input', function() {
+                    this.classList.remove('is-invalid');
+                    // Remove border-danger from parent surface category if it's a surface checkbox
+                    if (this.name === 'surfaces[]' || this.name === 'surfaceConditions[]') {
+                        const surfaceCategory = this.closest('.surface-category');
+                        if (surfaceCategory) {
+                            surfaceCategory.classList.remove('border', 'border-danger', 'p-3');
+                        }
+                    }
+                });
+            });
+
+            // Clear validation on surface selection
+            document.querySelectorAll('.surface-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const surfaceCategory = this.closest('.surface-category');
+                    if (surfaceCategory) {
+                        surfaceCategory.classList.remove('border', 'border-danger', 'p-3');
+                    }
+                    // Check if any surface is selected and clear the error message if true
+                    const allSurfaces = document.querySelectorAll('input[name="surfaces[]"]:checked');
+                    if (allSurfaces.length > 0) {
+                        document.querySelectorAll('.surface-category').forEach(category => {
+                            category.classList.remove('border', 'border-danger', 'p-3');
+                        });
+                    }
+                });
+            });
+        });
+
+        function updateValidationStatus() {
+            // Update numeric fields
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                const value = parseFloat(input.value);
+                if (!isNaN(value) && value > 0) {
+                    input.classList.add('is-valid');
+                    input.classList.remove('is-invalid');
+                } else {
+                    input.classList.remove('is-valid');
+                }
+            });
+
+            // Update select fields
+            document.querySelectorAll('select').forEach(select => {
+                if (select.value && select.value !== "Select...") {
+                    select.classList.add('is-valid');
+                    select.classList.remove('is-invalid');
+                } else {
+                    select.classList.remove('is-valid');
+                }
+            });
+
+            // Update surface selections
+            const surfaces = document.querySelectorAll('input[name="surfaces[]"]:checked');
+            const surfaceCategories = document.querySelectorAll('.surface-category:not(.surface-conditions)');
+            if (surfaces.length > 0) {
+                surfaceCategories.forEach(category => {
+                    category.classList.add('is-valid');
+                    category.classList.remove('is-invalid');
+                });
+            } else {
+                surfaceCategories.forEach(category => {
+                    category.classList.remove('is-valid');
+                });
+            }
+
+            // Update surface conditions
+            const conditions = document.querySelectorAll('input[name="surfaceConditions[]"]:checked');
+            const conditionsCategory = document.querySelector('.surface-conditions');
+            if (conditions.length > 0) {
+                conditionsCategory.classList.add('is-valid');
+                conditionsCategory.classList.remove('is-invalid');
+            } else {
+                conditionsCategory.classList.remove('is-valid');
+            }
+        }
+
+        // Add event listeners for validation updates
+        document.addEventListener('DOMContentLoaded', function() {
+            // Monitor input changes
+            document.querySelectorAll('input, select').forEach(element => {
+                element.addEventListener('input', updateValidationStatus);
+                element.addEventListener('change', updateValidationStatus);
+            });
+
+            // Monitor surface selections
+            document.querySelectorAll('.surface-option').forEach(option => {
+                option.addEventListener('click', updateValidationStatus);
+            });
+
+            // Monitor condition checkboxes
+            document.querySelectorAll('input[name="surfaceConditions[]"]').forEach(checkbox => {
+                checkbox.addEventListener('change', updateValidationStatus);
+            });
+        });
+
+        function updateActivityPredictions() {
+            const activitySelect = document.getElementById('activity');
+            const predictionDiv = document.getElementById('activityPrediction');
+            
+            if (activitySelect.value) {
+                const selectedOption = activitySelect.options[activitySelect.selectedIndex];
+                const prediction = selectedOption.getAttribute('data-prediction');
+                predictionDiv.textContent = `Expected usage: ${prediction}`;
+                predictionDiv.style.display = 'block';
+            } else {
+                predictionDiv.style.display = 'none';
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

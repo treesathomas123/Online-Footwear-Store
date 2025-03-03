@@ -12,64 +12,79 @@
     </div>
 
     <div class="deliveries-list">
-        {% if active_deliveries %}
-            {% for assignment in active_deliveries %}
-            <div class="delivery-card">
-                <div class="order-details">
-                    <h3>Order #{{ assignment.order.id }}</h3>
-                    <div class="customer-details">
-                        <p><strong>Customer:</strong> {{ assignment.order.user.first_name }} {{ assignment.order.user.last_name }}</p>
-                        <p><strong>Address:</strong> {{ assignment.order.user.userprofile.house_no }},
-                            {{ assignment.order.user.userprofile.street }},
-                            {{ assignment.order.user.userprofile.district }}</p>
-                        <p><strong>Total Amount:</strong> Rs. {{ assignment.order.total_price }}</p>
-                    </div>
-                </div>
-
-                <div class="status-timeline">
-                    <div class="status-step {% if assignment.delivery_status == 'pending' or assignment.delivery_status == 'packed' or assignment.delivery_status == 'dispatched' or assignment.delivery_status == 'out_for_delivery' or assignment.delivery_status == 'delivered' %}active{% endif %}">
-                        <div class="step-icon">📦</div>
-                        <p>Processing</p>
-                    </div>
-                    <div class="status-step {% if assignment.delivery_status == 'packed' or assignment.delivery_status == 'dispatched' or assignment.delivery_status == 'out_for_delivery' or assignment.delivery_status == 'delivered' %}active{% endif %}">
-                        <div class="step-icon">📥</div>
-                        <p>Packed</p>
-                    </div>
-                    <div class="status-step {% if assignment.delivery_status == 'dispatched' or assignment.delivery_status == 'out_for_delivery' or assignment.delivery_status == 'delivered' %}active{% endif %}">
-                        <div class="step-icon">🚚</div>
-                        <p>Dispatched</p>
-                    </div>
-                    <div class="status-step {% if assignment.delivery_status == 'out_for_delivery' or assignment.delivery_status == 'delivered' %}active{% endif %}">
-                        <div class="step-icon">🛵</div>
-                        <p>Out for Delivery</p>
-                    </div>
-                    <div class="status-step {% if assignment.delivery_status == 'delivered' %}active{% endif %}">
-                        <div class="step-icon">✅</div>
-                        <p>Delivered</p>
-                    </div>
-                </div>
-
-                <div class="status-update">
-                    <form method="POST" action="{% url 'update_delivery_status' assignment.id %}">
-                        {% csrf_token %}
-                        <select name="status" class="status-select" onchange="this.form.submit()">
-                            <option value="pending" {% if assignment.delivery_status == 'pending' %}selected{% endif %}>Processing</option>
-                            <option value="packed" {% if assignment.delivery_status == 'packed' %}selected{% endif %}>Packed</option>
-                            <option value="dispatched" {% if assignment.delivery_status == 'dispatched' %}selected{% endif %}>Dispatched</option>
-                            <option value="out_for_delivery" {% if assignment.delivery_status == 'out_for_delivery' %}selected{% endif %}>Out for Delivery</option>
-                        </select>
-                    </form>
+        {% if grouped_deliveries %}
+            {% for date, assignments in grouped_deliveries.items %}
+                <div class="date-section {% if date == today %}today{% endif %}">
+                    <h2 class="date-header">
+                        {% if date == today %}
+                            Today's Deliveries
+                        {% else %}
+                            Pending from {{ date }}
+                        {% endif %}
+                    </h2>
                     
-                    {% if assignment.delivery_status == 'out_for_delivery' %}
-                    <a href="{% url 'qr_scanner' %}" class="scan-qr-btn">
-                        <i class="fas fa-qrcode"></i> Scan QR to Confirm Delivery
-                    </a>
-                    {% endif %}
+                    {% for assignment in assignments %}
+                    <div class="delivery-card {% if date != today %}overdue{% endif %}">
+                        <div class="order-details">
+                            <h3>Order #{{ assignment.order.id }}</h3>
+                            {% if date != today %}
+                                <div class="overdue-badge">Overdue</div>
+                            {% endif %}
+                            <div class="customer-details">
+                                <p><strong>Customer:</strong> {{ assignment.order.user.first_name }} {{ assignment.order.user.last_name }}</p>
+                                <p><strong>Address:</strong> {{ assignment.order.user.userprofile.house_no }},
+                                    {{ assignment.order.user.userprofile.street }},
+                                    {{ assignment.order.user.userprofile.district }}</p>
+                                <p><strong>Total Amount:</strong> Rs. {{ assignment.order.total_price }}</p>
+                            </div>
+                        </div>
+
+                        <div class="status-timeline">
+                            <div class="status-step {% if assignment.delivery_status == 'pending' or assignment.delivery_status == 'packed' or assignment.delivery_status == 'dispatched' or assignment.delivery_status == 'out_for_delivery' or assignment.delivery_status == 'delivered' %}active{% endif %}">
+                                <div class="step-icon">📦</div>
+                                <p>Processing</p>
+                            </div>
+                            <div class="status-step {% if assignment.delivery_status == 'packed' or assignment.delivery_status == 'dispatched' or assignment.delivery_status == 'out_for_delivery' or assignment.delivery_status == 'delivered' %}active{% endif %}">
+                                <div class="step-icon">📥</div>
+                                <p>Packed</p>
+                            </div>
+                            <div class="status-step {% if assignment.delivery_status == 'dispatched' or assignment.delivery_status == 'out_for_delivery' or assignment.delivery_status == 'delivered' %}active{% endif %}">
+                                <div class="step-icon">🚚</div>
+                                <p>Dispatched</p>
+                            </div>
+                            <div class="status-step {% if assignment.delivery_status == 'out_for_delivery' or assignment.delivery_status == 'delivered' %}active{% endif %}">
+                                <div class="step-icon">🛵</div>
+                                <p>Out for Delivery</p>
+                            </div>
+                            <div class="status-step {% if assignment.delivery_status == 'delivered' %}active{% endif %}">
+                                <div class="step-icon">✅</div>
+                                <p>Delivered</p>
+                            </div>
+                        </div>
+
+                        <div class="status-update">
+                            <form method="POST" action="{% url 'update_delivery_status' assignment.id %}">
+                                {% csrf_token %}
+                                <select name="status" class="status-select" onchange="this.form.submit()">
+                                    <option value="pending" {% if assignment.delivery_status == 'pending' %}selected{% endif %}>Processing</option>
+                                    <option value="packed" {% if assignment.delivery_status == 'packed' %}selected{% endif %}>Packed</option>
+                                    <option value="dispatched" {% if assignment.delivery_status == 'dispatched' %}selected{% endif %}>Dispatched</option>
+                                    <option value="out_for_delivery" {% if assignment.delivery_status == 'out_for_delivery' %}selected{% endif %}>Out for Delivery</option>
+                                </select>
+                            </form>
+                            
+                            {% if assignment.delivery_status == 'out_for_delivery' %}
+                            <a href="{% url 'qr_scanner' %}" class="scan-qr-btn">
+                                <i class="fas fa-qrcode"></i> Scan QR to Confirm Delivery
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
-            </div>
             {% endfor %}
         {% else %}
-            <p class="no-deliveries">No active deliveries for today.</p>
+            <p class="no-deliveries">No active deliveries.</p>
         {% endif %}
     </div>
 </div>
@@ -184,6 +199,36 @@
     
     .scan-qr-btn i {
         margin-right: 5px;
+    }
+
+    .date-section {
+        margin-bottom: 30px;
+    }
+    
+    .date-header {
+        font-size: 1.5em;
+        color: #333;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .overdue {
+        border-left: 4px solid #dc3545;
+    }
+    
+    .overdue-badge {
+        display: inline-block;
+        background-color: #dc3545;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        margin-left: 10px;
+    }
+    
+    .today .date-header {
+        color: #28a745;
     }
 </style>
 {% endblock %} 
