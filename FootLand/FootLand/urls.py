@@ -18,10 +18,12 @@ from django.contrib import admin
 from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
+from user.views import get_server_ip
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('user.urls')),
+    path('get_server_ip/', get_server_ip, name='get_server_ip'),
 ]
 
 if settings.DEBUG:

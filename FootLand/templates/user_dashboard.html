@@ -436,12 +436,153 @@ nav {
     transform: scale(1.15);
 }
 
+/* Size Finder Icon */
+#size-finder-icon {
+    position: relative;
+    transition: transform 0.3s ease;
+}
+
+#size-finder-icon:hover {
+    transform: scale(1.15);
+}
+
+/* Size Finder Modal */
+.size-finder-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.7);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.size-finder-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 15px;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+    text-align: center;
+    position: relative;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-modal:hover {
+    color: #37100d;
+}
+
+.size-finder-content h2 {
+    color: #37100d;
+    margin-bottom: 15px;
+    font-size: 24px;
+}
+
+.qr-container {
+    margin: 20px auto;
+    padding: 15px;
+    background-color: white;
+    border-radius: 10px;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+#qr-code {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.app-info {
+    margin-top: 20px;
+    text-align: left;
+}
+
+.app-info ul {
+    margin: 15px 0;
+    padding-left: 20px;
+}
+
+.app-info li {
+    margin-bottom: 8px;
+    color: #555;
+}
+
+.mobile-only-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.download-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #37100d 0%, #a23a33 100%);
+    color: white;
+    padding: 12px 25px;
+    border-radius: 30px;
+    text-decoration: none;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.download-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.download-btn i {
+    margin-right: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .size-finder-content {
+        width: 90%;
+        margin: 15% auto;
+        padding: 20px;
+    }
+    
+    .qr-container {
+        width: 150px;
+        height: 150px;
+    }
+}
+
         </style>
     </head>
     <body>
        
         <div class="header">
             <div class="navbar">
+                
                 <div class="logo">
                     <a href="{% url 'home' %}"><img src="{% static 'images/logo2.png' %}" width="125px"></a>
                 </div>
@@ -454,6 +595,12 @@ nav {
                         <li>
                             <a href="{% url 'search' %}" class="navbar-icon">
                                 <i class="fa fa-search" aria-hidden="true"></i>
+                            </a>
+                        </li>
+                        <!-- Size Finder Icon -->
+                        <li>
+                            <a href="#" class="navbar-icon" id="size-finder-icon" title="Size Finder">
+                                <i class="fa fa-ruler" aria-hidden="true" style="color: white;"></i>
                             </a>
                         </li>
                         <li class="dropdown">
@@ -1375,3 +1522,145 @@ nav {
     
     </body>
 </html>
+
+<!-- Size Finder QR Code Modal -->
+<div id="size-finder-modal" class="size-finder-modal">
+    <div class="size-finder-content">
+        <span class="close-modal">&times;</span>
+        <h2>FootLand Size Finder App</h2>
+        <p>Scan this QR code with your mobile device to download our Size Finder app</p>
+        <div class="qr-container">
+            <img src="{% static 'images/size-finder-qr.png' %}" alt="Size Finder QR Code" id="qr-code">
+            <!-- If you don't have a static QR image, we'll generate one with JS -->
+        </div>
+        <div class="app-info">
+            <p class="mobile-only-warning">Please use a mobile device to download our app</p>
+            <p>Our Size Finder app helps you find your perfect shoe size by:</p>
+            <ul>
+                <li>Scanning your foot with your phone's camera</li>
+                <li>Comparing your measurements with our shoe database</li>
+                <li>Recommending the best size for each shoe style</li>
+            </ul>
+            <a href="{% static 'downloads/footland-size-finder.apk' %}" class="download-btn" download>
+                <i class="fa fa-download"></i> Direct Download
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Add this JavaScript before the closing body tag -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the modal elements
+    const modal = document.getElementById('size-finder-modal');
+    const sizeFinderIcon = document.getElementById('size-finder-icon');
+    const closeModal = document.querySelector('.close-modal');
+    const qrCodeImg = document.getElementById('qr-code');
+    
+    // Function to get the actual IP address
+    async function getActualIP() {
+        try {
+            const response = await fetch('/get_server_ip/');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            if (data.ip === '127.0.0.1' || data.ip === 'localhost') {
+                throw new Error('Got localhost address');
+            }
+            return `${data.ip}:${window.location.port}`;
+        } catch (error) {
+            console.error("Error getting server IP:", error);
+            alert("Could not determine the correct network address. Please make sure you're running the server with 'python manage.py runserver 0.0.0.0:8000'");
+            throw error;
+        }
+    }
+    
+    // Generate QR code with the actual IP address
+    async function generateQRCode() {
+        try {
+            const ipAddress = await getActualIP();
+            console.log("Using IP address for QR code:", ipAddress);
+            
+            const appDownloadUrl = `http://${ipAddress}{% static 'downloads/footland-size-finder.apk' %}`;
+            const qrCodeApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(appDownloadUrl)}`;
+            
+            qrCodeImg.setAttribute('src', qrCodeApiUrl);
+            
+            // Also update the direct download link
+            const downloadBtn = document.querySelector('.download-btn');
+            if (downloadBtn) {
+                downloadBtn.href = appDownloadUrl;
+            }
+            
+            // Display the IP address for verification
+            const ipInfoElement = document.createElement('p');
+            ipInfoElement.className = 'ip-info';
+            ipInfoElement.innerHTML = `
+                <small>
+                    Network Address: ${ipAddress}<br>
+                    <strong>Make sure your phone is connected to the same WiFi network</strong>
+                </small>`;
+            
+            // Remove any existing ip-info elements
+            const existingIpInfo = qrCodeImg.parentNode.querySelector('.ip-info');
+            if (existingIpInfo) {
+                existingIpInfo.remove();
+            }
+            
+            qrCodeImg.parentNode.appendChild(ipInfoElement);
+            
+        } catch (error) {
+            console.error('Error generating QR code:', error);
+            // Show error message in the modal
+            const errorElement = document.createElement('p');
+            errorElement.className = 'error-message';
+            errorElement.style.color = 'red';
+            errorElement.textContent = 'Could not generate QR code with the correct network address. Please check your network configuration.';
+            
+            // Remove any existing error messages
+            const existingError = qrCodeImg.parentNode.querySelector('.error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            qrCodeImg.parentNode.appendChild(errorElement);
+        }
+    }
+    
+    // Open modal when clicking the size finder icon
+    sizeFinderIcon.addEventListener('click', function(e) {
+        e.preventDefault();
+        modal.style.display = 'block';
+        
+        // Generate QR code when modal is opened
+        generateQRCode();
+        
+        // Check if user is on mobile
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const mobileWarning = document.querySelector('.mobile-only-warning');
+        
+        if (isMobile) {
+            mobileWarning.style.display = 'none';
+        } else {
+            mobileWarning.style.display = 'block';
+            mobileWarning.innerHTML = 'Please use a mobile device to download our app. <br><strong>Make sure your mobile device is connected to the same WiFi network as this computer.</strong>';
+        }
+    });
+    
+    // Close modal when clicking the close button
+    closeModal.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+    
+    // Close modal when clicking outside the modal content
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+});
+</script>

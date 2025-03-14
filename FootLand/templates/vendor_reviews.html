@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Product Reviews - FootLand</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f6f9fc 0%, #edf2f7 100%);
+        }
+
+        .reviews-section {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .review-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .review-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .rating {
+            color: #ffd700;
+            font-size: 1.2rem;
+            margin: 10px 0;
+        }
+
+        .review-content {
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+
+        .review-image {
+            max-width: 200px;
+            border-radius: 10px;
+            margin-top: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .review-reply {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #4a90e2;
+        }
+
+        .reply-form {
+            margin-top: 20px;
+        }
+
+        .reply-form textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s ease;
+        }
+
+        .reply-form textarea:focus {
+            border-color: #4a90e2;
+            outline: none;
+        }
+
+        .btn-primary {
+            background: #4a90e2;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: #357abd;
+            transform: translateY(-2px);
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+
+        .back-button {
+            margin-bottom: 20px;
+        }
+
+        .back-button a {
+            color: #4a90e2;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="reviews-section">
+        <div class="back-button">
+            <a href="{% url 'vendor_dashboard' %}">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <div class="page-header">
+            <h2><i class="fas fa-comments"></i> Your Product Reviews</h2>
+            <p>Manage and respond to customer feedback for your products</p>
+        </div>
+
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% for review in reviews %}
+        <div class="review-card">
+            <div class="review-header">
+                <div class="user-info">
+                    <h5>{{ review.name }}</h5>
+                    <div class="rating">
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= review.rating %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <small class="text-muted">{{ review.created_at|date:"F d, Y" }}</small>
+                </div>
+                <div class="product-info">
+                    <p><strong>Product:</strong> {{ review.product.name }}</p>
+                </div>
+            </div>
+
+            <div class="review-content">
+                <p>{{ review.comment }}</p>
+                {% if review.image %}
+                <img src="{{ review.image.url }}" alt="Review image" class="review-image">
+                {% endif %}
+            </div>
+
+            {% if review.reply %}
+            <div class="review-reply">
+                <h6>Your Reply</h6>
+                <p>{{ review.reply }}</p>
+                <small class="text-muted">Replied on {{ review.replied_at|date:"F d, Y" }}</small>
+            </div>
+            {% else %}
+            <div class="reply-form">
+                <form method="POST" action="{% url 'reply_to_review' review.id %}">
+                    {% csrf_token %}
+                    {{ form.reply }}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-reply"></i> Reply to Review
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <i class="far fa-comment-dots fa-3x mb-3"></i>
+            <h4>No Reviews Yet</h4>
+            <p>There are no customer reviews for your products at this time.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

@@ -3,6 +3,7 @@ from .models import Product
 from .models import UserProfile
 from .models import Review
 from .models import VendorDetails
+from .models import Offer
 
 
 class ProductForm(forms.ModelForm):
@@ -71,39 +72,33 @@ class ProfileForm(forms.ModelForm):
 class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
-        fields = ['name', 'email', 'rating', 'comment']
+        fields = ['rating', 'comment', 'image']
         
         widgets = {
-            'name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Your Name',
+            'rating': forms.NumberInput(attrs={
+                'class': 'rating-input',
+                'min': '1',
+                'max': '5',
+                'step': '1',
+                'type': 'range',
                 'required': True
             }),
-            'email': forms.EmailInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Your Email',
-                'required': True
-            }),
-            'rating': forms.RadioSelect(choices=[
-                (1, '1 Star'),
-                (2, '2 Stars'),
-                (3, '3 Stars'),
-                (4, '4 Stars'),
-                (5, '5 Stars')
-            ], attrs={'class': 'star-rating', 'required': True}),
             'comment': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 4,
                 'placeholder': 'Write your review here...',
                 'required': True
             }),
+            'image': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*'
+            }),
         }
 
-    # Optionally, you can define clean methods for additional validation
     def clean_rating(self):
         rating = self.cleaned_data.get('rating')
         if rating is None or int(rating) not in range(1, 6):
-            raise forms.ValidationError('Please select a valid star rating.')
+            raise forms.ValidationError('Please select a valid star rating between 1 and 5.')
         return rating
 
     def clean_email(self):
@@ -130,3 +125,73 @@ class VendorDetailsForm(forms.ModelForm):
         self.fields['aadhar_card'].required = False
         self.fields['shop_license'].required = False
         self.fields['profile_image'].required = False
+
+class ReviewReplyForm(forms.ModelForm):
+    reply = forms.CharField(widget=forms.Textarea(attrs={'placeholder': 'Write your reply here...', 'rows': 4}))
+    
+    class Meta:
+        model = Review
+        fields = ['reply']
+
+class ReportReviewForm(forms.ModelForm):
+    REPORT_REASONS = [
+        ('inappropriate', 'Inappropriate Content'),
+        ('spam', 'Spam'),
+        ('fake', 'Fake Review'),
+        ('offensive', 'Offensive Language'),
+        ('other', 'Other')
+    ]
+    
+    report_reason = forms.ChoiceField(
+        choices=REPORT_REASONS,
+        widget=forms.Select(attrs={
+            'class': 'form-control'
+        })
+    )
+    
+    additional_details = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Please provide additional details...'
+        }),
+        required=False
+    )
+
+    class Meta:
+        model = Review
+        fields = ['report_reason']
+
+class OfferForm(forms.ModelForm):
+    start_date = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        help_text='Select start date and time'
+    )
+    end_date = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        help_text='Select end date and time'
+    )
+
+    class Meta:
+        model = Offer
+        fields = ['product', 'offer_type', 'discount_value', 'start_date', 'end_date', 'description']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+        discount_value = cleaned_data.get('discount_value')
+
+        if start_date and end_date and start_date >= end_date:
+            raise forms.ValidationError("End date must be after start date")
+
+        if discount_value and discount_value <= 0:
+            raise forms.ValidationError("Discount value must be greater than 0")
+
+        if cleaned_data.get('offer_type') == 'discount' and discount_value > 100:
+            raise forms.ValidationError("Percentage discount cannot exceed 100%")
+
+        return cleaned_data

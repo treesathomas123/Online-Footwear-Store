@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -243,7 +244,7 @@
                         <div class="col-md-3">
                             <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="hardwood">
                                 <span class="condition-badge">Polished</span>
-                                <img src="https://images.unsplash.com/photo-1594940208308-e7dfcdb0bd3e" alt="Hardwood">
+                                <img src="{% static 'images/hardwood.jpg' %}" alt="Hardwood">
                                 <p>Hardwood</p>
                                 <input type="checkbox" name="surfaces[]" value="hardwood" style="display: none;">
                             </div>
@@ -266,7 +267,7 @@
                         <div class="col-md-3">
                             <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="asphalt">
                                 <span class="condition-badge">Textured</span>
-                                <img src="https://images.unsplash.com/photo-1617195920950-1145d3d4ec90" alt="Asphalt">
+                                <img src="{% static 'images/textured.jpeg' %}" alt="Asphalt">
                                 <p>Asphalt</p>
                                 <input type="checkbox" name="surfaces[]" value="asphalt" style="display: none;">
                             </div>
@@ -274,7 +275,7 @@
                         <div class="col-md-3">
                             <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="grass">
                                 <span class="condition-badge">Natural</span>
-                                <img src="https://images.unsplash.com/photo-1592991538534-00972b6f599ab" alt="Grass">
+                                <img src="{% static 'images/grass.jpg' %}" alt="Grass">
                                 <p>Grass</p>
                                 <input type="checkbox" name="surfaces[]" value="grass" style="display: none;">
                             </div>
@@ -282,7 +283,7 @@
                         <div class="col-md-3">
                             <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="gravel">
                                 <span class="condition-badge">Loose</span>
-                                <img src="https://images.unsplash.com/photo-1626259809786-a2fecd0d5ba5" alt="Gravel">
+                                <img src="{% static 'images/gravel.webp' %}" alt="Gravel">
                                 <p>Gravel</p>
                                 <input type="checkbox" name="surfaces[]" value="gravel" style="display: none;">
                             </div>
@@ -297,7 +298,7 @@
                         <div class="col-md-3">
                             <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="wet_tile">
                                 <span class="condition-badge">Wet</span>
-                                <img src="https://images.unsplash.com/photo-1527089001920-e56a29bf5999" alt="Wet Tile">
+                                <img src="{% static 'images/wettile.jpg' %}" alt="Wet Tile">
                                 <p>Wet Tile</p>
                                 <input type="checkbox" name="surfaces[]" value="wet_tile" style="display: none;">
                             </div>

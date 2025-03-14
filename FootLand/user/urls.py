@@ -49,7 +49,7 @@ urlpatterns = [
     path('wishlist/', views.wishlist_view, name='wishlist'),
     path('remove-from-wishlist/<int:product_id>/', views.remove_from_wishlist, name='remove_from_wishlist'),
     path('product/<int:product_id>/', views.product_detail, name='product_detail'),
-    path('cart/', views.view_cart, name='cart'),  # Change 'cart' to 'view_cart'
+    path('cart/', views.view_cart, name='cart'),
     path('cart/add/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/update/<int:cart_item_id>/', views.update_cart, name='update_cart'),
     path('cart/save_for_later/<int:product_id>/', views.save_for_later, name='save_for_later'),
@@ -92,11 +92,23 @@ urlpatterns = [
     path('delivery_boy/active_deliveries/', views.active_deliveries, name='active_deliveries'),
     path('delivery_boy/update_status/<int:assignment_id>/', views.update_delivery_status, name='update_delivery_status'),
     path('delivery_boy/delivery_history/', views.delivery_history, name='delivery_history'),
+    path('delivery_boy/route_map/', views.delivery_route_map, name='delivery_route_map'),
     path('order/<int:order_id>/', views.order_detail, name='order_detail'),
     path('order/track/<int:order_id>/', views.track_order, name='track_order'),
     path('delivery_boy/scan-qr/', views.qr_scanner, name='qr_scanner'),
     path('delivery_boy/scan-delivery/', views.scan_delivery_qr, name='scan_delivery_qr'),
     path('recommend/', views.recommend, name='recommend'),
+    path('submit-review/<int:order_id>/', views.submit_review, name='submit_review'),
+    path('admin_reviews/', views.admin_reviews, name='admin_reviews'),
+    path('vendor/reviews/', views.vendor_reviews, name='vendor_reviews'),
+    path('review/reply/<int:review_id>/', views.reply_to_review, name='reply_to_review'),
+    #path('report-review/<int:review_id>/', views.report_review, name='report_review'),
+   # path('share-review/<int:review_id>/', views.share_review, name='share_review'),
+   # path('delete-review/<int:review_id>/', views.delete_review, name='delete_review'),
+    path('vendor/offers/', views.vendor_offers, name='vendor_offers'),
+    path('vendor/offers/edit/<int:offer_id>/', views.edit_offer, name='edit_offer'),
+    path('vendor/offers/delete/<int:offer_id>/', views.delete_offer, name='delete_offer'),
+    path('admin/offers/', views.admin_offers, name='admin_offers'),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

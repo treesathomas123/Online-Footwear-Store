@@ -57,6 +57,8 @@ import torch
 from torchvision import transforms
 import base64
 import io
+import socket
+  # You might need to install this: pip install netifaces
 
 logger = logging.getLogger(__name__)
 
@@ -225,13 +227,16 @@ def admin_dashboard(request):
     total_products = Product.objects.count()
     total_customers = user_registration.objects.filter(user_type='customer').count()
     total_vendors = user_registration.objects.filter(user_type='vendor').count()  # Count all vendors  # You'll need to implement this based on your vendor model
-    total_orders = Order.objects.count() # Assuming each unique user in Cart represents an order
+    total_orders = Order.objects.count() 
+    total_review = Review.objects.count()
+    # Assuming each unique user in Cart represents an order
 
     context = {
         'total_products': total_products,
         'total_customers': total_customers,
         'total_vendors': total_vendors,
         'total_orders': total_orders,
+        'total_reviews': total_review,
     }
     return render(request, 'admin_dashboard.html', context)
 
@@ -1047,43 +1052,33 @@ def add_to_cart(request, product_id):
              return redirect('login')
 
 def view_cart(request):
-    if 'user_id' in request.session:
-        user_id = request.session['user_id']
-        user = get_object_or_404(user_registration, id=user_id)
-        
-        # Get cart items and saved items for the logged-in user
-        cart_items = Cart.objects.filter(user=user, saved_for_later=False)
-        saved_items = Cart.objects.filter(user=user, saved_for_later=True)
-
-        # Calculate the subtotal
-        subtotal = sum(item.product.price * item.quantity for item in cart_items)
-        
-        # Define additional charges and tax
-        shipping_charge = Decimal('0') if subtotal > 0 else Decimal('0')
-        platform_fee = Decimal('0')
-        tax_rate = Decimal('0')
-        tax = tax_rate * subtotal
-        
-        # Total calculation
-        total_amount = subtotal + shipping_charge + platform_fee + tax
-
-        # Prepare context data for the template
-        context = {
-            'cart_items': cart_items,
-            'saved_items': saved_items,
-            'subtotal': subtotal,
-            'shipping': shipping_charge,
-            'platform_fee': platform_fee,
-            'tax': tax,
-            'total': total_amount,
-        }
-        return render(request, 'cart.html', context)
-    
-    else:
-        messages.error(request, "You need to log in to view your cart.")
+    if 'user_id' not in request.session:
+        messages.error(request, "Please login to view cart.")
         return redirect('login')
     
+    user = get_object_or_404(user_registration, id=request.session['user_id'])
+    cart_items = Cart.objects.filter(user=user)
+    saved_items = SavedItem.objects.filter(user=user)
     
+    # Calculate totals
+    subtotal = sum(item.product.price * item.quantity for item in cart_items)
+    shipping = 50 if subtotal > 0 else 0  # Example shipping cost
+    platform_fee = round(subtotal * 0.02, 2)  # 2% platform fee
+    tax = round(subtotal * 0.18, 2)  # 18% tax
+    total = subtotal + shipping + platform_fee + tax
+    
+    context = {
+        'cart_items': cart_items,
+        'saved_items': saved_items,
+        'subtotal': subtotal,
+        'shipping': shipping,
+        'platform_fee': platform_fee,
+        'tax': tax,
+        'total': total
+    }
+    
+    return render(request, 'cart.html', context)
+
 def remove_from_cart(request, product_id):
     # Get the logged-in user ID from session
     if 'user_id' in request.session:
@@ -1568,7 +1563,7 @@ def online_payment(request):
 
 def add_to_wishlist(request):
     if 'user_id' not in request.session:
-        messages.error(request, "Please log in to add items to your wishlist.")
+        messages.error(request, "Please login to add items to your wishlist.")
         return redirect('login')
 
     user_id = request.session['user_id']
@@ -1589,7 +1584,7 @@ def add_to_wishlist(request):
     return redirect('home')  # Redirect to home if not a POST request
 def wishlist_view(request):
     if 'user_id' not in request.session:
-        messages.error(request, "Please log in to view your wishlist.")
+        messages.error(request, "Please login to view your wishlist.")
         return redirect('login')  # Redirect to your login page
 
     user_id = request.session['user_id']
@@ -1610,187 +1605,86 @@ def remove_from_wishlist(request, product_id):
 
 
 def product_detail(request, product_id):
-    # Fetch the product details
-    logger.debug(f"Fetching product with ID: {product_id}")
-    
-    product = get_object_or_404(Product, id=product_id)
-
-    # Fetch similar products based on type
-    similar_products = Product.objects.filter(
-        type=product.type  # Filter by type
-    ).exclude(id=product_id)[:5]  # Exclude the current product and limit to 5
-
-    if request.method == 'POST':
-        # Handle the adding to cart logic
-        user = request.user  # Get the logged-in user
-        if user.is_authenticated:  # Check if the user is authenticated
-            quantity = request.POST.get('quantity', 1)  # Get the quantity from the form
-            cart_item, created = Cart.objects.get_or_create(user=user, product=product)
-            cart_item.quantity += int(quantity)  # Increase the quantity
-            cart_item.save()  # Save the cart item
-            return redirect('cart')  # Redirect to the cart page
-
-    return render(request, 'product_detail.html', {
-        'product': product,
-        'similar_products': similar_products  # Pass similar products to the template
-    })
-
-def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     similar_products = Product.objects.filter(type=product.type).exclude(id=product_id)[:4]
+    
+    # Get reviews with related reply information
+    reviews = Review.objects.filter(product=product).select_related('replied_by').order_by('-created_at')
+    avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+    rating_count = reviews.count()
 
-    if request.method == 'POST':
-        if 'add_to_cart' in request.POST:  # Handle Add to Cart form
-            size = request.POST.get('size')
-            quantity = int(request.POST.get('quantity', 1))
-            user = request.user  # Get the logged-in user
-
-            if user.is_authenticated:
-                cart_item, created = Cart.objects.get_or_create(user=user, product=product, size=size)
-                cart_item.quantity += quantity
-                cart_item.save()
-                messages.success(request, 'Product added to cart successfully!')
-                return redirect('cart')
-            else:
-                messages.error(request, 'You need to be logged in to add products to the cart.')
-
-        elif 'submit_review' in request.POST:  # Handle Review submission form
-            form = ReviewForm(request.POST)
-            if form.is_valid():
-                review = form.save(commit=False)
-                review.product = product
-                review.user = request.user
-                review.save()
-                messages.success(request, "Your review has been submitted successfully!")
-                return redirect('product_detail', product_id=product_id)
-            else:
-                messages.error(request, "There was an error in your review. Please check the form.")
-
-    else:
-        form = ReviewForm()
-
-    return render(request, 'product_detail.html', {
+    context = {
         'product': product,
-        'form': form,
-        'similar_products': similar_products
-    })
-#def add_review(request, product_id):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        rating = request.POST.get('rating')
-        comment = request.POST.get('comment')
-        
-        product = get_object_or_404(Product, id=product_id)
-
-        # Create and save the review
-        Review.objects.create(
-            product=product,
-            name=name,
-            email=email,
-            rating=int(rating),
-            comment=comment
-        )
-        return redirect('product_detail', product_id=product.id)  # Redirect to product detail page
-
-    return redirect('product_detail', product_id=product_id)  # Handle GET request by redirecting #
-
-#def confirm_order(request):
-    if request.method == 'POST':
-        user_id = request.session.get('user_id')
-        
-        # Debugging: Print user_id to check if it's correctly set
-        print(f"User ID from session: {user_id}")
-
-        if user_id is None:
-            messages.error(request, "User not logged in.")
-            return redirect('login')  # Redirect to login if user_id is None
-
-        try:
-            user_profile = UserProfile.objects.get(user_id=user_id)  # Fetch user profile
-        except UserProfile.DoesNotExist:
-            messages.error(request, "UserProfile matching query does not exist.")
-            return redirect('add_profile')  # Redirect to profile creation if user_profile does not exist
-
-        # Update the user profile with the new data
-        user_registration.first_name = request.POST.get('first_name')
-        user_registration.last_name = request.POST.get('last_name')
-        user_registration.email = request.POST.get('email')
-        user_profile.address = request.POST.get('address')
-        user_profile.pincode = request.POST.get('pincode')
-        user_profile.phone = request.POST.get('phone')
-        user_profile.save()
-
-        # Here you would place your order logic
-        # ...
-
-        messages.success(request, "Your order has been placed successfully!")
-        return redirect('home')  # Redirect to home or any other page after order is confirmed
-
-    return redirect('cart')  # Redirect back to the cart if the method is not POST
-
-def save_for_later(request, product_id):
-    if 'user_id' in request.session:
-        user_id = request.session['user_id']
-        user = get_object_or_404(user_registration, id=user_id)
-        
-        try:
-            # Get the first cart item for this product and user
-            cart_item = Cart.objects.filter(
-                user=user, 
-                product_id=product_id, 
-                saved_for_later=False
-            ).first()
-            
-            if cart_item:
-                cart_item.saved_for_later = True
-                cart_item.save()
-                messages.success(request, f"{cart_item.product.name} has been saved for later.")
-            else:
-                messages.error(request, "Item not found in cart.")
-                
-        except Exception as e:
-            messages.error(request, "Error saving item for later.")
-            
-        return redirect('cart')
-    else:
-        messages.error(request, "You need to log in to save items for later.")
-        return redirect('login')
-
-
-def move_to_cart(request, product_id):
-    if 'user_id' in request.session:
-        user_id = request.session['user_id']
-        user = get_object_or_404(user_registration, id=user_id)
-        cart_item = get_object_or_404(Cart, user=user, product_id=product_id)
-
-        cart_item.saved_for_later = False
-        cart_item.save()
-
-        messages.success(request, f"{cart_item.product.name} has been moved back to your cart.")
-        return redirect('cart')
-    else:
-        messages.error(request, "You need to log in to move items to the cart.")
-        return redirect('login')
+        'similar_products': similar_products,
+        'reviews': reviews,
+        'avg_rating': round(avg_rating, 1),
+        'rating_count': rating_count,
+        'range_5': range(5),
+        'user_id': request.session.get('user_id')
+    }
+    return render(request, 'product_detail.html', context)
 
 def remove_saved_item(request, product_id):
-    if 'user_id' in request.session:
-        user_id = request.session['user_id']
-        user = get_object_or_404(user_registration, id=user_id)
-
-        # Find the item saved for later in the Cart model
-        saved_item = Cart.objects.filter(product_id=product_id, user=user, saved_for_later=True).first()
-
-        if saved_item:
-            saved_item.delete()  # Remove the item
-
-        messages.success(request, "Item removed from saved items.")
-    else:
-        messages.error(request, "You need to log in to remove saved items.")
+    if 'user_id' not in request.session:
+        messages.error(request, "Please login to remove saved items.")
+        return redirect('login')
     
+    user = get_object_or_404(user_registration, id=request.session['user_id'])
+    product = get_object_or_404(Product, id=product_id)
+    
+    # Find and delete the saved item
+    saved_item = get_object_or_404(SavedItem, user=user, product=product)
+    saved_item.delete()
+    
+    messages.success(request, "Item removed from saved items.")
     return redirect('cart')
 
+def save_for_later(request, product_id):
+    if 'user_id' not in request.session:
+        messages.error(request, "Please login to save items.")
+        return redirect('login')
+    
+    user = get_object_or_404(user_registration, id=request.session['user_id'])
+    product = get_object_or_404(Product, id=product_id)
+    
+    # Check if item is already saved
+    if SavedItem.objects.filter(user=user, product=product).exists():
+        messages.info(request, "Item is already saved!")
+        return redirect('cart')
+    
+    # Remove from cart if it exists
+    Cart.objects.filter(user=user, product=product).delete()
+    
+    # Save the item
+    SavedItem.objects.create(user=user, product=product)
+    messages.success(request, "Item saved for later!")
+    return redirect('cart')
 
+def move_to_cart(request, product_id):
+    if 'user_id' not in request.session:
+        messages.error(request, "Please login to move items to cart.")
+        return redirect('login')
+    
+    user = get_object_or_404(user_registration, id=request.session['user_id'])
+    product = get_object_or_404(Product, id=product_id)
+    
+    # Remove from saved items
+    saved_item = get_object_or_404(SavedItem, user=user, product=product)
+    saved_item.delete()
+    
+    # Add to cart
+    cart_item, created = Cart.objects.get_or_create(
+        user=user,
+        product=product,
+        defaults={'quantity': 1}
+    )
+    
+    if not created:
+        cart_item.quantity += 1
+        cart_item.save()
+    
+    messages.success(request, "Item moved to cart successfully!")
+    return redirect('cart')
 
 def my_orders(request):
     user_id = request.session.get('user_id')  # Get the user ID from the session
@@ -2857,5 +2751,376 @@ def slip_resistance(request):
     View function for the slip resistance recommender page
     """
     return render(request, 'index.html')
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import DeliveryBoy, DeliveryAssignment, Order, user_registration
+from django.db.models import Exists, OuterRef
+from datetime import date, timedelta
+from django.contrib import messages
+from django.core.paginator import Paginator
+import json
+
+def delivery_route_map(request):
+    if 'email' not in request.session:
+        return redirect('login')
+    
+    delivery_boy = get_object_or_404(DeliveryBoy, email=request.session['email'])
+    
+    # Get active deliveries for this delivery boy
+    active_assignments = DeliveryAssignment.objects.filter(
+        delivery_boy=delivery_boy,
+        delivery_status__in=['pending', 'packed', 'dispatched', 'out_for_delivery']
+    ).select_related('order', 'order__user')
+    
+    # Prepare delivery locations for the map
+    delivery_locations = []
+    
+    for assignment in active_assignments:
+        order = assignment.order
+        user = order.user
+        
+        # Get user's address from profile
+        try:
+            profile = user.userprofile
+            address = f"{profile.address}, {profile.city}, {profile.district}, {profile.state}, {profile.pincode}"
+            
+            # Add to locations list with string ID to ensure proper JavaScript handling
+            delivery_locations.append({
+                'order_id': str(order.id),  # Convert to string to avoid JS issues
+                'customer_name': f"{user.first_name} {user.last_name}",
+                'address': address,
+                'status': assignment.delivery_status,
+                'product': order.product.name,
+                'assignment_id': str(assignment.id)  # Convert to string
+            })
+        except Exception as e:
+            print(f"Error getting address for order {order.id}: {str(e)}")
+    
+    context = {
+        'delivery_boy': delivery_boy,
+        'delivery_locations': json.dumps(delivery_locations),
+        'delivery_count': len(delivery_locations),
+        'assignments': active_assignments
+    }
+    
+    return render(request, 'delivery_route_map.html', context)
+
+def get_server_ip(request):
+    """Get the server's actual local network IP address"""
+    try:
+        # Create a socket connection to an external server
+        # This helps us determine which network interface is used for external connections
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # Doesn't actually connect, but helps us get the local IP
+            s.connect(('8.8.8.8', 80))
+            ip = s.getsockname()[0]
+        finally:
+            s.close()
+            
+        # Verify we didn't get localhost
+        if ip.startswith('127.'):
+            raise Exception('Got localhost address')
+            
+        return JsonResponse({"ip": ip})
+        
+    except Exception as e:
+        print(f"Error getting IP: {e}")
+        # Fallback: try to get any non-localhost IP
+        try:
+            hostname = socket.gethostname()
+            ips = socket.gethostbyname_ex(hostname)[2]
+            for ip in ips:
+                if not ip.startswith('127.'):
+                    return JsonResponse({"ip": ip})
+        except:
+            pass
+            
+        return JsonResponse({"error": "Could not determine local IP address. Make sure you're running the server with 'python manage.py runserver 0.0.0.0:8000'"}, 
+                          status=500)
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Cart, SavedItem, Product, user_registration
+
+def save_for_later(request, product_id):
+    if 'user_id' not in request.session:
+        messages.error(request, "Please login to save items.")
+        return redirect('login')
+    
+    user = get_object_or_404(user_registration, id=request.session['user_id'])
+    product = get_object_or_404(Product, id=product_id)
+    
+    # Check if item is already saved
+    if SavedItem.objects.filter(user=user, product=product).exists():
+        messages.info(request, "Item is already saved!")
+        return redirect('cart')
+    
+    # Remove from cart if it exists
+    Cart.objects.filter(user=user, product=product).delete()
+    
+    # Save the item
+    SavedItem.objects.create(user=user, product=product)
+    messages.success(request, "Item saved for later!")
+    return redirect('cart')
+
+def move_to_cart(request, product_id):
+    if 'user_id' not in request.session:
+        messages.error(request, "Please login to move items to cart.")
+        return redirect('login')
+    
+    user = get_object_or_404(user_registration, id=request.session['user_id'])
+    product = get_object_or_404(Product, id=product_id)
+    
+    # Remove from saved items
+    saved_item = get_object_or_404(SavedItem, user=user, product=product)
+    saved_item.delete()
+    
+    # Add to cart
+    cart_item, created = Cart.objects.get_or_create(
+        user=user,
+        product=product,
+        defaults={'quantity': 1}
+    )
+    
+    if not created:
+        cart_item.quantity += 1
+        cart_item.save()
+    
+    messages.success(request, "Item moved to cart successfully!")
+    return redirect('cart')
+
+def remove_saved_item(request, product_id):
+    if 'user_id' not in request.session:
+        messages.error(request, "Please login to remove saved items.")
+        return redirect('login')
+    
+    user = get_object_or_404(user_registration, id=request.session['user_id'])
+    product = get_object_or_404(Product, id=product_id)
+    
+    # Find and delete the saved item
+    saved_item = get_object_or_404(SavedItem, user=user, product=product)
+    saved_item.delete()
+    
+    messages.success(request, "Item removed from saved items.")
+    return redirect('cart')
+
+from decimal import Decimal  # Add this import at the top
+
+def view_cart(request):
+    if 'user_id' not in request.session:
+        messages.error(request, "Please login to view cart.")
+        return redirect('login')
+    
+    user = get_object_or_404(user_registration, id=request.session['user_id'])
+    cart_items = Cart.objects.filter(user=user)
+    saved_items = SavedItem.objects.filter(user=user)
+    
+    # Calculate totals using Decimal
+    subtotal = sum(item.product.price * Decimal(str(item.quantity)) for item in cart_items)
+    shipping = Decimal('50.00') if subtotal > 0 else Decimal('0.00')
+    platform_fee = (subtotal * Decimal('0.02')).quantize(Decimal('0.01'))  # 2% platform fee
+    tax = (subtotal * Decimal('0.18')).quantize(Decimal('0.01'))  # 18% tax
+    total = subtotal + shipping + platform_fee + tax
+    
+    context = {
+        'cart_items': cart_items,
+        'saved_items': saved_items,
+        'subtotal': subtotal,
+        'shipping': shipping,
+        'platform_fee': platform_fee,
+        'tax': tax,
+        'total': total
+    }
+    
+    return render(request, 'cart.html', context)
+
+def submit_review(request, order_id):
+    if 'user_id' not in request.session:
+        messages.error(request, "Please login to submit a review.")
+        return redirect('login')
+
+    user = get_object_or_404(user_registration, id=request.session['user_id'])
+    order = get_object_or_404(Order, id=order_id, user=user)
+    
+    # Check if order is delivered and hasn't been reviewed yet
+    if request.method == 'POST' and order.delivery_status == 'Delivered':
+        # Check if review already exists
+        existing_review = Review.objects.filter(user=user, product=order.product).first()
+        if existing_review:
+            messages.error(request, 'You have already reviewed this product.')
+            return redirect('track_order', order_id=order_id)
+            
+        try:
+            # Create the review
+            Review.objects.create(
+                product=order.product,
+                user=user,
+                rating=request.POST.get('rating'),
+                comment=request.POST.get('comment'),
+                name=user.first_name,
+                email=user.email,
+                image=request.FILES.get('image')
+            )
+            messages.success(request, 'Thank you for your review!')
+            return redirect('my_orders')
+            
+        except Exception as e:
+            messages.error(request, f'Error submitting review: {str(e)}')
+            return redirect('track_order', order_id=order_id)
+    else:
+        messages.error(request, 'You can only review delivered orders.')
+    
+    return redirect('track_order', order_id=order_id)
+
+from django.utils import timezone
+from .forms import ReviewReplyForm
+
+def admin_reviews(request):
+    # Get all reviews with related product and user information
+    reviews = Review.objects.select_related('product', 'user', 'replied_by').order_by('-created_at')
+    
+    # Create a form instance for replies
+    from .forms import ReviewReplyForm
+    form = ReviewReplyForm()
+    
+    context = {
+        'reviews': reviews,
+        'form': form
+    }
+    return render(request, 'admin_reviews.html', context)
+
+def vendor_reviews(request):
+    if 'user_id' not in request.session:
+        messages.error(request, "Please login to view reviews")
+        return redirect('login')
+    
+    vendor = get_object_or_404(user_registration, id=request.session['user_id'])
+    vendor_products = Product.objects.filter(vendor=vendor)
+    reviews = Review.objects.filter(product__in=vendor_products).order_by('-created_at')
+    
+    context = {
+        'reviews': reviews,
+        'form': ReviewReplyForm()
+    }
+    return render(request, 'vendor_reviews.html', context)
+
+def reply_to_review(request, review_id):
+    if 'user_id' not in request.session:
+        messages.error(request, "Please login to reply to reviews")
+        return redirect('login')
+
+    review = get_object_or_404(Review, id=review_id)
+    user = get_object_or_404(user_registration, id=request.session['user_id'])
+
+    # Check if user is admin or the vendor of the product
+    is_admin = user.user_type == 'admin'
+    is_vendor = review.product.vendor == user
+
+    if not (is_admin or is_vendor):
+        messages.error(request, "You don't have permission to reply to this review")
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = ReviewReplyForm(request.POST, instance=review)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.replied_by = user
+            review.replied_at = timezone.now()
+            review.save()
+            messages.success(request, "Reply posted successfully!")
+            
+            # Redirect based on user type
+            if is_admin:
+                return redirect('admin_reviews')
+            else:
+                return redirect('vendor_reviews')
+    
+    messages.error(request, "Invalid request")
+    return redirect('home')
+
+# Add these new views to your views.py
+
+def vendor_offers(request):
+    if 'user_id' not in request.session or request.session.get('user_type') != 'vendor':
+        return redirect('login')
+    
+    vendor = get_object_or_404(user_registration, id=request.session['user_id'])
+    offers = Offer.objects.filter(vendor=vendor)
+    
+    if request.method == 'POST':
+        form = OfferForm(request.POST)
+        if form.is_valid():
+            offer = form.save(commit=False)
+            offer.vendor = vendor
+            offer.save()
+            messages.success(request, 'Offer created successfully!')
+            return redirect('vendor_offers')
+    else:
+        form = OfferForm()
+        # Filter products to show only vendor's products
+        form.fields['product'].queryset = Product.objects.filter(vendor=vendor)
+    
+    context = {
+        'offers': offers,
+        'form': form,
+        'vendor': vendor
+    }
+    return render(request, 'vendor_offers.html', context)
+
+def edit_offer(request, offer_id):
+    if 'user_id' not in request.session or request.session.get('user_type') != 'vendor':
+        return redirect('login')
+    
+    vendor = get_object_or_404(user_registration, id=request.session['user_id'])
+    offer = get_object_or_404(Offer, id=offer_id, vendor=vendor)
+    
+    if request.method == 'POST':
+        form = OfferForm(request.POST, instance=offer)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Offer updated successfully!')
+            return redirect('vendor_offers')
+    else:
+        form = OfferForm(instance=offer)
+        form.fields['product'].queryset = Product.objects.filter(vendor=vendor)
+    
+    return render(request, 'edit_offer.html', {'form': form, 'offer': offer})
+
+def delete_offer(request, offer_id):
+    if 'user_id' not in request.session or request.session.get('user_type') != 'vendor':
+        return redirect('login')
+    
+    offer = get_object_or_404(Offer, id=offer_id, vendor_id=request.session['user_id'])
+    offer.delete()
+    messages.success(request, 'Offer deleted successfully!')
+    return redirect('vendor_offers')
+
+def admin_offers(request):
+    if 'user_id' not in request.session or request.session.get('user_type') != 'admin':
+        return redirect('login')
+    
+    offers = Offer.objects.all().select_related('vendor', 'product')
+    return render(request, 'admin_offers.html', {'offers': offers})
+
+# Modify your existing user_dashboard view to include offers
+def user_dashboard(request):
+    active_offers = Offer.objects.filter(
+        is_active=True,
+        start_date__lte=timezone.now(),
+        end_date__gte=timezone.now()
+    ).select_related('product', 'vendor')
+    
+    flash_sales = active_offers.filter(offer_type='flash_sale')
+    regular_offers = active_offers.exclude(offer_type='flash_sale')
+    
+    context = {
+        'flash_sales': flash_sales,
+        'regular_offers': regular_offers,
+        'first_name': request.session.get('first_name', "Guest"),
+        'last_name': request.session.get('last_name', ""),
+        'user_id': request.session.get('user_id')
+    }
+    return render(request, 'user_dashboard.html', context)
 
 

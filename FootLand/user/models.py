@@ -7,6 +7,8 @@ import qrcode
 from io import BytesIO
 from django.core.files import File
 from PIL import Image
+from django.utils import timezone
+from decimal import Decimal
 
 
 # Create your models here.
@@ -229,6 +231,9 @@ class SavedItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     date_saved = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ('user', 'product')  # Prevent duplicate saves
+
     def __str__(self):
         return f"{self.user.first_name}'s saved item - {self.product.name}"
 
@@ -262,6 +267,7 @@ class Order(models.Model):
         ('Failed', 'Failed')
     ]
     delivery_status = models.CharField(max_length=50, choices=DELIVERY_STATUS, default='Processing')
+    review = models.OneToOneField('Review', on_delete=models.SET_NULL, null=True, blank=True, related_name='order')
 
     def __str__(self):
         return f"Order for {self.product.name} by {self.user.first_name}"
@@ -411,17 +417,68 @@ class Review(models.Model):
     product = models.ForeignKey(Product, related_name='reviews', on_delete=models.CASCADE)
     user = models.ForeignKey(user_registration, on_delete=models.CASCADE)
     rating = models.PositiveIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)]  # Add validators for 1-5 stars
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
     comment = models.TextField()
     name = models.CharField(max_length=100)
     email = models.EmailField(null=True)
+    image = models.ImageField(upload_to='review_images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    reply = models.TextField(null=True, blank=True)
+    replied_at = models.DateTimeField(null=True, blank=True)
+    replied_by = models.ForeignKey(user_registration, null=True, blank=True, 
+                                 on_delete=models.SET_NULL, related_name='review_replies')
+    # New fields for reporting
+    reported = models.BooleanField(default=False)
+    report_reason = models.TextField(null=True, blank=True)
+    reported_by = models.ForeignKey(user_registration, null=True, blank=True, 
+                                  on_delete=models.SET_NULL, related_name='reported_reviews')
+    reported_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        db_table = 'user_review'  # Specify the table name explicitly
-        ordering = ['-created_at']  # Order by newest first
+        db_table = 'user_review'
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.name} - {self.rating} stars"
+    
+
+class Offer(models.Model):
+    OFFER_TYPE_CHOICES = [
+        ('discount', 'Percentage Discount'),
+        ('fixed', 'Fixed Amount Off'),
+        ('flash_sale', 'Flash Sale'),
+    ]
+
+    vendor = models.ForeignKey(user_registration, on_delete=models.CASCADE, related_name='offers')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='offers')
+    offer_type = models.CharField(max_length=20, choices=OFFER_TYPE_CHOICES)
+    discount_value = models.DecimalField(max_digits=5, decimal_places=2)  # Percentage or fixed amount
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+    description = models.TextField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.get_offer_type_display()} - {self.product.name}"
+
+    def is_valid(self):
+        now = timezone.now()
+        return self.is_active and self.start_date <= now <= self.end_date
+
+    def get_discounted_price(self, original_price):
+        if not self.is_valid():
+            return original_price
+        
+        if self.offer_type == 'discount':
+            discount = (Decimal(self.discount_value) / 100) * original_price
+            return original_price - discount
+        elif self.offer_type == 'fixed':
+            return max(0, original_price - self.discount_value)
+        return original_price
     

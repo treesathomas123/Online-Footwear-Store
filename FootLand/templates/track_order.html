@@ -255,6 +255,259 @@
                 text-align: left;
             }
         }
+
+        /* Enhanced Review Section Styles */
+        .review-section {
+            margin-top: 40px;
+            background: #ffffff;
+            border-radius: 25px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transform: translateY(0);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .review-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(66, 153, 225, 0.2);
+        }
+
+        .review-section .card {
+            border: none;
+            background: transparent;
+        }
+
+        .review-section .card-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 25px;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .review-section .card-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            z-index: 1;
+        }
+
+        .review-section .card-header h3 {
+            color: white;
+            margin: 0;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .review-section .card-header h3 i {
+            color: #ffd700;
+            animation: starPulse 2s infinite;
+        }
+
+        @keyframes starPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .review-section .card-body {
+            padding: 35px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+
+        /* Enhanced Rating Input Styles */
+        .rating-container {
+            background: linear-gradient(145deg, #ffffff, #f0f7ff);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .rating-input {
+            width: 100%;
+            height: 25px;
+            margin: 15px 0;
+            accent-color: #667eea;
+        }
+
+        .rating-value {
+            font-size: 32px;
+            color: #667eea;
+            text-align: center;
+            margin: 15px 0;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(102,126,234,0.2);
+        }
+
+        .rating-labels {
+            display: flex;
+            justify-content: space-between;
+            color: #718096;
+            font-size: 1em;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        /* Enhanced Form Controls */
+        .form-label {
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            background: #f8fafc;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102,126,234,0.15);
+            outline: none;
+            background: #ffffff;
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        /* Enhanced File Upload Styling */
+        .file-upload-container {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: linear-gradient(145deg, #f8fafc, #edf2f7);
+            border: 2px dashed #cbd5e0;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-upload-label:hover {
+            border-color: #667eea;
+            background: linear-gradient(145deg, #f0f7ff, #e6eeff);
+            transform: translateY(-2px);
+        }
+
+        .file-upload-label i {
+            font-size: 2em;
+            color: #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .file-upload-label:hover i {
+            transform: scale(1.1);
+        }
+
+        /* Enhanced Submit Button */
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 18px 35px;
+            border: none;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            width: 100%;
+            margin-top: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(102,126,234,0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .submit-btn i {
+            font-size: 1.3em;
+            animation: floatIcon 2s infinite;
+        }
+
+        @keyframes floatIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        /* Form Group Spacing */
+        .mb-4 {
+            margin-bottom: 2rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .review-section {
+                margin-top: 30px;
+            }
+
+            .review-section .card-header {
+                padding: 20px;
+            }
+
+            .review-section .card-body {
+                padding: 25px;
+            }
+
+            .submit-btn {
+                padding: 15px 25px;
+                font-size: 1.1em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -322,6 +575,78 @@
                 {% endif %}
             </div>
         </div>
+
+        {% if order.delivery_status == 'Delivered' and not order.review %}
+            <div class="review-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-star"></i> Share Your Experience</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" enctype="multipart/form-data" action="{% url 'submit_review' order.id %}">
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label for="rating" class="form-label">How would you rate this product?</label>
+                                <div class="rating-container">
+                                    <input type="range" class="rating-input" id="rating" name="rating" 
+                                           min="1" max="5" step="1" value="5" required>
+                                    <div class="rating-value" id="ratingValue">5 ★</div>
+                                    <div class="rating-labels">
+                                        <span>Not satisfied</span>
+                                        <span>Very satisfied</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="comment" class="form-label">Tell us about your experience</label>
+                                <textarea class="form-control" id="comment" name="comment" 
+                                        placeholder="Share your thoughts about the product..." 
+                                        rows="4" required></textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="file-upload-container">
+                                    <label for="image" class="file-upload-label">
+                                        <i class="fas fa-camera"></i>
+                                        <span>Add Photos to Your Review (Optional)</span>
+                                    </label>
+                                    <input type="file" class="form-control" id="image" name="image" 
+                                           accept="image/*" style="display: none;">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="submit-btn">
+                                <i class="fas fa-paper-plane"></i>
+                                Submit Review
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
     </div>
+
+    <!-- Add JavaScript for rating display -->
+    <script>
+        const ratingInput = document.getElementById('rating');
+        const ratingValue = document.getElementById('ratingValue');
+        
+        ratingInput?.addEventListener('input', function() {
+            ratingValue.textContent = `${this.value} ★`;
+        });
+
+        // File upload preview
+        const fileInput = document.getElementById('image');
+        const fileLabel = document.querySelector('.file-upload-label span');
+        
+        fileInput?.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                fileLabel.textContent = `Selected: ${this.files[0].name}`;
+            } else {
+                fileLabel.textContent = 'Add Photos to Your Review (Optional)';
+            }
+        });
+    </script>
 </body>
 </html> 

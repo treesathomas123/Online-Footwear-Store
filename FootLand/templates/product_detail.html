@@ -10,151 +10,200 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css">
     <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
     <style>
-        /* Basic CSS styles for the page */
+        /* Modern Product Detail Styles */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f6f9fc 0%, #edf2f7 100%);
             margin: 0;
-            display: flex;
-            flex-direction: column;
             padding: 20px;
+            min-height: 100vh;
         }
-        nav {
-            background-color: #ffd6d6;
-            padding: 0px;
-            margin-bottom: 10px;
-            gap: 20px;
-        }
-        nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-        }
-        nav ul li {
-            display: inline;
-        }
-        nav ul li a {
-            color: rgb(41, 37, 37);
-            text-decoration: none;
-            padding: 10px 15px;
-        }
-        nav ul li a:hover {
-            background-color: #c0bbbb;
-            border-radius: 5px;
-        }
-        /* Add to Wishlist button styling */
-        .add-to-wishlist-btn {
-            background-color: #ff6b6b;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 8px 12px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 10px;
-        }
-        .add-to-wishlist-btn:hover {
-            background-color: #ff4b4b;
-        }
-        /* Navbar wishlist icon */
-        .navbar-wishlist-icon {
-            margin-left: 15px;
-            cursor: pointer;
-        }
-        header {
-            background-color: #ffd6d6;
-            padding: 15px 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+
         .product-detail-container {
-            background-color: #ffffff;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            margin-top: 1px;
+            margin-top: 30px;
+            transition: transform 0.3s ease;
         }
+
+        .product-detail-container:hover {
+            transform: translateY(-5px);
+        }
+
         .product-image-container {
-            height: 400px;
+            height: 500px;
+            padding: 30px;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+            background: linear-gradient(145deg, #ffffff, #f0f4f8);
         }
+
         .product-image-container img {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
-            border-radius: 10px;
+            border-radius: 15px;
+            transition: transform 0.3s ease;
         }
-        .product-image {
-            height: 50px;
-            object-position: 10px;
-            border-radius: 5px 0 0 5px;
+
+        .product-image-container img:hover {
+            transform: scale(1.05);
         }
-        .product-image img {
-            max-width: 50%;
-            border-radius: 10px;
+
+        .product-info {
+            padding: 40px;
         }
+
         .product-title {
             font-size: 2.5rem;
-            font-weight: bold;
-            color: #333;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            line-height: 1.2;
         }
+
         .product-price {
-            font-size: 1.8rem;
-            color: #28a745;
-            font-weight: bold;
+            font-size: 2rem;
+            color: #4299e1;
+            font-weight: 600;
+            margin-bottom: 30px;
         }
+
         .product-detail {
-            margin-bottom: 10px;
-        }
-        .product-info {
-            padding: 30px;
-        }
-        .product-info h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-        .product-info p {
-            margin-bottom: 10px;
-        }
-        .price {
-            font-size: 24px;
-            font-weight: bold;
-            color: #28a745;
-        }
-        .add-to-cart-btn {
-            background-color: #007bff;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1.1rem;
-            transition: all 0.3s;
-        }
-        .add-to-cart-btn:disabled {
-            background-color: #999;
-            cursor: not-allowed;
-        }
-        .add-to-cart-btn:hover:not(:disabled) {
-            background-color: #0056b3;
-        }
-        .reviews {
-            background-color: #fff;
-            padding: 20px;
+            margin-bottom: 15px;
+            padding: 12px 20px;
+            background: #f8fafc;
             border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .product-detail strong {
+            color: #4a5568;
+        }
+
+        /* Enhanced Button Styles */
+        .add-to-cart-btn {
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            width: 100%;
             margin-top: 20px;
         }
+
+        .add-to-cart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(66, 153, 225, 0.3);
+        }
+
+        .add-to-wishlist-btn {
+            background: linear-gradient(135deg, #fc8181, #f56565);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .add-to-wishlist-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 101, 101, 0.3);
+        }
+
+        /* Enhanced Review Section */
+        .reviews-section {
+            margin-top: 50px;
+            padding: 30px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .review-card {
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .review-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .reviewer-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .reviewer-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .star-display {
+            color: #ffd700;
+            font-size: 1.2rem;
+            margin-top: 5px;
+        }
+
+        .review-content {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .review-image {
+            max-width: 200px;
+            border-radius: 10px;
+            margin-top: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Similar Products Section */
+        .similar-products-section {
+            margin-top: 50px;
+        }
+
+        .similar-product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .similar-product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
         /* Navigation and dropdown styling */
         nav {
             display: flex;
@@ -197,13 +246,6 @@
             font-weight: bold;
             margin: 40px 0 20px;
             color: #333;
-        }
-        .similar-product-card {
-            transition: all 0.3s;
-        }
-        .similar-product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         .product-image-wrapper {
             position: relative;
@@ -285,6 +327,403 @@
 
         .fancybox__container {
             --fancybox-bg: rgba(0, 0, 0, 0.95);
+        }
+
+        .rating {
+            display: flex;
+            flex-direction: row-reverse;
+            gap: 0.3rem;
+            font-size: 1.5rem;
+            justify-content: flex-end;
+        }
+
+        .rating input {
+            display: none;
+        }
+
+        .rating label {
+            cursor: pointer;
+            color: #ddd;
+            font-size: 1.5rem;
+        }
+
+        .rating input:checked ~ label,
+        .rating label:hover,
+        .rating label:hover ~ label {
+            color: #ffd700;
+        }
+
+        .review-item .text-warning {
+            color: #ffd700 !important;
+        }
+
+        /* Star Rating Styles */
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .star-rating input {
+            display: none;
+        }
+        
+        .star-rating label {
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="%23ddd"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 36px;
+            transition: all 0.2s;
+        }
+        
+        .star-rating input:checked ~ label,
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="%23ffd700"/></svg>');
+            transform: scale(1.1);
+        }
+        
+        /* Review Card Styles */
+        .review-card {
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        
+        .review-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .reviewer-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .reviewer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .review-content {
+            padding: 20px;
+        }
+        
+        .review-image {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .star-display {
+            color: #ffd700;
+            font-size: 18px;
+        }
+        
+        .review-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        /* Rating slider */
+        .rating-container {
+            position: relative;
+            width: 100%;
+            height: 60px;
+            margin-bottom: 20px;
+        }
+        
+        .rating-input {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 15px;
+            border-radius: 10px;
+            background: #d3d3d3;
+            outline: none;
+        }
+        
+        .rating-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="%23ffd700"/></svg>');
+            background-size: cover;
+            cursor: pointer;
+        }
+        
+        .rating-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .rating-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        /* Navigation Styles */
+        .nav-menu {
+            background: linear-gradient(135deg, #37100d, #37100d);
+            padding: 15px 0;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-menu a {
+            color: #37100d;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .nav-menu a:hover {
+            background: rgba(55, 16, 13, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Reviews Section Styling */
+        .reviews-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .reviews-header {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .reviews-title {
+            color: #37100d;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .rating-summary {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .rating-summary .stars {
+            color: #ffd700;
+            font-size: 1.5rem;
+        }
+
+        .review-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            padding: 20px 0;
+        }
+
+        .review-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .review-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .reviewer-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .reviewer-avatar {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #37100d, #5a1f1a);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .reviewer-details h5 {
+            margin: 0;
+            color: #37100d;
+            font-size: 1.1rem;
+        }
+
+        .star-display {
+            color: #ffd700;
+            margin-top: 5px;
+        }
+
+        .review-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .review-content {
+            margin-top: 15px;
+        }
+
+        .review-content p {
+            color: #495057;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .review-image-container {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            margin: 15px auto;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .review-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .review-image:hover {
+            transform: scale(1.05);
+        }
+
+        .empty-reviews {
+            text-align: center;
+            padding: 50px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .empty-reviews i {
+            font-size: 3rem;
+            color: #37100d;
+            margin-bottom: 20px;
+        }
+
+        .empty-reviews p {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .review-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .reviews-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .review-image-container {
+                max-width: 100%;
+            }
+        }
+
+        .review-reply {
+            background-color: #f8f9fa;
+            border-left: 4px solid #4a90e2;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .reply-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .reply-date {
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        /* Add these styles in your existing style section */
+        .review-actions {
+            display: none; /* Hide the review actions section */
+        }
+
+        /* Remove report button styles */
+        .report-btn, .report-btn:hover {
+            display: none;
+        }
+
+        /* Remove share button styles */
+        .share-btn, .share-btn:hover {
+            display: none;
+        }
+
+        /* Remove share buttons styles */
+        .share-buttons {
+            display: none;
+        }
+
+        .share-button, .share-button:hover {
+            display: none;
+        }
+
+        .share-facebook, .share-twitter, .share-whatsapp, .share-telegram {
+            display: none;
         }
     </style>
 </head>
@@ -414,97 +853,92 @@
         </div>
     </div>
 
-    <!-- Add this script before closing body tag -->
-    <script>
-        // Initialize Fancybox
-        Fancybox.bind('[data-fancybox="product-gallery"]', {
-            dragToClose: false,
-        });
+    <!-- Add this after your product details section -->
+    <div class="reviews-container">
+        <div class="reviews-header">
+            <h4 class="reviews-title">
+                <i class="fas fa-comments"></i>
+                Customer Reviews
+            </h4>
+            <div class="rating-summary">
+                <span class="h4">{{ avg_rating }}</span>
+                <div class="stars">
+                    {% for i in "12345"|make_list %}
+                        {% if forloop.counter <= avg_rating %}
+                            <i class="fas fa-star"></i>
+                        {% else %}
+                            <i class="far fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <span class="text-muted">({{ rating_count }} reviews)</span>
+            </div>
+        </div>
 
-        let isRotating = false;
-        let currentZoom = 1;
-        const zoomStep = 0.1;
-        const maxZoom = 3;
-        const minZoom = 0.5;
+        {% if reviews %}
+        <div class="review-grid">
+            {% for review in reviews %}
+            <div class="review-card" id="review-{{ review.id }}">
+                <div class="reviewer-info">
+                    <div class="reviewer-avatar">
+                        {{ review.name|slice:":1" }}
+                    </div>
+                    <div class="reviewer-details">
+                        <h5>{{ review.name }}</h5>
+                        <div class="star-display">
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= review.rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <span class="review-date">{{ review.created_at|date:"F d, Y" }}</span>
+                </div>
+                <div class="review-content">
+                    <p>{{ review.comment }}</p>
+                    {% if review.image %}
+                    <div class="review-image-container">
+                        <img src="{{ review.image.url }}" alt="Review image" class="review-image">
+                    </div>
+                    {% endif %}
+                    
+                    {% if review.reply %}
+                    <div class="review-reply">
+                        <div class="reply-header">
+                            <strong>
+                                {% if review.replied_by.user_type == 'admin' %}
+                                    Admin Response
+                                {% else %}
+                                    Vendor Response
+                                {% endif %}
+                            </strong>
+                            <span class="reply-date">{{ review.replied_at|date:"F d, Y" }}</span>
+                        </div>
+                        <p>{{ review.reply }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Removed review actions section -->
+                </div>
+                
+                <!-- Removed report modal -->
+                
+                <!-- Removed share modal -->
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-reviews">
+            <i class="far fa-comment-dots"></i>
+            <p>No reviews yet. Be the first to share your experience!</p>
+        </div>
+        {% endif %}
+    </div>
 
-        function open3DViewer() {
-            Fancybox.show([
-                {
-                    src: "#viewer3D",
-                    type: "inline",
-                    dragToClose: false,
-                },
-            ]);
-        }
-
-        function toggleRotation() {
-            const image = document.getElementById('3dImage');
-            isRotating = !isRotating;
-            if (isRotating) {
-                image.classList.add('rotate-360');
-            } else {
-                image.classList.remove('rotate-360');
-            }
-        }
-
-        function resetView() {
-            const image = document.getElementById('3dImage');
-            image.classList.remove('rotate-360');
-            isRotating = false;
-            currentZoom = 1;
-            image.style.transform = `scale(${currentZoom})`;
-        }
-
-        function zoomIn() {
-            if (currentZoom < maxZoom) {
-                currentZoom += zoomStep;
-                updateZoom();
-            }
-        }
-
-        function zoomOut() {
-            if (currentZoom > minZoom) {
-                currentZoom -= zoomStep;
-                updateZoom();
-            }
-        }
-
-        function updateZoom() {
-            const image = document.getElementById('3dImage');
-            image.style.transform = `scale(${currentZoom})`;
-        }
-
-        // Add mouse wheel zoom support
-        document.getElementById('viewer3D').addEventListener('wheel', function(e) {
-            e.preventDefault();
-            if (e.deltaY < 0) {
-                zoomIn();
-            } else {
-                zoomOut();
-            }
-        });
-
-        // Add drag to rotate functionality
-        let isDragging = false;
-        let startX;
-        let rotateX = 0;
-
-        document.getElementById('3dImage').addEventListener('mousedown', function(e) {
-            isDragging = true;
-            startX = e.pageX - rotateX;
-        });
-
-        document.addEventListener('mousemove', function(e) {
-            if (!isDragging) return;
-            
-            rotateX = e.pageX - startX;
-            document.getElementById('3dImage').style.transform = 
-                `scale(${currentZoom}) rotateY(${rotateX}deg)`;
-        });
-
-        document.addEventListener('mouseup', function() {
-            isDragging = false;
-        });
-    </script>
+    <!-- Add these before closing </body> tag -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -226,21 +226,21 @@
         <!-- Low Stock Alert -->
         <div class="analytics-card mt-4">
             <h4><i class="fas fa-exclamation-triangle text-warning"></i> Low Stock Products</h4>
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
                             <th>Product Name</th>
                             <th>Current Stock</th>
                             <th>Price</th>
                             <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for product in low_stock_products %}
-                        <tr>
-                            <td>{{ product.name }}</td>
-                            <td>{{ product.stock_quantity }}</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in low_stock_products %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.stock_quantity }}</td>
                             <td>₹{{ product.price }}</td>
                             <td>
                                 {% if product.stock_quantity == 0 %}
@@ -249,45 +249,34 @@
                                     <span class="badge bg-warning">Low Stock</span>
                                 {% endif %}
                             </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             </div>
         </div>
     </div>
 
     <script>
         // Best Selling Products Chart
-        const bestSellingData = [
-            {% for product in best_selling %}
-                {
-                    name: "{{ product.product__name }}",
-                    sales: {{ product.total_sales }},
-                    revenue: {{ product.total_revenue|default:0 }}
-                }{% if not forloop.last %},{% endif %}
-            {% endfor %}
-        ];
-
         const bestSellingCtx = document.getElementById('bestSellingChart').getContext('2d');
         new Chart(bestSellingCtx, {
             type: 'bar',
             data: {
-                labels: bestSellingData.map(item => item.name),
+                labels: [{% for product in best_selling %}'{{ product.product__name }}'{% if not forloop.last %},{% endif %}{% endfor %}],
                 datasets: [{
                     label: 'Sales Count',
-                    data: bestSellingData.map(item => item.sales),
-                    backgroundColor: 'rgba(54, 162, 235, 0.8)'
-                }, {
-                    label: 'Revenue (₹)',
-                    data: bestSellingData.map(item => item.revenue),
-                    backgroundColor: 'rgba(75, 192, 192, 0.8)'
+                    data: [{% for product in best_selling %}{{ product.total_sales }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                    backgroundColor: 'rgba(52, 152, 219, 0.8)'
                 }]
             },
             options: {
                 responsive: true,
+                animation: false,
                 scales: {
-                    y: { beginAtZero: true }
+                    y: {
+                        beginAtZero: true
+                    }
                 }
             }
         });

@@ -1,0 +1,595 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Route Map - FootLand</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <!-- Leaflet Routing Machine CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            --secondary-gradient: linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%);
+            --success-gradient: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            --warning-gradient: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+            
+            --primary: #4f46e5;
+            --secondary: #0ea5e9;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #94a3b8;
+            --text-light: #ffffff;
+            
+            --sidebar-width: 300px;
+            --border-radius-sm: 10px;
+            --border-radius-md: 15px;
+            --border-radius-lg: 20px;
+            --border-radius-xl: 30px;
+            
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 25px rgba(0,0,0,0.15);
+            
+            --transition-all: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar styles (same as dashboard) */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary-gradient);
+            padding: 2rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            z-index: 1000;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-lg);
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .brand img {
+            width: 45px;
+            height: 45px;
+            border-radius: var(--border-radius-md);
+            background: white;
+            padding: 5px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .brand h2 {
+            color: var(--text-light);
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 1.2rem 1.5rem;
+            color: var(--text-light);
+            text-decoration: none;
+            margin-bottom: 0.8rem;
+            border-radius: var(--border-radius-lg);
+            transition: var(--transition-all);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav-link.active {
+            background: var(--secondary-gradient);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav-link i {
+            margin-right: 15px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: var(--transition-all);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            margin-left: var(--sidebar-width);
+            position: relative;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: var(--border-radius-xl);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .welcome-text {
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 600;
+        }
+
+        .welcome-text i {
+            font-size: 2.2rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Map container */
+        #map-container {
+            height: 600px;
+            border-radius: var(--border-radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+        }
+
+        /* Delivery list */
+        .delivery-list-container {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: var(--border-radius-xl);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .delivery-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .delivery-list-header h2 {
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .delivery-list {
+            list-style: none;
+        }
+
+        .delivery-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--bg-tertiary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition-all);
+            cursor: pointer;
+        }
+
+        .delivery-item:hover {
+            background: var(--bg-tertiary);
+            transform: translateX(5px);
+        }
+
+        .delivery-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .delivery-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--bg-tertiary);
+            border-radius: var(--border-radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.2rem;
+            transition: var(--transition-all);
+        }
+
+        .delivery-details h4 {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .delivery-details p {
+            color: var(--text-tertiary);
+            font-size: 0.9rem;
+        }
+
+        .delivery-status {
+            padding: 0.6rem 1.5rem;
+            border-radius: var(--border-radius-xl);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: rgba(217, 119, 6, 0.1);
+            color: var(--warning);
+        }
+
+        .status-delivered {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--success);
+        }
+
+        .status-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .status-btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-lg);
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition-all);
+        }
+
+        .status-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-update {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .btn-navigate {
+            background: var(--secondary-gradient);
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="brand">
+                <img src="{% static 'images/logo2.png' %}" alt="FootLand Logo">
+                <h2>FootLand</h2>
+            </div>
+
+            <nav>
+                <a href="{% url 'delivery_boy_dashboard' %}" class="nav-link">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <a href="{% url 'active_deliveries' %}" class="nav-link">
+                    <i class="fas fa-box"></i> Active Deliveries
+                </a>
+                <a href="{% url 'delivery_history' %}" class="nav-link">
+                    <i class="fas fa-history"></i> Delivery History
+                </a>
+                <a href="{% url 'delivery_route_map' %}" class="nav-link active">
+                    <i class="fas fa-map-marker-alt"></i> Route Map
+                </a>
+                <a href="{% url 'delivery_boy_profile' %}" class="nav-link">
+                    <i class="fas fa-user"></i> Profile
+                </a>
+                <a href="{% url 'delivery_boy_change_password' %}" class="nav-link">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="welcome-text">
+                    <i class="fas fa-map-marked-alt"></i>
+                    Delivery Route Map
+                </div>
+                <a href="{% url 'logout' %}" class="btn btn-danger">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </header>
+
+            <!-- Map Container -->
+            <div id="map-container"></div>
+
+            <!-- Delivery List -->
+            <div class="delivery-list-container">
+                <div class="delivery-list-header">
+                    <h2>
+                        <i class="fas fa-list"></i>
+                        Active Deliveries ({{ delivery_count }})
+                    </h2>
+                </div>
+
+                <ul class="delivery-list">
+                    {% for assignment in assignments %}
+                    <li class="delivery-item" data-order-id="{{ assignment.order.id }}">
+                        <div class="delivery-info">
+                            <div class="delivery-icon">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div class="delivery-details">
+                                <h4>Order #{{ assignment.order.id }} - {{ assignment.order.product.name }}</h4>
+                                <p>{{ assignment.order.user.first_name }} {{ assignment.order.user.last_name }}</p>
+                                <p>
+                                    {% if assignment.order.user.userprofile %}
+                                        {{ assignment.order.user.userprofile.address }}, 
+                                        {{ assignment.order.user.userprofile.city }}, 
+                                        {{ assignment.order.user.userprofile.district }}
+                                    {% else %}
+                                        Address not available
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="status-actions">
+                            <button class="status-btn btn-navigate" onclick="navigateToLocation('{{ assignment.order.id }}')">
+                                <i class="fas fa-directions"></i> Navigate
+                            </button>
+                            <a href="{% url 'active_deliveries' %}" class="status-btn btn-update">
+                                <i class="fas fa-edit"></i> Update Status
+                            </a>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="delivery-item">
+                        <div class="delivery-info">
+                            <div class="delivery-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div class="delivery-details">
+                                <h4>No active deliveries</h4>
+                                <p>You don't have any active deliveries at the moment.</p>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Leaflet Routing Machine JS -->
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <!-- Geocoding service -->
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+    <script>
+        // Initialize map
+        const map = L.map('map-container').setView([10.8505, 76.2711], 8); // Default center of Kerala
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Get delivery locations from Django context
+        const deliveryLocations = JSON.parse('{{ delivery_locations|escapejs }}');
+        
+        // Store markers for each location
+        const markers = {};
+        
+        // Store current user location
+        let userLocation = null;
+        let userMarker = null;
+        let routingControl = null;
+
+        // Function to get user's current location
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation = [position.coords.latitude, position.coords.longitude];
+                        
+                        // Add user marker
+                        if (userMarker) {
+                            map.removeLayer(userMarker);
+                        }
+                        
+                        userMarker = L.marker(userLocation, {
+                            icon: L.divIcon({
+                                className: 'user-location-marker',
+                                html: '<div style="background-color: #4f46e5; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white;"></div>',
+                                iconSize: [20, 20],
+                                iconAnchor: [10, 10]
+                            })
+                        }).addTo(map);
+                        
+                        // Center map on user location
+                        map.setView(userLocation, 13);
+                        
+                        // Add all delivery markers
+                        addDeliveryMarkers();
+                    },
+                    (error) => {
+                        console.error("Error getting location:", error);
+                        // If can't get user location, just add delivery markers
+                        addDeliveryMarkers();
+                    }
+                );
+            } else {
+                console.error("Geolocation is not supported by this browser.");
+                // If geolocation not supported, just add delivery markers
+                addDeliveryMarkers();
+            }
+        }
+
+        // Function to add delivery markers
+        function addDeliveryMarkers() {
+            // Clear existing markers if any
+            Object.values(markers).forEach(marker => {
+                if (map.hasLayer(marker)) {
+                    map.removeLayer(marker);
+                }
+            });
+            markers = {}; // Reset markers object
+            
+            // Add markers for each delivery location
+            deliveryLocations.forEach(location => {
+                // Use a more reliable geocoding service or hardcode test coordinates for testing
+                geocodeAddress(location.address, (coords) => {
+                    if (coords) {
+                        console.log(`Adding marker for order ${location.order_id} at ${coords}`);
+                        const marker = L.marker(coords).addTo(map);
+                        
+                        // Add popup with delivery info
+                        marker.bindPopup(`
+                            <strong>Order #${location.order_id}</strong><br>
+                            <strong>Customer:</strong> ${location.customer_name}<br>
+                            <strong>Address:</strong> ${location.address}<br>
+                            <strong>Product:</strong> ${location.product}<br>
+                            <strong>Status:</strong> ${location.status}<br>
+                            <button onclick="navigateToLocation('${location.order_id}')" class="btn btn-sm btn-primary mt-2">
+                                <i class="fas fa-directions"></i> Navigate
+                            </button>
+                        `);
+                        
+                        // Store marker reference with string key
+                        markers[location.order_id] = marker;
+                    }
+                });
+            });
+            
+            // If we have locations, fit bounds
+            if (deliveryLocations.length > 0 && Object.keys(markers).length > 0) {
+                const markerArray = Object.values(markers);
+                if (markerArray.length > 0) {
+                    const group = new L.featureGroup(markerArray);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                }
+            }
+        }
+
+        // Function to geocode address
+        function geocodeAddress(address, callback) {
+            const geocoder = L.Control.Geocoder.nominatim();
+            
+            geocoder.geocode(address, (results) => {
+                if (results && results.length > 0) {
+                    callback([results[0].center.lat, results[0].center.lng]);
+                } else {
+                    console.error("Could not geocode address:", address);
+                    callback(null);
+                }
+            });
+        }
+
+        // Function to navigate to a specific location
+        function navigateToLocation(orderId) {
+            console.log(`Navigating to order: ${orderId}`);
+            console.log(`Available markers:`, Object.keys(markers));
+            
+            const marker = markers[orderId];
+            
+            if (marker && userLocation) {
+                console.log(`Found marker at: ${marker.getLatLng()}`);
+                // Remove existing routing control if any
+                if (routingControl) {
+                    map.removeControl(routingControl);
+                }
+                
+                // Create new routing control
+                routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(userLocation[0], userLocation[1]),
+                        marker.getLatLng()
+                    ],
+                    routeWhileDragging: true,
+                    lineOptions: {
+                        styles: [
+                            {color: '#4f46e5', opacity: 0.8, weight: 6}
+                        ]
+                    },
+                    createMarker: function() { return null; }
+                }).addTo(map);
+                
+                // Open the popup
+                marker.openPopup();
+            } else if (!userLocation) {
+                alert("Please allow location access to use navigation.");
+                getUserLocation();
+            } else {
+                console.error(`Could not find marker for order ${orderId}`);
+                alert("Could not find the delivery location. Please try again.");
+            }
+        }
+
+        // Initialize map when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            getUserLocation();
+            
+            // Update location periodically
+            setInterval(getUserLocation, 60000); // Update every minute
+        });
+    </script>
+</body>
+</html> 
