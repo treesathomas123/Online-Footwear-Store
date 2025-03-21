@@ -726,6 +726,155 @@
             display: none;
         }
     </style>
+
+    <style>
+        /* Offer Styling for Product Detail */
+        .offer-highlight {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+            border: 2px solid #f8d7da;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .offer-highlight::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #ff3a3a 0%, #a23a33 100%);
+            transform: rotate(45deg);
+            z-index: 0;
+        }
+        
+        .offer-badge {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 30px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .offer-badge.flash-sale {
+            background: linear-gradient(135deg, #ff3a3a 0%, #a23a33 100%);
+            animation: pulse 1.5s infinite;
+        }
+        
+        .offer-badge.regular-offer {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        }
+        
+        .offer-badge i {
+            margin-right: 5px;
+        }
+        
+        .price-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .original-price {
+            text-decoration: line-through;
+            color: #999;
+            font-size: 1.2rem;
+        }
+        
+        .discounted-price {
+            color: #ff3a3a;
+            font-weight: bold;
+            font-size: 2rem;
+        }
+        
+        .discount-percentage {
+            background-color: #ff3a3a;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .offer-countdown {
+            background-color: rgba(0,0,0,0.05);
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .countdown-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .countdown-timer {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff3a3a;
+        }
+        
+        .offer-validity {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .offer-validity i {
+            margin-right: 5px;
+        }
+        
+        .offer-description {
+            color: #333;
+            font-style: italic;
+            border-left: 3px solid #a23a33;
+            padding-left: 10px;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Add to Cart Button Enhancement */
+        .add-to-cart-btn {
+            background: linear-gradient(135deg, #37100d 0%, #a23a33 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .add-to-cart-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .add-to-cart-btn i {
+            font-size: 1.2rem;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -773,9 +922,72 @@
                 </div>
             </div>
             <div class="col-md-6 product-info">
-                <h1 class="product-title mb-3">{{ product.name }}</h1>
-                <p class="product-price mb-4">Rs. {{ product.price }}</p>
-                <div class="product-detail"><strong>Brand:</strong> {{ product.brand }}</div>
+                <h1 class="product-title">{{ product.name }}</h1>
+                <div class="product-meta">
+                    <span class="brand">{{ product.brand }}</span>
+                    <div class="rating">
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= product.average_rating %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                        <span>({{ product.reviews.count }} reviews)</span>
+                    </div>
+                </div>
+                
+                <!-- Offer Display Section -->
+                {% if product_offer %}
+                <div class="offer-highlight">
+                    <div class="offer-badge {% if product_offer.offer_type == 'flash_sale' %}flash-sale{% else %}regular-offer{% endif %}">
+                        {% if product_offer.offer_type == 'flash_sale' %}
+                            <i class="fas fa-bolt"></i> FLASH SALE
+                        {% else %}
+                            <i class="fas fa-tag"></i> SPECIAL OFFER
+                        {% endif %}
+                    </div>
+                    
+                    <div class="offer-details">
+                        <div class="price-container">
+                            <span class="original-price">₹{{ product.price }}</span>
+                            <span class="discounted-price">₹{{ discounted_price }}</span>
+                            <span class="discount-percentage">
+                                {% if product_offer.offer_type == 'discount' %}
+                                    {{ product_offer.discount_value }}% OFF
+                                {% else %}
+                                    ₹{{ product_offer.discount_value }} OFF
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        {% if product_offer.offer_type == 'flash_sale' %}
+                        <div class="offer-countdown">
+                            <div class="countdown-label">Hurry! Offer ends in:</div>
+                            <div class="countdown-timer" data-end-date="{{ product_offer.end_date|date:'c' }}">
+                                <span class="hours">00</span>:<span class="minutes">00</span>:<span class="seconds">00</span>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="offer-validity">
+                            <i class="far fa-calendar-alt"></i> Valid till: {{ product_offer.end_date|date:"F d, Y" }}
+                        </div>
+                        {% endif %}
+                        
+                        <p class="offer-description">{{ product_offer.description }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Display the appropriate price based on whether there's an offer -->
+                <p class="product-price mb-4">
+                    {% if product_offer %}
+                        <span class="original-price-display">Rs. {{ product.price }}</span>
+                        <span class="discounted-price-display">Rs. {{ discounted_price }}</span>
+                    {% else %}
+                        Rs. {{ product.price }}
+                    {% endif %}
+                </p>
                 <div class="product-detail"><strong>Type:</strong> {{ product.type }}</div>
                 <div class="product-detail"><strong>Size:</strong> {{ product.size }}</div>
                 <div class="product-detail"><strong>Color:</strong> {{ product.color }}</div>
@@ -820,11 +1032,37 @@
             {% for similar_product in similar_products %}
                 <div class="col">
                     <div class="card h-100 similar-product-card">
+                        {% if similar_product.id in similar_product_offers %}
+                        <div class="offer-badge-small">
+                            {% with offer=similar_product_offers.similar_product.id.offer %}
+                            {% if offer.offer_type == 'flash_sale' %}
+                                <i class="fas fa-bolt"></i> FLASH SALE
+                            {% else %}
+                                <i class="fas fa-tag"></i> 
+                                {% if offer.offer_type == 'discount' %}
+                                    {{ offer.discount_value }}% OFF
+                                {% else %}
+                                    ₹{{ offer.discount_value }} OFF
+                                {% endif %}
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+                        {% endif %}
+                        
                         <img src="{{ similar_product.image.url }}" class="card-img-top" alt="{{ similar_product.name }}" style="height: 200px; object-fit: cover;">
                         <div class="card-body">
                             <h5 class="card-title">{{ similar_product.name }}</h5>
+                            
+                            {% if similar_product.id in similar_product_offers %}
+                            <div class="price-container-small">
+                                <span class="original-price-small">Rs. {{ similar_product.price }}</span>
+                                <span class="discounted-price-small">Rs. {{ similar_product_offers.similar_product.id.discounted_price }}</span>
+                            </div>
+                            {% else %}
                             <p class="card-text">Rs. {{ similar_product.price }}</p>
-                            <a href="{% url 'product_detail' similar_product.id %}" class="btn btn-outline-primary btn-sm">View Details</a>
+                            {% endif %}
+                            
+                            <a href="{% url 'products_details' %}?product_id={{ similar_product.id }}" class="btn btn-outline-primary btn-sm">View Details</a>
                         </div>
                     </div>
                 </div>

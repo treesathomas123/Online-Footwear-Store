@@ -576,6 +576,397 @@ nav {
     }
 }
 
+/* Offers Section Styling */
+.offers-section {
+    padding: 50px 0;
+    background-color: #f9f9f9;
+}
+
+.flash-sale-banner {
+    background: linear-gradient(135deg, #37100d 0%, #a23a33 100%);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    overflow: hidden;
+    position: relative;
+}
+
+@media (min-width: 768px) {
+    .flash-sale-banner {
+        flex-direction: row;
+    }
+}
+
+.flash-sale-content {
+    color: white;
+    padding: 20px;
+    flex: 1;
+}
+
+.flash-badge {
+    display: inline-block;
+    background-color: #ff3a3a;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    animation: pulse 1.5s infinite;
+}
+
+.flash-badge i {
+    margin-right: 5px;
+}
+
+.flash-sale-content h3 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.countdown-container {
+    margin-top: 20px;
+}
+
+.countdown {
+    display: flex;
+    gap: 15px;
+}
+
+.countdown-item {
+    background-color: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 10px;
+    min-width: 70px;
+    text-align: center;
+}
+
+.countdown-item span {
+    display: block;
+}
+
+.countdown-item span:first-child {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.countdown-label {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.flash-sale-products {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    padding: 20px;
+    flex: 2;
+}
+
+.flash-product-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 15px;
+    min-width: 200px;
+    position: relative;
+    transition: transform 0.3s ease;
+}
+
+.flash-product-card:hover {
+    transform: translateY(-5px);
+}
+
+.discount-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #ff3a3a;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.flash-product-card img {
+    width: 100%;
+    height: 150px;
+    object-fit: contain;
+    margin-bottom: 10px;
+}
+
+.flash-product-card h4 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.price-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: #999;
+}
+
+.discounted-price {
+    color: #ff3a3a;
+    font-weight: bold;
+}
+
+.shop-now-btn {
+    display: block;
+    background-color: #37100d;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.shop-now-btn:hover {
+    background-color: #a23a33;
+}
+
+/* Regular Offers Grid */
+.offers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.offer-card {
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.offer-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.offer-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    z-index: 1;
+}
+
+.offer-badge.discount {
+    background-color: #ff3a3a;
+    color: white;
+}
+
+.offer-badge.fixed {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.offer-image {
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+}
+
+.offer-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.offer-card:hover .offer-image img {
+    transform: scale(1.05);
+}
+
+.offer-details {
+    padding: 15px;
+}
+
+.offer-details h4 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.offer-details p {
+    color: #666;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+.offer-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.vendor-name {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.view-offer-btn {
+    background-color: #37100d;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+}
+
+.view-offer-btn:hover {
+    background-color: #a23a33;
+}
+
+/* Offer Popup */
+.offer-popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.offer-popup-content {
+    background-color: white;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: popupFadeIn 0.3s ease;
+}
+
+@keyframes popupFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.close-popup {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 1.5rem;
+    color: #999;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.close-popup:hover {
+    color: #333;
+}
+
+.popup-header {
+    background: linear-gradient(135deg, #37100d 0%, #a23a33 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px 10px 0 0;
+}
+
+.popup-badge {
+    display: inline-block;
+    background-color: rgba(255,255,255,0.2);
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+.popup-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 768px) {
+    .popup-body {
+        flex-direction: row;
+    }
+}
+
+.popup-image {
+    flex: 1;
+    padding: 10px;
+}
+
+.popup-image img {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
+}
+
+.popup-details {
+    flex: 1;
+    padding: 10px;
+}
+
+.popup-price {
+    margin: 20px 0;
+}
+
+.popup-validity {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.popup-btn {
+    display: inline-block;
+    background-color: #37100d;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.popup-btn:hover {
+    background-color: #a23a33;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
         </style>
     </head>
     <body>
@@ -645,6 +1036,115 @@ nav {
                     </div>
                     <div class="col-2">
                         <img src="{% static 'images/men.jpg'%}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+         <!------------------------------ Offers & Promotions Section ------------------------------>
+         <div class="offers-section">
+            <div class="container">
+                <h2 class="title">Special Offers & Promotions</h2>
+                
+                <!-- Flash Sales Banner -->
+                {% if flash_sales %}
+                <div class="flash-sale-banner">
+                    <div class="flash-sale-content">
+                        <div class="flash-badge">
+                            <i class="fa fa-bolt"></i> FLASH SALE
+                        </div>
+                        <h3>Limited Time Offers</h3>
+                        <p>Hurry! These deals won't last long</p>
+                        <div class="countdown-container">
+                            <div class="countdown" id="flash-countdown">
+                                <div class="countdown-item">
+                                    <span id="hours">00</span>
+                                    <span class="countdown-label">Hours</span>
+                                </div>
+                                <div class="countdown-item">
+                                    <span id="minutes">00</span>
+                                    <span class="countdown-label">Minutes</span>
+                                </div>
+                                <div class="countdown-item">
+                                    <span id="seconds">00</span>
+                                    <span class="countdown-label">Seconds</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flash-sale-products">
+                        {% for offer in flash_sales|slice:":3" %}
+                        <div class="flash-product-card">
+                            <div class="discount-badge">{{ offer.discount_value }}% OFF</div>
+                            <img src="{{ offer.product.image.url }}" alt="{{ offer.product.name }}">
+                            <h4>{{ offer.product.name }}</h4>
+                            <div class="price-container">
+                                <span class="original-price">₹{{ offer.product.price }}</span>
+                                <span class="discounted-price">₹{{ offer.get_discounted_price }}</span>
+                            </div>
+                            <a href="{% url 'products_details' %}?product_id={{ offer.product.id }}" class="shop-now-btn">Shop Now</a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Regular Offers Grid -->
+                <div class="regular-offers">
+                    <div class="offers-grid">
+                        {% for offer in regular_offers %}
+                        <div class="offer-card" data-offer-id="{{ offer.id }}">
+                            <div class="offer-badge {{ offer.offer_type }}">
+                                {% if offer.offer_type == 'discount' %}
+                                    <i class="fa fa-tag"></i> {{ offer.discount_value }}% OFF
+                                {% elif offer.offer_type == 'fixed' %}
+                                    <i class="fa fa-money"></i> ₹{{ offer.discount_value }} OFF
+                                {% endif %}
+                            </div>
+                            <div class="offer-image">
+                                <img src="{{ offer.product.image.url }}" alt="{{ offer.product.name }}">
+                            </div>
+                            <div class="offer-details">
+                                <h4>{{ offer.product.name }}</h4>
+                                <p>{{ offer.description|truncatechars:60 }}</p>
+                                <div class="price-container">
+                                    <span class="original-price">₹{{ offer.product.price }}</span>
+                                    <span class="discounted-price">₹{{ offer.get_discounted_price }}</span>
+                                </div>
+                                <div class="offer-footer">
+                                    <span class="vendor-name">By: {{ offer.vendor.first_name }}</span>
+                                    <a href="{% url 'products_details' %}?product_id={{ offer.product.id }}" class="view-offer-btn">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Offer Popup -->
+        <div class="offer-popup" id="offerPopup">
+            <div class="offer-popup-content">
+                <span class="close-popup">&times;</span>
+                <div class="popup-header">
+                    <div class="popup-badge">Special Offer</div>
+                    <h3 id="popupTitle">Offer Title</h3>
+                </div>
+                <div class="popup-body">
+                    <div class="popup-image">
+                        <img id="popupImage" src="" alt="Product Image">
+                    </div>
+                    <div class="popup-details">
+                        <p id="popupDescription">Offer description goes here</p>
+                        <div class="popup-price">
+                            <span class="original-price" id="popupOriginalPrice">₹0.00</span>
+                            <span class="discounted-price" id="popupDiscountedPrice">₹0.00</span>
+                        </div>
+                        <div class="popup-validity">
+                            <p>Valid until: <span id="popupValidity">Date</span></p>
+                        </div>
+                        <a href="#" class="popup-btn" id="popupBtn">Shop Now</a>
                     </div>
                 </div>
             </div>
@@ -1551,116 +2051,319 @@ nav {
 <!-- Add this JavaScript before the closing body tag -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Get the modal elements
-    const modal = document.getElementById('size-finder-modal');
-    const sizeFinderIcon = document.getElementById('size-finder-icon');
-    const closeModal = document.querySelector('.close-modal');
-    const qrCodeImg = document.getElementById('qr-code');
+    // Initialize all countdowns
+    initializeCountdowns();
     
-    // Function to get the actual IP address
-    async function getActualIP() {
-        try {
-            const response = await fetch('/get_server_ip/');
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data = await response.json();
-            if (data.error) {
-                throw new Error(data.error);
-            }
-            if (data.ip === '127.0.0.1' || data.ip === 'localhost') {
-                throw new Error('Got localhost address');
-            }
-            return `${data.ip}:${window.location.port}`;
-        } catch (error) {
-            console.error("Error getting server IP:", error);
-            alert("Could not determine the correct network address. Please make sure you're running the server with 'python manage.py runserver 0.0.0.0:8000'");
-            throw error;
-        }
-    }
+    // Setup offer cards click to show popup
+    setupOfferCards();
     
-    // Generate QR code with the actual IP address
-    async function generateQRCode() {
-        try {
-            const ipAddress = await getActualIP();
-            console.log("Using IP address for QR code:", ipAddress);
-            
-            const appDownloadUrl = `http://${ipAddress}{% static 'downloads/footland-size-finder.apk' %}`;
-            const qrCodeApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(appDownloadUrl)}`;
-            
-            qrCodeImg.setAttribute('src', qrCodeApiUrl);
-            
-            // Also update the direct download link
-            const downloadBtn = document.querySelector('.download-btn');
-            if (downloadBtn) {
-                downloadBtn.href = appDownloadUrl;
-            }
-            
-            // Display the IP address for verification
-            const ipInfoElement = document.createElement('p');
-            ipInfoElement.className = 'ip-info';
-            ipInfoElement.innerHTML = `
-                <small>
-                    Network Address: ${ipAddress}<br>
-                    <strong>Make sure your phone is connected to the same WiFi network</strong>
-                </small>`;
-            
-            // Remove any existing ip-info elements
-            const existingIpInfo = qrCodeImg.parentNode.querySelector('.ip-info');
-            if (existingIpInfo) {
-                existingIpInfo.remove();
-            }
-            
-            qrCodeImg.parentNode.appendChild(ipInfoElement);
-            
-        } catch (error) {
-            console.error('Error generating QR code:', error);
-            // Show error message in the modal
-            const errorElement = document.createElement('p');
-            errorElement.className = 'error-message';
-            errorElement.style.color = 'red';
-            errorElement.textContent = 'Could not generate QR code with the correct network address. Please check your network configuration.';
-            
-            // Remove any existing error messages
-            const existingError = qrCodeImg.parentNode.querySelector('.error-message');
-            if (existingError) {
-                existingError.remove();
-            }
-            
-            qrCodeImg.parentNode.appendChild(errorElement);
-        }
-    }
+    // Show welcome offer popup on first visit
+    showWelcomeOfferPopup();
     
-    // Open modal when clicking the size finder icon
-    sizeFinderIcon.addEventListener('click', function(e) {
-        e.preventDefault();
-        modal.style.display = 'block';
-        
-        // Generate QR code when modal is opened
-        generateQRCode();
-        
-        // Check if user is on mobile
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const mobileWarning = document.querySelector('.mobile-only-warning');
-        
-        if (isMobile) {
-            mobileWarning.style.display = 'none';
-        } else {
-            mobileWarning.style.display = 'block';
-            mobileWarning.innerHTML = 'Please use a mobile device to download our app. <br><strong>Make sure your mobile device is connected to the same WiFi network as this computer.</strong>';
-        }
-    });
-    
-    // Close modal when clicking the close button
-    closeModal.addEventListener('click', function() {
-        modal.style.display = 'none';
-    });
-    
-    // Close modal when clicking outside the modal content
-    window.addEventListener('click', function(event) {
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
+    // Initialize floating offer button
+    initFloatingOfferButton();
 });
+
+function initializeCountdowns() {
+    // Set the end date for flash sales (24 hours from now for demo)
+    const endDate = new Date();
+    endDate.setHours(endDate.getHours() + 24);
+    
+    // Update countdown every second
+    setInterval(function() {
+        // Update main flash sale countdown
+        const countdownElement = document.getElementById('flash-countdown');
+        if (countdownElement) {
+            updateCountdown(countdownElement, endDate);
+        }
+        
+        // Update all product-specific countdowns
+        document.querySelectorAll('.product-countdown').forEach(function(element) {
+            const productEndDate = new Date(element.dataset.endDate);
+            updateCountdown(element, productEndDate);
+        });
+        
+        // Update popup timer if visible
+        const popupTimerElement = document.getElementById('popupTimer');
+        if (popupTimerElement && document.getElementById('offerPopup').style.display === 'flex') {
+            updateTimer(popupTimerElement, endDate);
+        }
+    }, 1000);
+}
+
+function updateCountdown(element, endTime) {
+    const now = new Date();
+    const diff = endTime - now;
+    
+    if (diff <= 0) {
+        element.querySelector('.hours').textContent = '00';
+        element.querySelector('.minutes').textContent = '00';
+        element.querySelector('.seconds').textContent = '00';
+        return;
+    }
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    
+    element.querySelector('.hours').textContent = hours < 10 ? '0' + hours : hours;
+    element.querySelector('.minutes').textContent = minutes < 10 ? '0' + minutes : minutes;
+    element.querySelector('.seconds').textContent = seconds < 10 ? '0' + seconds : seconds;
+}
+
+function updateTimer(element, endTime) {
+    const now = new Date();
+    const diff = endTime - now;
+    
+    if (diff <= 0) {
+        element.textContent = '00:00:00';
+        return;
+    }
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    
+    element.textContent = 
+        (hours < 10 ? '0' + hours : hours) + ':' +
+        (minutes < 10 ? '0' + minutes : minutes) + ':' +
+        (seconds < 10 ? '0' + seconds : seconds);
+}
+
+function setupOfferCards() {
+    const offerCards = document.querySelectorAll('.offer-card');
+    const offerPopup = document.getElementById('offerPopup');
+    const closePopup = document.querySelector('.close-popup');
+    
+    offerCards.forEach(function(card) {
+        card.addEventListener('click', function() {
+            const offerId = this.dataset.offerId;
+            
+            // In a real application, you would fetch the offer details from the server
+            // For demo purposes, we'll use the data already in the card
+            const title = this.querySelector('h4').textContent;
+            const description = this.querySelector('p').textContent;
+            const originalPrice = this.querySelector('.original-price').textContent;
+            const discountedPrice = this.querySelector('.discounted-price').textContent;
+            const imageSrc = this.querySelector('img').src;
+            const productUrl = this.querySelector('.view-offer-btn').href;
+            const offerType = this.querySelector('.offer-badge').classList.contains('discount') ? 'discount' : 'fixed';
+            
+            // Populate the popup
+            document.getElementById('popupTitle').textContent = title;
+            document.getElementById('popupDescription').textContent = description;
+            document.getElementById('popupOriginalPrice').textContent = originalPrice;
+            document.getElementById('popupDiscountedPrice').textContent = discountedPrice;
+            document.getElementById('popupImage').src = imageSrc;
+            document.getElementById('popupBtn').href = productUrl;
+            
+            // Set badge based on offer type
+            const popupBadge = document.querySelector('.popup-badge');
+            if (offerType === 'discount') {
+                popupBadge.innerHTML = '<i class="fa fa-tag"></i> DISCOUNT OFFER';
+                popupBadge.style.backgroundColor = '#ff3a3a';
+                document.getElementById('popupTimerContainer').style.display = 'block';
+            } else {
+                popupBadge.innerHTML = '<i class="fa fa-money"></i> FIXED PRICE OFFER';
+                popupBadge.style.backgroundColor = '#4CAF50';
+                document.getElementById('popupTimerContainer').style.display = 'none';
+            }
+            
+            // Show popup
+            offerPopup.style.display = 'flex';
+        });
+    });
+    
+    // Close popup when clicking the close button
+    if (closePopup) {
+        closePopup.addEventListener('click', function() {
+            offerPopup.style.display = 'none';
+        });
+    }
+    
+    // Close popup when clicking outside the content
+    window.addEventListener('click', function(event) {
+        if (event.target === offerPopup) {
+            offerPopup.style.display = 'none';
+        }
+    });
+}
+
+function initFloatingOfferButton() {
+    const floatingButton = document.createElement('div');
+    floatingButton.className = 'floating-offer-button';
+    floatingButton.innerHTML = '<i class="fa fa-gift"></i><span class="offer-count">{{ flash_sales|length|add:regular_offers|length }}</span>';
+    
+    document.body.appendChild(floatingButton);
+    
+    // Show/hide based on scroll position
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 300) {
+            floatingButton.classList.add('visible');
+        } else {
+            floatingButton.classList.remove('visible');
+        }
+    });
+    
+    // Scroll to offers section when clicked
+    floatingButton.addEventListener('click', function() {
+        const offersSection = document.querySelector('.offers-section');
+        if (offersSection) {
+            offersSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+}
+
+function showWelcomeOfferPopup() {
+    // Only show on first visit (using sessionStorage)
+    if (!sessionStorage.getItem('offerPopupShown')) {
+        const offerPopup = document.getElementById('offerPopup');
+        
+        // Check if there are any offers
+        {% if regular_offers %}
+            setTimeout(function() {
+                // Get the first regular offer
+                {% with first_offer=regular_offers.0 %}
+                    // Populate the popup with the first offer
+                    document.getElementById('popupTitle').textContent = "{{ first_offer.product.name }}";
+                    document.getElementById('popupDescription').textContent = "{{ first_offer.description }}";
+                    document.getElementById('popupOriginalPrice').textContent = "₹{{ first_offer.product.price }}";
+                    document.getElementById('popupDiscountedPrice').textContent = "₹{{ first_offer.get_discounted_price }}";
+                    document.getElementById('popupImage').src = "{{ first_offer.product.image.url }}";
+                    document.getElementById('popupBtn').href = "{% url 'products_details' %}?product_id={{ first_offer.product.id }}";
+                    document.getElementById('popupValidity').textContent = new Date("{{ first_offer.end_date|date:'Y-m-d' }}").toLocaleDateString();
+                    
+                    // Set badge based on offer type
+                    const popupBadge = document.getElementById('popupBadge');
+                    if ("{{ first_offer.offer_type }}" === 'flash_sale') {
+                        popupBadge.textContent = 'FLASH SALE';
+                        popupBadge.style.backgroundColor = '#ff3a3a';
+                        document.getElementById('popupTimerContainer').style.display = 'block';
+                    } else {
+                        popupBadge.textContent = 'WELCOME OFFER';
+                        popupBadge.style.backgroundColor = '#4e73df';
+                        document.getElementById('popupTimerContainer').style.display = 'none';
+                    }
+                    
+                    // Display popup with animation
+                    offerPopup.style.display = 'flex';
+                    offerPopup.querySelector('.offer-popup-content').style.animation = 'popupFadeIn 0.3s ease-out forwards';
+                    
+                    // Mark popup as shown
+                    sessionStorage.setItem('offerPopupShown', 'true');
+                {% endwith %}
+            }, 3000);
+        {% endif %}
+    }
+}
 </script>
+
+<!------------------------------ Offers & Promotions Section ------------------------------>
+<div class="offers-section">
+    <div class="container">
+        <h2 class="title">Special Offers & Promotions</h2>
+        
+        <!-- Flash Sales Banner -->
+        {% if flash_sales %}
+        <div class="flash-sale-banner">
+            <div class="flash-sale-content">
+                <div class="flash-badge">
+                    <i class="fa fa-bolt"></i> FLASH SALE
+                </div>
+                <h3>Limited Time Offers</h3>
+                <p>Hurry! These deals won't last long</p>
+                <div class="countdown-container">
+                    <div class="countdown" id="flash-countdown">
+                        <div class="countdown-item">
+                            <span id="hours">00</span>
+                            <span class="countdown-label">Hours</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span id="minutes">00</span>
+                            <span class="countdown-label">Minutes</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span id="seconds">00</span>
+                            <span class="countdown-label">Seconds</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flash-sale-products">
+                {% for offer in flash_sales|slice:":3" %}
+                <div class="flash-product-card">
+                    <div class="discount-badge">{{ offer.discount_value }}% OFF</div>
+                    <img src="{{ offer.product.image.url }}" alt="{{ offer.product.name }}">
+                    <h4>{{ offer.product.name }}</h4>
+                    <div class="price-container">
+                        <span class="original-price">₹{{ offer.product.price }}</span>
+                        <span class="discounted-price">₹{{ offer.get_discounted_price }}</span>
+                    </div>
+                    <a href="{% url 'products_details' %}?product_id={{ offer.product.id }}" class="shop-now-btn">Shop Now</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Regular Offers Grid -->
+        <div class="regular-offers">
+            <div class="offers-grid">
+                {% for offer in regular_offers %}
+                <div class="offer-card" data-offer-id="{{ offer.id }}">
+                    <div class="offer-badge {{ offer.offer_type }}">
+                        {% if offer.offer_type == 'discount' %}
+                            <i class="fa fa-tag"></i> {{ offer.discount_value }}% OFF
+                        {% elif offer.offer_type == 'fixed' %}
+                            <i class="fa fa-money"></i> ₹{{ offer.discount_value }} OFF
+                        {% endif %}
+                    </div>
+                    <div class="offer-image">
+                        <img src="{{ offer.product.image.url }}" alt="{{ offer.product.name }}">
+                    </div>
+                    <div class="offer-details">
+                        <h4>{{ offer.product.name }}</h4>
+                        <p>{{ offer.description|truncatechars:60 }}</p>
+                        <div class="price-container">
+                            <span class="original-price">₹{{ offer.product.price }}</span>
+                            <span class="discounted-price">₹{{ offer.get_discounted_price }}</span>
+                        </div>
+                        <div class="offer-footer">
+                            <span class="vendor-name">By: {{ offer.vendor.first_name }}</span>
+                            <a href="{% url 'products_details' %}?product_id={{ offer.product.id }}" class="view-offer-btn">View Details</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Offer Popup -->
+<div class="offer-popup" id="offerPopup">
+    <div class="offer-popup-content">
+        <span class="close-popup">&times;</span>
+        <div class="popup-header">
+            <div class="popup-badge">Special Offer</div>
+            <h3 id="popupTitle">Offer Title</h3>
+        </div>
+        <div class="popup-body">
+            <div class="popup-image">
+                <img id="popupImage" src="" alt="Product Image">
+            </div>
+            <div class="popup-details">
+                <p id="popupDescription">Offer description goes here</p>
+                <div class="popup-price">
+                    <span class="original-price" id="popupOriginalPrice">₹0.00</span>
+                    <span class="discounted-price" id="popupDiscountedPrice">₹0.00</span>
+                </div>
+                <div class="popup-validity">
+                    <p>Valid until: <span id="popupValidity">Date</span></p>
+                </div>
+                <a href="#" class="popup-btn" id="popupBtn">Shop Now</a>
+            </div>
+        </div>
+    </div>
+</div>
+

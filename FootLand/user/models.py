@@ -462,6 +462,7 @@ class Offer(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
+        db_table = 'user_offer'  # Make sure this matches what Django expects
         ordering = ['-created_at']
 
     def __str__(self):
@@ -471,7 +472,9 @@ class Offer(models.Model):
         now = timezone.now()
         return self.is_active and self.start_date <= now <= self.end_date
 
-    def get_discounted_price(self, original_price):
+    def get_discounted_price(self):
+        original_price = self.product.price
+        
         if not self.is_valid():
             return original_price
         

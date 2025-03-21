@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Offer</title>
+    {% load static %}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        .profile-section {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+        
+        .nav-link {
+            color: #fff;
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+        }
+        
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+        }
+
+        .messages li {
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .messages .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .messages .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .dropdown-menu {
+            background-color: #343a40;
+        }
+
+        .dropdown-item {
+            color: #fff;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .edit-offer-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 bg-dark sidebar">
+                <div class="profile-section">
+                    <img src="{% static 'images/default-profile.png' %}" class="profile-image" alt="Default Profile">
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> {{ request.session.first_name }}
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'vendor_profile' %}">
+                                <i class="fas fa-cog"></i> Profile Settings
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'vendor_change_password' %}">
+                                <i class="fas fa-key"></i> Change Password
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <nav class="mt-4">
+                    <a href="{% url 'vendor_dashboard' %}" class="nav-link">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <a href="{% url 'vendor_add_product' %}" class="nav-link">
+                        <i class="fas fa-plus"></i> Add Product
+                    </a>
+                    <a href="{% url 'vendor_view_products' %}" class="nav-link">
+                        <i class="fas fa-box"></i> View Products
+                    </a>
+                    <a href="{% url 'vendor_offers' %}" class="nav-link active">
+                        <i class="fas fa-tags"></i> Offers & Promotions
+                    </a>
+                    <a href="{% url 'vendor_performance_analytics' %}" class="nav-link">
+                        <i class="fas fa-chart-line"></i> Performance Analytics
+                    </a>
+                    <a href="{% url 'vendor_reviews' %}" class="nav-link">
+                        <i class="fas fa-comments"></i> Customer Reviews
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-edit"></i> Edit Offer</h2>
+                    <a href="{% url 'vendor_offers' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Offers
+                    </a>
+                </div>
+
+                <div class="card edit-offer-card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Editing Offer for {{ offer.product.name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{% url 'edit_offer' offer.id %}">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.product.id_for_label }}" class="form-label">Product</label>
+                                {{ form.product }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.offer_type.id_for_label }}" class="form-label">Offer Type</label>
+                                {{ form.offer_type }}
+                                <div class="form-text">
+                                    Choose "Percentage Discount" for a percentage off, "Fixed Amount Off" for a specific amount off, or "Flash Sale" for a limited-time promotion.
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.discount_value.id_for_label }}" class="form-label">Discount Value</label>
+                                {{ form.discount_value }}
+                                <div class="form-text">
+                                    For percentage discounts, enter a value between 1-100. For fixed amount, enter the amount to discount.
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.start_date.id_for_label }}" class="form-label">Start Date & Time</label>
+                                    {{ form.start_date }}
+                                    {{ form.start_date.help_text }}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.end_date.id_for_label }}" class="form-label">End Date & Time</label>
+                                    {{ form.end_date }}
+                                    {{ form.end_date.help_text }}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                                {{ form.description }}
+                                <div class="form-text">
+                                    Provide details about this offer that will be shown to customers.
+                                </div>
+                            </div>
+                            
+                            <div class="text-end">
+                                <a href="{% url 'vendor_offers' %}" class="btn btn-secondary me-2">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Update Offer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    
+    <script>
+        // Add form styling
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add Bootstrap classes to form elements
+            const formElements = document.querySelectorAll('form select, form input, form textarea');
+            formElements.forEach(element => {
+                element.classList.add('form-control');
+            });
+        });
+    </script>
+</body>
+</html> 

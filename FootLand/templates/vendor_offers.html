@@ -1,116 +1,565 @@
-{% extends 'vendor_base.html' %}
-{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Offers & Promotions</title>
+    {% load static %}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar {
+            min-height: 100vh;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            background: linear-gradient(to bottom, #343a40, #212529);
+        }
+        
+        .profile-section {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+        
+        .nav-link {
+            color: #fff;
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+        
+        .nav-link.active {
+            background-color: rgba(255,255,255,0.2);
+            font-weight: 600;
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+        }
+        
+        .offer-card {
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            border: none;
+            overflow: hidden;
+            height: 100%;
+            position: relative;
+        }
+        
+        .offer-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+        }
+        
+        .offer-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 10;
+        }
+        
+        .badge {
+            padding: 8px 12px;
+            font-weight: 600;
+            border-radius: 30px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .flash-sale-badge {
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+            padding: 8px 15px;
+            font-size: 0.85rem;
+        }
+        
+        .discount-badge {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            padding: 8px 15px;
+            font-size: 0.85rem;
+        }
+        
+        .fixed-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 8px 15px;
+            font-size: 0.85rem;
+        }
+        
+        .card-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .card-text {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        
+        .price-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .original-price {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .discounted-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #28a745;
+        }
+        
+        .validity-section {
+            background-color: #f0f8ff;
+            padding: 12px;
+            border-radius: 10px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .validity-section p {
+            margin-bottom: 5px;
+            color: #495057;
+        }
+        
+        .action-buttons {
+            margin-top: 20px;
+        }
+        
+        .btn-edit {
+            background-color: #4facfe;
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 30px;
+            transition: all 0.3s;
+        }
+        
+        .btn-edit:hover {
+            background-color: #3a8bd8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-delete {
+            background-color: #ff7e5f;
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 30px;
+            transition: all 0.3s;
+        }
+        
+        .btn-delete:hover {
+            background-color: #e56e52;
+            transform: translateY(-2px);
+        }
+        
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+        }
 
-{% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <h2 class="mb-4">Manage Offers</h2>
-            
-            <!-- Add New Offer Form -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h4>Create New Offer</h4>
+        .messages li {
+            padding: 12px 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .messages .success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 5px solid #28a745;
+        }
+
+        .messages .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 5px solid #dc3545;
+        }
+        
+        .dropdown-menu {
+            background-color: #343a40;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            padding: 10px;
+        }
+
+        .dropdown-item {
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 5px;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .create-offer-btn {
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .create-offer-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+        
+        .modal-content {
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 20px 25px;
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .form-control {
+            border-radius: 10px;
+            padding: 12px 15px;
+            border: 1px solid #ced4da;
+        }
+        
+        .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+            border-color: #6a11cb;
+        }
+        
+        .form-text {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: 500;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 bg-dark sidebar">
+                <div class="profile-section">
+                    {% if vendor_details.profile_image %}
+                        <img src="{{ vendor_details.profile_image.url }}" class="profile-image" alt="Profile Image">
+                    {% else %}
+                        <img src="{% static 'images/default-profile.png' %}" class="profile-image" alt="Default Profile">
+                    {% endif %}
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> {{ vendor.first_name }}
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'vendor_profile' %}">
+                                <i class="fas fa-cog"></i> Profile Settings
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'vendor_change_password' %}">
+                                <i class="fas fa-key"></i> Change Password
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a></li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form method="POST">
-                        {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Product</label>
-                                    {{ form.product }}
-                                </div>
-                                <div class="form-group">
-                                    <label>Offer Type</label>
-                                    {{ form.offer_type }}
-                                </div>
-                                <div class="form-group">
-                                    <label>Discount Value</label>
-                                    {{ form.discount_value }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Start Date</label>
-                                    {{ form.start_date }}
-                                </div>
-                                <div class="form-group">
-                                    <label>End Date</label>
-                                    {{ form.end_date }}
-                                </div>
-                                <div class="form-group">
-                                    <label>Description</label>
-                                    {{ form.description }}
-                                </div>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Create Offer</button>
-                    </form>
-                </div>
+                
+                <nav class="mt-4">
+                    <a href="{% url 'vendor_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'vendor_dashboard' %}active{% endif %}">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <a href="{% url 'vendor_add_product' %}" class="nav-link {% if request.resolver_match.url_name == 'vendor_add_product' %}active{% endif %}">
+                        <i class="fas fa-plus"></i> Add Product
+                    </a>
+                    <a href="{% url 'vendor_view_products' %}" class="nav-link {% if request.resolver_match.url_name == 'vendor_view_products' %}active{% endif %}">
+                        <i class="fas fa-box"></i> View Products
+                    </a>
+                    <a href="{% url 'vendor_offers' %}" class="nav-link {% if request.resolver_match.url_name == 'vendor_offers' %}active{% endif %}">
+                        <i class="fas fa-tags"></i> Offers & Promotions
+                    </a>
+                    <a href="{% url 'vendor_performance_analytics' %}" class="nav-link {% if request.resolver_match.url_name == 'vendor_performance_analytics' %}active{% endif %}">
+                        <i class="fas fa-chart-line"></i> Performance Analytics
+                    </a>
+                    <a href="{% url 'vendor_reviews' %}" class="nav-link">
+                        <i class="fas fa-comments"></i> Customer Reviews
+                    </a>
+                </nav>
             </div>
 
-            <!-- Existing Offers Table -->
-            <div class="card">
-                <div class="card-header">
-                    <h4>Current Offers</h4>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Product</th>
-                                    <th>Type</th>
-                                    <th>Value</th>
-                                    <th>Start Date</th>
-                                    <th>End Date</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for offer in offers %}
-                                <tr>
-                                    <td>{{ offer.product.name }}</td>
-                                    <td>{{ offer.get_offer_type_display }}</td>
-                                    <td>
-                                        {% if offer.offer_type == 'discount' %}
-                                            {{ offer.discount_value }}%
-                                        {% else %}
-                                            ₹{{ offer.discount_value }}
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ offer.start_date|date:"Y-m-d H:i" }}</td>
-                                    <td>{{ offer.end_date|date:"Y-m-d H:i" }}</td>
-                                    <td>
-                                        {% if offer.is_valid %}
-                                            <span class="badge bg-success">Active</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">Inactive</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'edit_offer' offer.id %}" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{% url 'delete_offer' offer.id %}" class="btn btn-sm btn-danger" 
-                                           onclick="return confirm('Are you sure you want to delete this offer?')">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="7" class="text-center">No offers found</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+            <!-- Main Content -->
+            <div class="col-md-9 p-4">
+                <div class="page-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-0"><i class="fas fa-tags me-2"></i> Offers & Promotions</h2>
+                        <p class="mb-0 mt-2">Create and manage special offers for your products</p>
                     </div>
+                    <button class="create-offer-btn" data-bs-toggle="modal" data-bs-target="#addOfferModal">
+                        <i class="fas fa-plus me-2"></i> Create New Offer
+                    </button>
+                </div>
+
+                <!-- Offers List -->
+                <div class="row">
+                    {% if offers %}
+                        {% for offer in offers %}
+                            <div class="col-md-4 mb-4">
+                                <div class="card offer-card">
+                                    {% if offer.offer_type == 'flash_sale' %}
+                                        <div class="offer-badge">
+                                            <span class="badge flash-sale-badge">
+                                                <i class="fas fa-bolt me-1"></i> Flash Sale
+                                            </span>
+                                        </div>
+                                    {% elif offer.offer_type == 'discount' %}
+                                        <div class="offer-badge">
+                                            <span class="badge discount-badge">
+                                                <i class="fas fa-percent me-1"></i> {{ offer.discount_value }}% Off
+                                            </span>
+                                        </div>
+                                    {% elif offer.offer_type == 'fixed' %}
+                                        <div class="offer-badge">
+                                            <span class="badge fixed-badge">
+                                                <i class="fas fa-rupee-sign me-1"></i> {{ offer.discount_value }} Off
+                                            </span>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-shoe-prints me-2 text-primary"></i>{{ offer.product.name }}
+                                        </h5>
+                                        <p class="card-text">{{ offer.description|truncatechars:100 }}</p>
+                                        
+                                        <div class="price-section mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="original-price">Original Price:</span>
+                                                <span class="text-muted text-decoration-line-through">₹{{ offer.product.price }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="original-price">Discounted Price:</span>
+                                                <span class="discounted-price">₹{{ offer.get_discounted_price|floatformat:2 }}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="validity-section mb-3">
+                                            <p class="mb-1 small"><i class="fas fa-calendar-alt me-2 text-primary"></i> From: {{ offer.start_date|date:"M d, Y H:i" }}</p>
+                                            <p class="mb-0 small"><i class="fas fa-calendar-check me-2 text-danger"></i> Until: {{ offer.end_date|date:"M d, Y H:i" }}</p>
+                                        </div>
+                                        
+                                        <div class="d-flex justify-content-between action-buttons">
+                                            <a href="{% url 'edit_offer' offer.id %}" class="btn btn-edit">
+                                                <i class="fas fa-edit me-1"></i> Edit
+                                            </a>
+                                            <a href="{% url 'delete_offer' offer.id %}" class="btn btn-delete" onclick="return confirm('Are you sure you want to delete this offer?')">
+                                                <i class="fas fa-trash me-1"></i> Delete
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12">
+                            <div class="empty-state">
+                                <i class="fas fa-tag"></i>
+                                <h4>No Offers Yet</h4>
+                                <p class="text-muted">You haven't created any offers or promotions yet.</p>
+                                <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addOfferModal">
+                                    <i class="fas fa-plus me-2"></i> Create Your First Offer
+                                </button>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
-</div>
-{% endblock %} 
+
+    <!-- Add Offer Modal -->
+    <div class="modal fade" id="addOfferModal" tabindex="-1" aria-labelledby="addOfferModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addOfferModalLabel"><i class="fas fa-tag me-2"></i> Create New Offer</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{% url 'vendor_offers' %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.product.id_for_label }}" class="form-label">Select Product</label>
+                            {{ form.product }}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.offer_type.id_for_label }}" class="form-label">Offer Type</label>
+                            {{ form.offer_type }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i> Choose "Percentage Discount" for a percentage off, "Fixed Amount Off" for a specific amount off, or "Flash Sale" for a limited-time promotion.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.discount_value.id_for_label }}" class="form-label">Discount Value</label>
+                            {{ form.discount_value }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i> For percentage discounts, enter a value between 1-100. For fixed amount, enter the amount to discount.
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.start_date.id_for_label }}" class="form-label">Start Date & Time</label>
+                                {{ form.start_date }}
+                                <div class="form-text">
+                                    <i class="fas fa-calendar-alt me-1"></i> When the offer becomes active
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.end_date.id_for_label }}" class="form-label">End Date & Time</label>
+                                {{ form.end_date }}
+                                <div class="form-text">
+                                    <i class="fas fa-calendar-check me-1"></i> When the offer expires
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                            {{ form.description }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i> Provide details about this offer that will be shown to customers.
+                            </div>
+                        </div>
+                        
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check me-2"></i> Create Offer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    
+    <script>
+        // Add form styling
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add Bootstrap classes to form elements
+            const formElements = document.querySelectorAll('form select, form input, form textarea');
+            formElements.forEach(element => {
+                element.classList.add('form-control');
+            });
+            
+            // Initialize any tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+        });
+    </script>
+</body>
+</html> 

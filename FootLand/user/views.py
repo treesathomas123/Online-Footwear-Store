@@ -58,6 +58,9 @@ from torchvision import transforms
 import base64
 import io
 import socket
+from django.db import models  # Add this import for Avg aggregation
+from .models import Offer
+from .forms import OfferForm
   # You might need to install this: pip install netifaces
 
 logger = logging.getLogger(__name__)
@@ -749,7 +752,7 @@ def kids(request):
 def products_details(request):
     return render(request, 'products-details.html')
 
-@login_required
+
 def products(request):
     return render(request, 'products.html')
 
@@ -1608,6 +1611,35 @@ def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     similar_products = Product.objects.filter(type=product.type).exclude(id=product_id)[:4]
     
+    # Check if there's an active offer for this product
+    product_offer = Offer.objects.filter(
+        product=product,
+        is_active=True,
+        start_date__lte=timezone.now(),
+        end_date__gte=timezone.now()
+    ).first()
+    
+    # Calculate discounted price if offer exists
+    discounted_price = product.price
+    if product_offer:
+        discounted_price = product_offer.get_discounted_price()
+    
+    # Get offers for similar products
+    similar_product_offers = {}
+    for similar_product in similar_products:
+        offer = Offer.objects.filter(
+            product=similar_product,
+            is_active=True,
+            start_date__lte=timezone.now(),
+            end_date__gte=timezone.now()
+        ).first()
+        
+        if offer:
+            similar_product_offers[similar_product.id] = {
+                'offer': offer,
+                'discounted_price': offer.get_discounted_price()
+            }
+    
     # Get reviews with related reply information
     reviews = Review.objects.filter(product=product).select_related('replied_by').order_by('-created_at')
     avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
@@ -1615,7 +1647,10 @@ def product_detail(request, product_id):
 
     context = {
         'product': product,
+        'product_offer': product_offer,
+        'discounted_price': discounted_price,
         'similar_products': similar_products,
+        'similar_product_offers': similar_product_offers,
         'reviews': reviews,
         'avg_rating': round(avg_rating, 1),
         'rating_count': rating_count,
@@ -3096,12 +3131,98 @@ def delete_offer(request, offer_id):
     messages.success(request, 'Offer deleted successfully!')
     return redirect('vendor_offers')
 
+
 def admin_offers(request):
     if 'user_id' not in request.session or request.session.get('user_type') != 'admin':
         return redirect('login')
     
     offers = Offer.objects.all().select_related('vendor', 'product')
-    return render(request, 'admin_offers.html', {'offers': offers})
+    all_products = Product.objects.all().select_related('vendor')
+    
+    if request.method == 'POST':
+        try:
+            # Get the product first to determine the vendor
+            product_id = request.POST.get('product')
+            if not product_id:
+                messages.error(request, "Product is required")
+                return redirect('admin_offers')
+                
+            product = Product.objects.get(id=product_id)
+            
+            # Get form data
+            offer_type = request.POST.get('offer_type')
+            discount_value = request.POST.get('discount_value')
+            start_date = request.POST.get('start_date')
+            end_date = request.POST.get('end_date')
+            description = request.POST.get('description')
+            is_active = request.POST.get('is_active', False) == 'on'
+            
+            # Convert discount_value to Decimal
+            try:
+                discount_value = Decimal(discount_value)
+            except:
+                messages.error(request, "Invalid discount value")
+                return redirect('admin_offers')
+                
+            # Handle datetime conversion
+            try:
+                import datetime
+                from django.utils import timezone
+                
+                # Try different parsing methods
+                try:
+                    start_datetime = datetime.datetime.fromisoformat(start_date)
+                    end_datetime = datetime.datetime.fromisoformat(end_date)
+                except ValueError:
+                    try:
+                        # Try with standard format
+                        start_datetime = datetime.datetime.strptime(start_date, '%Y-%m-%dT%H:%M')
+                        end_datetime = datetime.datetime.strptime(end_date, '%Y-%m-%dT%H:%M')
+                    except ValueError:
+                        # Last resort - use dateutil parser
+                        from dateutil import parser
+                        start_datetime = parser.parse(start_date)
+                        end_datetime = parser.parse(end_date)
+                
+                # Make them timezone-aware
+                start_datetime = timezone.make_aware(start_datetime)
+                end_datetime = timezone.make_aware(end_datetime)
+                
+                # Get the admin user as the vendor
+                admin_user = user_registration.objects.get(id=request.session['user_id'])
+                
+                # Create and save the offer
+                offer = Offer(
+                    vendor=admin_user,  # Always use admin as vendor
+                    product=product,
+                    offer_type=offer_type,
+                    discount_value=discount_value,
+                    start_date=start_datetime,
+                    end_date=end_datetime,
+                    description=description,
+                    is_active=is_active
+                )
+                offer.save()
+                
+                messages.success(request, 'Offer created successfully!')
+                return redirect('admin_offers')
+                
+            except Exception as e:
+                print(f"Error processing dates: {str(e)}")
+                messages.error(request, f'Error processing dates: {str(e)}')
+                return redirect('admin_offers')
+                
+        except Exception as e:
+            print(f"Error creating offer: {str(e)}")
+            messages.error(request, f'Error creating offer: {str(e)}')
+    
+    context = {
+        'offers': offers,
+        'all_products': all_products,
+    }
+    return render(request, 'admin_offers.html', context)
+
+
 
 # Modify your existing user_dashboard view to include offers
 def user_dashboard(request):
@@ -3122,5 +3243,14 @@ def user_dashboard(request):
         'user_id': request.session.get('user_id')
     }
     return render(request, 'user_dashboard.html', context)
+
+def admin_delete_offer(request, offer_id):
+    if 'user_id' not in request.session or request.session.get('user_type') != 'admin':
+        return redirect('login')
+    
+    offer = get_object_or_404(Offer, id=offer_id)
+    offer.delete()
+    messages.success(request, 'Offer deleted successfully!')
+    return redirect('admin_offers')
 
 

@@ -415,27 +415,26 @@
                     <span>Welcome, Admin</span>
                 </div>
             </header>
-
             <section class="quick-actions">
-                <div class="action-card" onclick="window.location.href='{% url 'add_product' %}'">
+                <div class="action-card" onclick="window.location.href='{% url 'add_product' %}';">
                     <i class="fas fa-plus-circle"></i>
                     <h3>Add Product</h3>
                     <p>Add new products to your inventory</p>
                 </div>
-                <div class="action-card" onclick="window.location.href='{% url 'view_orders' %}'">
+                <div class="action-card" onclick="window.location.href='{% url 'view_orders' %}';">
                     <i class="fas fa-clipboard-list"></i>
                     <h3>View Orders</h3>
                     <p>Check recent customer orders</p>
                 </div>
-                <div class="action-card" onclick="window.location.href='{% url 'admin_reviews' %}'">
+                <div class="action-card" onclick="window.location.href='{% url 'admin_reviews' %}';">
                     <i class="fas fa-star"></i>
                     <h3>Reviews</h3>
                     <p>Manage customer reviews</p>
                 </div>
-                <div class="action-card" onclick="window.location.href='{% url 'analytics' %}'">
-                    <i class="fas fa-chart-line"></i>
-                    <h3>Analytics</h3>
-                    <p>View sales and performance data</p>
+                <div class="action-card" onclick="window.location.href='{% url 'admin_offers' %}';">
+                    <i class="fas fa-tag"></i>
+                    <h3>Offers & Promotions</h3>
+                    <p>Manage special offers and discounts</p>
                 </div>
             </section>
 

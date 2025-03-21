@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Offers</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            font-family: 'Poppins', sans-serif;
+        }
+        .card {
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            border: none;
+            border-radius: 0.35rem;
+            margin-bottom: 24px;
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #4e73df, #224abe);
+            color: white;
+            border-bottom: 1px solid #e3e6f0;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .table th {
+            font-weight: 600;
+            color: #5a5c69;
+        }
+        .table td {
+            vertical-align: middle;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #4e73df, #224abe);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #224abe, #1a3a8f);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .btn-success {
+            background-color: #1cc88a;
+            border-color: #1cc88a;
+        }
+        .btn-success:hover {
+            background-color: #17a673;
+            border-color: #169b6b;
+        }
+        .btn-danger {
+            background-color: #e74a3b;
+            border-color: #e74a3b;
+        }
+        .btn-danger:hover {
+            background-color: #e02d1b;
+            border-color: #d52a1a;
+        }
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.35em 0.65em;
+        }
+        .page-title {
+            color: #4e73df;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            position: relative;
+            display: inline-block;
+        }
+        .page-title:after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 4px;
+            background: linear-gradient(90deg, #4e73df, #36b9cc);
+            bottom: -10px;
+            left: 0;
+            border-radius: 2px;
+        }
+        .nav-tabs .nav-link {
+            color: #5a5c69;
+            font-weight: 600;
+        }
+        .nav-tabs .nav-link.active {
+            color: #4e73df;
+            border-color: #e3e6f0 #e3e6f0 #fff;
+        }
+        .offer-template {
+            border: 1px solid #e3e6f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .offer-template:hover {
+            background-color: #f0f7ff;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(78, 115, 223, 0.15);
+        }
+        .offer-template h5 {
+            color: #4e73df;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .offer-template p {
+            color: #5a5c69;
+            margin-bottom: 10px;
+        }
+        .offer-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        .badge-discount {
+            background-color: #e74a3b;
+            color: white;
+        }
+        .badge-time {
+            background-color: #1cc88a;
+            color: white;
+        }
+        .badge-type {
+            background-color: #4e73df;
+            color: white;
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #4e73df, #224abe);
+            color: white;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #5a5c69;
+        }
+        .form-control:focus {
+            border-color: #bac8f3;
+            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+        }
+        .stats-card {
+            padding: 20px;
+            text-align: center;
+            border-left: 4px solid;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .stats-primary {
+            border-left-color: #4e73df;
+        }
+        .stats-success {
+            border-left-color: #1cc88a;
+        }
+        .stats-info {
+            border-left-color: #36b9cc;
+        }
+        .stats-warning {
+            border-left-color: #f6c23e;
+        }
+        .stats-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #5a5c69;
+            margin-bottom: 5px;
+        }
+        .stats-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #b7b9cc;
+        }
+        .pulse {
+            animation: pulse-animation 1s;
+        }
+        @keyframes pulse-animation {
+            0% { box-shadow: 0 0 0 0 rgba(78, 115, 223, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(78, 115, 223, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(78, 115, 223, 0); }
+        }
+        .btn-add-offer {
+            transition: all 0.3s;
+        }
+        .btn-add-offer:hover {
+            transform: translateY(-2px);
+        }
+        .timeline {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            position: relative;
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 15px;
+        }
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e3e6f0;
+        }
+        .timeline-item:after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4e73df;
+        }
+        .timeline-item-content {
+            background: #fff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .timeline-item-content .tag {
+            color: #fff;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        .timeline-item-content time {
+            font-size: 12px;
+            color: #b7b9cc;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .timeline-item-content p {
+            margin: 0;
+            font-size: 14px;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-tags me-2"></i> Manage Offers & Promotions
+        </h1>
+        
+        {% if messages %}
+        <div class="row">
+            <div class="col-12">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stats-card stats-primary">
+                    <div class="stats-number count">{{ offers.count }}</div>
+                    <div class="stats-label">Total Offers</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stats-card stats-success">
+                    <div class="stats-number count">{{ active_offers_count|default:"0" }}</div>
+                    <div class="stats-label">Active Offers</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stats-card stats-info">
+                    <div class="stats-number count">{{ flash_sales_count|default:"0" }}</div>
+                    <div class="stats-label">Flash Sales</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stats-card stats-warning">
+                    <div class="stats-number count">{{ all_products.count }}</div>
+                    <div class="stats-label">Available Products</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold">Current Offers</h6>
+                <button class="btn btn-primary btn-add-offer" data-bs-toggle="modal" data-bs-target="#addOfferModal">
+                    <i class="fas fa-plus me-1"></i> Add New Offer
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Vendor</th>
+                                <th>Offer Type</th>
+                                <th>Discount</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for offer in offers %}
+                            <tr>
+                                <td>{{ offer.product.name }}</td>
+                                <td>{{ offer.vendor.first_name }} {{ offer.vendor.last_name }}</td>
+                                <td>
+                                    {% if offer.offer_type == 'discount' %}
+                                        <span class="badge bg-primary">Percentage</span>
+                                    {% elif offer.offer_type == 'fixed' %}
+                                        <span class="badge bg-success">Fixed Amount</span>
+                                    {% elif offer.offer_type == 'flash_sale' %}
+                                        <span class="badge bg-danger">Flash Sale</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ offer.get_offer_type_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if offer.offer_type == 'discount' or offer.offer_type == 'flash_sale' %}
+                                        <span class="fw-bold text-primary">{{ offer.discount_value }}%</span>
+                                    {% else %}
+                                        <span class="fw-bold text-success">₹{{ offer.discount_value }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ offer.start_date|date:"M d, Y H:i" }}</td>
+                                <td>{{ offer.end_date|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    {% if offer.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" onclick="confirmDelete({{ offer.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <i class="fas fa-tag fa-2x mb-3 text-muted"></i>
+                                    <p class="mb-0">No offers available. Create your first offer!</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Offer Analysis Section -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold">Offer Analysis</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Offer Type Distribution -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary mb-3"><i class="fas fa-chart-pie me-2"></i>Offer Type Distribution</h5>
+                                <div class="chart-container" style="position: relative; height:250px;">
+                                    <canvas id="offerTypeChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Offer Performance -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary mb-3"><i class="fas fa-chart-line me-2"></i>Offer Performance</h5>
+                                <div class="chart-container" style="position: relative; height:250px;">
+                                    <canvas id="offerPerformanceChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Performing Offers -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary mb-3"><i class="fas fa-trophy me-2"></i>Top Performing Offers</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Offer Type</th>
+                                                <th>Discount</th>
+                                                <th>Conversion Rate</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for offer in top_performing_offers|slice:":5" %}
+                                            <tr>
+                                                <td>{{ offer.product.name }}</td>
+                                                <td>
+                                                    {% if offer.offer_type == 'discount' %}
+                                                        <span class="badge bg-primary">Percentage</span>
+                                                    {% elif offer.offer_type == 'fixed' %}
+                                                        <span class="badge bg-success">Fixed</span>
+                                                    {% elif offer.offer_type == 'flash_sale' %}
+                                                        <span class="badge bg-danger">Flash Sale</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if offer.offer_type == 'discount' or offer.offer_type == 'flash_sale' %}
+                                                        <span class="fw-bold text-primary">{{ offer.discount_value }}%</span>
+                                                    {% else %}
+                                                        <span class="fw-bold text-success">₹{{ offer.discount_value }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <div class="progress" style="height: 8px;">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ offer.conversion_rate }}%"></div>
+                                                    </div>
+                                                    <small class="fw-bold">{{ offer.conversion_rate }}%</small>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="4" class="text-center py-3">No performance data available yet</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Offer Activity -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary mb-3"><i class="fas fa-history me-2"></i>Recent Offer Activity</h5>
+                                <div class="timeline">
+                                    {% for activity in recent_activities|slice:":5" %}
+                                    <div class="timeline-item">
+                                        <div class="timeline-item-content">
+                                            <span class="tag" style="background-color: 
+                                                {% if activity.action == 'created' %}#1cc88a{% elif activity.action == 'expired' %}#e74a3b{% else %}#4e73df{% endif %}">
+                                                {{ activity.action|title }}
+                                            </span>
+                                            <time>{{ activity.timestamp|date:"M d, H:i" }}</time>
+                                            <p>{{ activity.message }}</p>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <p class="text-center py-3">No recent activity</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Offer Modal -->
+    <div class="modal fade" id="addOfferModal" tabindex="-1" aria-labelledby="addOfferModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addOfferModalLabel">Create New Offer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs mb-4" id="offerTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="custom-tab" data-bs-toggle="tab" data-bs-target="#custom" type="button" role="tab" aria-controls="custom" aria-selected="true">Custom Offer</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="templates-tab" data-bs-toggle="tab" data-bs-target="#templates" type="button" role="tab" aria-controls="templates" aria-selected="false">Offer Templates</button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content" id="offerTabsContent">
+                        <div class="tab-pane fade show active" id="custom" role="tabpanel" aria-labelledby="custom-tab">
+                            <form method="POST" action="{% url 'admin_offers' %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="product" class="form-label">Product</label>
+                                    <select name="product" id="product" class="form-select" required>
+                                        <option value="">Select a product</option>
+                                        {% for product in all_products %}
+                                        <option value="{{ product.id }}">{{ product.name }} - ₹{{ product.price }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="offer_type" class="form-label">Offer Type</label>
+                                    <select name="offer_type" id="offer_type" class="form-select" required>
+                                        <option value="discount">Percentage Discount</option>
+                                        <option value="fixed">Fixed Amount</option>
+                                        <option value="flash_sale">Flash Sale</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="discount_value" class="form-label">Discount Value</label>
+                                    <div class="input-group">
+                                        <input type="number" name="discount_value" id="discount_value" class="form-control" step="0.01" min="0" required>
+                                        <span class="input-group-text" id="discount-type">%</span>
+                                    </div>
+                                    <small class="form-text text-muted">For percentage discount, enter value between 1-100</small>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="start_date" class="form-label">Start Date</label>
+                                            <input type="datetime-local" name="start_date" id="start_date" class="form-control" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="end_date" class="form-label">End Date</label>
+                                            <input type="datetime-local" name="end_date" id="end_date" class="form-control" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea name="description" id="description" class="form-control" rows="3" required></textarea>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" name="is_active" id="is_active" class="form-check-input" checked>
+                                    <label for="is_active" class="form-check-label">Active</label>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Create Offer</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="tab-pane fade" id="templates" role="tabpanel" aria-labelledby="templates-tab">
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div class="offer-template" onclick="applyTemplate('first_purchase')">
+                                        <h5><i class="fas fa-gift me-2"></i> First Purchase Discount</h5>
+                                        <p>10% off for new users. Welcome to FootLand!</p>
+                                        <span class="offer-badge badge-discount">10% OFF</span>
+                                        <span class="offer-badge badge-time">7 Days</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="offer-template" onclick="applyTemplate('festive_bonanza')">
+                                        <h5><i class="fas fa-star me-2"></i> Festive Bonanza</h5>
+                                        <p>30% Off on All Products for Diwali celebration.</p>
+                                        <span class="offer-badge badge-discount">30% OFF</span>
+                                        <span class="offer-badge badge-time">7 Days</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="offer-template" onclick="applyTemplate('summer_sneakers')">
+                                        <h5><i class="fas fa-shoe-prints me-2"></i> Summer Sneakers Sale</h5>
+                                        <p>Buy 2 Sneakers, Get 1 Free (33.33% discount applied).</p>
+                                        <span class="offer-badge badge-discount">33.33% OFF</span>
+                                        <span class="offer-badge badge-time">7 Days</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="offer-template" onclick="applyTemplate('pay_save')">
+                                        <h5><i class="fas fa-wallet me-2"></i> Pay & Save</h5>
+                                        <p>₹100 Cashback on Prepaid Orders above ₹1000.</p>
+                                        <span class="offer-badge badge-type">Fixed Amount</span>
+                                        <span class="offer-badge badge-discount">₹100 OFF</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="offer-template" onclick="applyTemplate('weekend_rush')">
+                                        <h5><i class="fas fa-bolt me-2"></i> Weekend Rush Sale</h5>
+                                        <p>Flash Sale with 40% Off for 3 Hours Only! Hurry!</p>
+                                        <span class="offer-badge badge-type">Flash Sale</span>
+                                        <span class="offer-badge badge-discount">40% OFF</span>
+                                        <span class="offer-badge badge-time">3 Hours</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="offer-template" onclick="applyTemplate('clearance_sale')">
+                                        <h5><i class="fas fa-fire-alt me-2"></i> Clearance Sale</h5>
+                                        <p>End-of-season sale with up to 60% off on selected items.</p>
+                                        <span class="offer-badge badge-discount">60% OFF</span>
+                                        <span class="offer-badge badge-time">7 Days</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="offer-template" onclick="applyTemplate('festival_offers')">
+                                        <h5><i class="fas fa-holly-berry me-2"></i> Festival Offers</h5>
+                                        <p>Diwali, Christmas, New Year - Up to 50% off on all products.</p>
+                                        <span class="offer-badge badge-discount">50% OFF</span>
+                                        <span class="offer-badge badge-time">14 Days</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="offer-template" onclick="applyTemplate('flash_sale')">
+                                        <h5><i class="fas fa-clock me-2"></i> Flash Sale</h5>
+                                        <p>Limited-time 2-hour sale with up to 40% off! Don't miss out!</p>
+                                        <span class="offer-badge badge-type">Flash Sale</span>
+                                        <span class="offer-badge badge-discount">40% OFF</span>
+                                        <span class="offer-badge badge-time">2 Hours</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Chart.js for the analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Confirm delete
+        function confirmDelete(offerId) {
+            if (confirm('Are you sure you want to delete this offer?')) {
+                window.location.href = `/custom-admin/offers/delete/${offerId}/`;
+            }
+        }
+        
+        // Apply template to form
+        function applyTemplate(templateId) {
+            // Open the modal
+            var modal = new bootstrap.Modal(document.getElementById('addOfferModal'));
+            modal.show();
+            
+            // Switch to custom tab
+            document.getElementById('custom-tab').click();
+            
+            const now = new Date();
+            const oneWeekLater = new Date(now);
+            oneWeekLater.setDate(now.getDate() + 7);
+            
+            // Format dates for datetime-local input
+            const formatDate = (date) => {
+                return date.toISOString().slice(0, 16);
+            };
+            
+            // Set start and end dates
+            document.getElementById('start_date').value = formatDate(now);
+            document.getElementById('end_date').value = formatDate(oneWeekLater);
+            
+            // Apply template based on ID
+            switch(templateId) {
+                case 'first_purchase':
+                    document.getElementById('offer_type').value = 'discount';
+                    document.getElementById('discount_value').value = '10';
+                    document.getElementById('description').value = 'First Purchase Discount: 10% off for new users. Welcome to FootLand!';
+                    break;
+                case 'festive_bonanza':
+                    document.getElementById('offer_type').value = 'discount';
+                    document.getElementById('discount_value').value = '30';
+                    document.getElementById('description').value = 'Festive Bonanza: 30% Off on All Products for Diwali celebration. Limited time offer!';
+                    break;
+                case 'summer_sneakers':
+                    document.getElementById('offer_type').value = 'discount';
+                    document.getElementById('discount_value').value = '33.33';
+                    document.getElementById('description').value = 'Summer Sneakers Sale: Buy 2 Sneakers, Get 1 Free (33.33% discount applied)';
+                    break;
+                case 'pay_save':
+                    document.getElementById('offer_type').value = 'fixed';
+                    document.getElementById('discount_value').value = '100';
+                    document.getElementById('description').value = 'Pay & Save: ₹100 Cashback on Prepaid Orders above ₹1000';
+                    break;
+                case 'weekend_rush':
+                    document.getElementById('offer_type').value = 'flash_sale';
+                    document.getElementById('discount_value').value = '40';
+                    
+                    // Set end date to 3 hours from now for flash sale
+                    const threeHoursLater = new Date(now);
+                    threeHoursLater.setHours(now.getHours() + 3);
+                    document.getElementById('end_date').value = formatDate(threeHoursLater);
+                    
+                    document.getElementById('description').value = 'Weekend Rush Sale: Flash Sale with 40% Off for 3 Hours Only! Hurry!';
+                    break;
+                case 'clearance_sale':
+                    document.getElementById('offer_type').value = 'discount';
+                    document.getElementById('discount_value').value = '60';
+                    document.getElementById('description').value = 'Clearance Sale: End-of-season sale with up to 60% off on selected items';
+                    break;
+                case 'festival_offers':
+                    document.getElementById('offer_type').value = 'discount';
+                    document.getElementById('discount_value').value = '50';
+                    document.getElementById('description').value = 'Festival Offers: Diwali, Christmas, New Year - Up to 50% off on all products';
+                    break;
+                case 'flash_sale':
+                    document.getElementById('offer_type').value = 'flash_sale';
+                    document.getElementById('discount_value').value = '40';
+                    
+                    // Set end date to 2 hours from now for flash sale
+                    const twoHoursLater = new Date(now);
+                    twoHoursLater.setHours(now.getHours() + 2);
+                    document.getElementById('end_date').value = formatDate(twoHoursLater);
+                    
+                    document.getElementById('description').value = 'Flash Sale: Limited-time 2-hour sale with up to 40% off! Don\'t miss out!';
+                    break;
+            }
+            
+            // Update discount type label
+            const discountType = document.getElementById('discount-type');
+            if (document.getElementById('offer_type').value === 'discount' || document.getElementById('offer_type').value === 'flash_sale') {
+                discountType.textContent = '%';
+            } else {
+                discountType.textContent = '₹';
+            }
+        }
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update discount type label based on offer type
+            const offerTypeSelect = document.getElementById('offer_type');
+            if (offerTypeSelect) {
+                offerTypeSelect.addEventListener('change', function() {
+                    const discountType = document.getElementById('discount-type');
+                    if (this.value === 'discount' || this.value === 'flash_sale') {
+                        discountType.textContent = '%';
+                    } else {
+                        discountType.textContent = '₹';
+                    }
+                });
+            }
+            
+            // Add hover effects to table rows
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#f8f9fa';
+                    this.style.transform = 'scale(1.01)';
+                    this.style.boxShadow = '0 5px 15px rgba(0,0,0,0.05)';
+                    this.style.transition = 'all 0.3s ease';
+                });
+                
+                row.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = '';
+                    this.style.transform = '';
+                    this.style.boxShadow = '';
+                });
+            });
+            
+            // Add pulse animation to add button
+            const addButton = document.querySelector('.btn-add-offer');
+            if (addButton) {
+                setInterval(() => {
+                    addButton.classList.add('pulse');
+                    setTimeout(() => {
+                        addButton.classList.remove('pulse');
+                    }, 1000);
+                }, 3000);
+            }
+            
+            // Initialize charts
+            initializeCharts();
+        });
+        
+        // Initialize charts for offer analysis
+        function initializeCharts() {
+            // Offer Type Distribution Chart
+            const offerTypeCtx = document.getElementById('offerTypeChart');
+            if (offerTypeCtx) {
+                new Chart(offerTypeCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Percentage Discount', 'Fixed Amount', 'Flash Sale'],
+                        datasets: [{
+                            data: [
+                                {{ percentage_discount_count|default:"0" }}, 
+                                {{ fixed_amount_count|default:"0" }}, 
+                                {{ flash_sale_count|default:"0" }}
+                            ],
+                            backgroundColor: [
+                                '#4e73df',
+                                '#1cc88a',
+                                '#e74a3b'
+                            ],
+                            hoverBackgroundColor: [
+                                '#2e59d9',
+                                '#17a673',
+                                '#e02d1b'
+                            ],
+                            hoverBorderColor: "rgba(234, 236, 244, 1)",
+                        }],
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        cutout: '70%',
+                    }
+                });
+            }
+            
+            // Offer Performance Chart
+            const performanceCtx = document.getElementById('offerPerformanceChart');
+            if (performanceCtx) {
+                new Chart(performanceCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+                        datasets: [{
+                            label: "Offer Conversions",
+                            lineTension: 0.3,
+                            backgroundColor: "rgba(78, 115, 223, 0.05)",
+                            borderColor: "rgba(78, 115, 223, 1)",
+                            pointRadius: 3,
+                            pointBackgroundColor: "rgba(78, 115, 223, 1)",
+                            pointBorderColor: "rgba(78, 115, 223, 1)",
+                            pointHoverRadius: 5,
+                            pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+                            pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+                            pointHitRadius: 10,
+                            pointBorderWidth: 2,
+                            data: [0, 10, 5, 15, 10, 20, 15, 25, 20, 30, 25, 40],
+                        }],
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html> 

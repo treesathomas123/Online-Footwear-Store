@@ -108,7 +108,8 @@ urlpatterns = [
     path('vendor/offers/', views.vendor_offers, name='vendor_offers'),
     path('vendor/offers/edit/<int:offer_id>/', views.edit_offer, name='edit_offer'),
     path('vendor/offers/delete/<int:offer_id>/', views.delete_offer, name='delete_offer'),
-    path('admin/offers/', views.admin_offers, name='admin_offers'),
+    path('custom-admin/offers/', views.admin_offers, name='admin_offers'),
+    path('custom-admin/offers/delete/<int:offer_id>/', views.admin_delete_offer, name='admin_delete_offer'),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
