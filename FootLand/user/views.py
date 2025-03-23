@@ -2661,13 +2661,28 @@ def get_recommendations(age, weight, shoe_size, prev_incidents, footwear_type, a
         prev_incidents = int(prev_incidents)
         numerical_features = np.array([age, weight, shoe_size, prev_incidents])
         
+        # Get all products from the user_product table
+        from django.db.models import Q
+        all_products = Product.objects.all()
+
+        # Process each surface and condition combination
         for surface in surfaces:
+            # Clean up surface name
+            surface = surface.strip().lower().replace(' ', '_')
+            
             for condition in surface_conditions:
+                # Clean up condition
+                condition = condition.strip().lower()
+                
                 surface_predictions = {}
                 
-                # Get predictions for each activity type
                 for act in activities:
                     try:
+                        # Verify surface is in the encoder's vocabulary
+                        if surface not in surface_encoder.classes_:
+                            print(f"Warning: Surface '{surface}' not in encoder vocabulary")
+                            continue
+
                         categorical_features = np.array([
                             footwear_encoder.transform([footwear_type])[0],
                             activity_encoder.transform([act])[0],
@@ -2687,27 +2702,61 @@ def get_recommendations(age, weight, shoe_size, prev_incidents, footwear_type, a
                         # Format the materials info
                         materials_info = []
                         for mat, prob in zip(recommended_materials, probs):
+                            # Create a list of possible material variations for matching
+                            material_variations = [
+                                mat,  # Original
+                                mat.lower(),  # Lowercase
+                                mat.upper(),  # Uppercase
+                                mat.replace(' ', '_'),  # With underscores
+                                mat.replace(' ', '-'),  # With hyphens
+                                mat.replace('_', ' '),  # Spaces instead of underscores
+                                mat.replace('-', ' '),  # Spaces instead of hyphens
+                                ' '.join(word.capitalize() for word in mat.split()),  # Title Case
+                            ]
+
+                            # Query for products with any of the material variations
+                            matching_products = all_products.filter(
+                                Q(material__in=material_variations) |
+                                Q(material__icontains=mat)
+                            ).distinct().values(
+                                'id', 'name', 'description', 'material',
+                                'brand', 'type', 'price', 'stock_quantity', 'image'
+                            )[:5]
+
+                            # Convert queryset to list
+                            product_list = list(matching_products)
+                            
+                            # Debug print
+                            print(f"Surface: {surface}, Condition: {condition}, Material: {mat}, Found products: {len(product_list)}")
+                            
                             materials_info.append({
                                 'name': mat,
                                 'percentage': round(prob * 100, 1),
-                                'description': descriptions[mat]
+                                'description': descriptions[mat],
+                                'matching_products': product_list
                             })
                         
                         surface_predictions[act] = {
                             'materials_info': materials_info
                         }
                     except Exception as e:
-                        print(f"Error processing activity {act}: {str(e)}")
+                        print(f"Error processing activity {act} for surface {surface}: {str(e)}")
                         continue
 
+                # Create a more readable surface display name
                 surface_display = surface.replace('_', ' ').title()
                 surface_key = f"{surface_display}_{condition}"
                 recommendations[surface_key] = {
                     'predictions': surface_predictions,
                     'condition': condition
                 }
-        
+
+        if not recommendations:
+            print("Warning: No recommendations generated")
+            return {'error': 'No recommendations could be generated for the selected criteria'}
+
         return recommendations
+
     except Exception as e:
         print(f"Error in get_recommendations: {str(e)}")
         return {'error': str(e)}
@@ -2732,48 +2781,120 @@ def get_material_descriptions(materials):
 def recommend(request):
     if request.method == 'POST':
         try:
-            # Get form data with default values and type conversion
-            age = int(request.POST.get('age', 0))
-            weight = float(request.POST.get('weight', 0))
-            shoe_size = float(request.POST.get('shoeSize', 0))
+            # Debug print
+            print("Raw POST data:", dict(request.POST))
+            
+            # Get form data with proper type conversion and default values
+            try:
+                age = int(request.POST.get('age', 0))
+                weight = float(request.POST.get('weight', 0))
+                shoe_size = float(request.POST.get('shoeSize', 0))
+            except ValueError as e:
+                print(f"Value conversion error: {e}")
+                return render(request, 'index.html', {'error': 'Please enter valid numeric values'})
+
+            # Get other form fields
             prev_incidents = request.POST.get('previousIncidents')
             footwear_type = request.POST.get('footwearType')
             activity = request.POST.get('activity')
             usage_freq = request.POST.get('usageFrequency')
             temperature = request.POST.get('temperature')
-            surfaces = request.POST.getlist('surfaces[]')
-            surface_conditions = request.POST.getlist('surfaceConditions[]')
+            
+            # Get surfaces and conditions - try both array and single value formats
+            surfaces = request.POST.getlist('surfaces[]') or request.POST.getlist('surfaces')
+            surface_conditions = request.POST.getlist('surfaceConditions[]') or request.POST.getlist('surfaceConditions')
 
-            # Validate required fields
-            if not all([age, weight, shoe_size, prev_incidents, footwear_type, 
-                       activity, usage_freq, temperature, surfaces, surface_conditions]):
+            # Debug print
+            print("Processed form data:", {
+                'age': age,
+                'weight': weight,
+                'shoe_size': shoe_size,
+                'prev_incidents': prev_incidents,
+                'footwear_type': footwear_type,
+                'activity': activity,
+                'usage_freq': usage_freq,
+                'temperature': temperature,
+                'surfaces': surfaces,
+                'surface_conditions': surface_conditions
+            })
+
+            # Validate surfaces and conditions
+            if not surfaces:
+                print("No surfaces selected")
                 return render(request, 'index.html', {
-                    'error': 'Please fill in all required fields.'
+                    'error': 'Please select at least one surface type',
+                    'form_data': request.POST
                 })
 
-            # Validate numeric fields
-            if age <= 0 or weight <= 0 or shoe_size <= 0:
+            if not surface_conditions:
+                print("No conditions selected")
                 return render(request, 'index.html', {
-                    'error': 'Please enter valid numeric values.'
+                    'error': 'Please select at least one surface condition',
+                    'form_data': request.POST
                 })
 
+            # Clean and validate surfaces
+            valid_surfaces = []
+            for surface in surfaces:
+                cleaned_surface = surface.strip().lower().replace(' ', '_')
+                if cleaned_surface in surface_encoder.classes_:
+                    valid_surfaces.append(cleaned_surface)
+                else:
+                    print(f"Invalid surface: {surface}")
+
+            if not valid_surfaces:
+                return render(request, 'index.html', {
+                    'error': 'No valid surfaces selected',
+                    'form_data': request.POST
+                })
+
+            # Clean and validate conditions
+            valid_conditions = []
+            for condition in surface_conditions:
+                cleaned_condition = condition.strip().lower()
+                if cleaned_condition in condition_encoder.classes_:
+                    valid_conditions.append(cleaned_condition)
+                else:
+                    print(f"Invalid condition: {condition}")
+
+            if not valid_conditions:
+                return render(request, 'index.html', {
+                    'error': 'No valid conditions selected',
+                    'form_data': request.POST
+                })
+
+            # Get recommendations with validated data
             recommendations = get_recommendations(
-                age, weight, shoe_size, prev_incidents, footwear_type, 
-                activity, usage_freq, temperature, surfaces, surface_conditions
+                age=age,
+                weight=weight,
+                shoe_size=shoe_size,
+                prev_incidents=prev_incidents,
+                footwear_type=footwear_type,
+                activity=activity,
+                usage_freq=usage_freq,
+                temperature=temperature,
+                surfaces=valid_surfaces,
+                surface_conditions=valid_conditions
             )
 
-            # No additional formatting needed, pass recommendations directly
+            if not recommendations or 'error' in recommendations:
+                error_msg = recommendations.get('error', 'No recommendations found')
+                return render(request, 'index.html', {
+                    'error': error_msg,
+                    'form_data': request.POST
+                })
+
             return render(request, 'recommendations.html', {
                 'recommendations': recommendations,
-                'surfaces': surfaces,
-                'conditions': surface_conditions
+                'surfaces': valid_surfaces,
+                'conditions': valid_conditions
             })
             
-        except (ValueError, TypeError) as e:
-            print(f"Form data error: {e}")
-            print("POST data:", request.POST)
+        except Exception as e:
+            print(f"Error processing form: {str(e)}")
             return render(request, 'index.html', {
-                'error': 'Please fill in all required fields with valid values.'
+                'error': f'An error occurred: {str(e)}',
+                'form_data': request.POST
             })
     
     return render(request, 'index.html')

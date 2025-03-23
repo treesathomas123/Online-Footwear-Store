@@ -68,13 +68,7 @@ class Product(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(max_length=1000)
     MATERIAL_CHOICES = [
-        ('leather', 'Leather'),
-        ('textiles', 'Textiles'),
-        ('synthetics', 'Synthetics'),
-        ('rubber', 'Rubber'),
-        ('foam', 'Foam'),
-        ('plastic', 'Plastic'),
-         ('Natural rubber', 'Natural Rubber'),
+        ('Natural rubber', 'Natural Rubber'),
         ('Heavy-duty rubber', 'Heavy-duty Rubber'),
         ('Non-marking rubber', 'Non-marking Rubber'),
         ('TPR', 'TPR'),
@@ -86,6 +80,12 @@ class Product(models.Model):
         ('Neoprene', 'Neoprene'),
         ('Vibram', 'Vibram'),
         ('Cork', 'Cork'),
+        ('leather', 'Leather'),
+        ('textiles', 'Textiles'),
+        ('synthetics', 'Synthetics'),
+        ('rubber', 'Rubber'),
+        ('foam', 'Foam'),
+        ('plastic', 'Plastic'),
     ]
     
     BRAND_CHOICES = [

@@ -96,7 +96,14 @@
         
         {% if error %}
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ error }}
+            <strong>{{ error }}</strong>
+            {% if error_list %}
+            <ul class="mb-0 mt-2">
+                {% for err in error_list %}
+                <li>{{ err }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         {% endif %}
@@ -118,19 +125,19 @@
                     <div class="col-md-3">
                         <div class="mb-3">
                             <label for="age" class="form-label required-field">Age</label>
-                            <input type="number" class="form-control" id="age" name="age" required>
+                            <input type="number" class="form-control" id="age" name="age" required value="{{ form_data.age|default:'' }}">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="mb-3">
                             <label for="weight" class="form-label required-field">Weight (kg)</label>
-                            <input type="number" class="form-control" id="weight" name="weight" required>
+                            <input type="number" class="form-control" id="weight" name="weight" required step="0.1" value="{{ form_data.weight|default:'' }}">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="mb-3">
                             <label for="shoeSize" class="form-label required-field">Shoe Size</label>
-                            <input type="number" class="form-control" id="shoeSize" name="shoeSize" step="0.5" required>
+                            <input type="number" class="form-control" id="shoeSize" name="shoeSize" required step="0.5" value="{{ form_data.shoe_size|default:'' }}">
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -138,10 +145,10 @@
                             <label for="previousIncidents" class="form-label required-field">Previous Slip Incidents</label>
                             <select class="form-select" id="previousIncidents" name="previousIncidents" required>
                                 <option value="">Select...</option>
-                                <option value="0">None</option>
-                                <option value="1">1-2 times</option>
-                                <option value="2">3-5 times</option>
-                                <option value="3">More than 5 times</option>
+                                <option value="0" {% if form_data.prev_incidents == '0' %}selected{% endif %}>None</option>
+                                <option value="1" {% if form_data.prev_incidents == '1' %}selected{% endif %}>1-2 times</option>
+                                <option value="2" {% if form_data.prev_incidents == '2' %}selected{% endif %}>3-5 times</option>
+                                <option value="3" {% if form_data.prev_incidents == '3' %}selected{% endif %}>More than 5 times</option>
                             </select>
                         </div>
                     </div>
@@ -222,7 +229,7 @@
                                 <span class="condition-badge">Dry/Wet</span>
                                 <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace" alt="Ceramic Tile">
                                 <p>Ceramic Tile</p>
-                                <input type="checkbox" name="surfaces[]" value="ceramic_tile" style="display: none;">
+                                <input type="checkbox" name="surfaces" value="ceramic_tile" style="display: none;">
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -230,7 +237,7 @@
                                 <span class="condition-badge">Slippery</span>
                                 <img src="https://images.unsplash.com/photo-1603665301175-57ba46f392bf" alt="Polished Marble">
                                 <p>Polished Marble</p>
-                                <input type="checkbox" name="surfaces[]" value="polished_marble" style="display: none;">
+                                <input type="checkbox" name="surfaces" value="polished_marble" style="display: none;">
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -238,7 +245,7 @@
                                 <span class="condition-badge">Smooth</span>
                                 <img src="https://images.unsplash.com/photo-1581858726788-75bc0f6a952d" alt="Vinyl">
                                 <p>Vinyl Flooring</p>
-                                <input type="checkbox" name="surfaces[]" value="vinyl" style="display: none;">
+                                <input type="checkbox" name="surfaces" value="vinyl" style="display: none;">
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -246,7 +253,7 @@
                                 <span class="condition-badge">Polished</span>
                                 <img src="{% static 'images/hardwood.jpg' %}" alt="Hardwood">
                                 <p>Hardwood</p>
-                                <input type="checkbox" name="surfaces[]" value="hardwood" style="display: none;">
+                                <input type="checkbox" name="surfaces" value="hardwood" style="display: none;">
                             </div>
                         </div>
                     </div>
@@ -259,9 +266,9 @@
                         <div class="col-md-3">
                             <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="concrete">
                                 <span class="condition-badge">Rough</span>
-                                <img src="https://images.unsplash.com/photo-1601128533718-374ffcca299b" alt="Concrete">
+                                <img src="{% static 'images/concrete.jpg' %}" alt="Concrete">
                                 <p>Concrete</p>
-                                <input type="checkbox" name="surfaces[]" value="concrete" style="display: none;">
+                                <input type="checkbox" name="surfaces" value="concrete" style="display: none;">
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -269,7 +276,7 @@
                                 <span class="condition-badge">Textured</span>
                                 <img src="{% static 'images/textured.jpeg' %}" alt="Asphalt">
                                 <p>Asphalt</p>
-                                <input type="checkbox" name="surfaces[]" value="asphalt" style="display: none;">
+                                <input type="checkbox" name="surfaces" value="asphalt" style="display: none;">
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -277,7 +284,7 @@
                                 <span class="condition-badge">Natural</span>
                                 <img src="{% static 'images/grass.jpg' %}" alt="Grass">
                                 <p>Grass</p>
-                                <input type="checkbox" name="surfaces[]" value="grass" style="display: none;">
+                                <input type="checkbox" name="surfaces" value="grass" style="display: none;">
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -285,7 +292,7 @@
                                 <span class="condition-badge">Loose</span>
                                 <img src="{% static 'images/gravel.webp' %}" alt="Gravel">
                                 <p>Gravel</p>
-                                <input type="checkbox" name="surfaces[]" value="gravel" style="display: none;">
+                                <input type="checkbox" name="surfaces" value="gravel" style="display: none;">
                             </div>
                         </div>
                     </div>
@@ -300,37 +307,37 @@
                                 <span class="condition-badge">Wet</span>
                                 <img src="{% static 'images/wettile.jpg' %}" alt="Wet Tile">
                                 <p>Wet Tile</p>
-                                <input type="checkbox" name="surfaces[]" value="wet_tile" style="display: none;">
+                                <input type="checkbox" name="surfaces" value="wet_tile" style="display: none;">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="inclined">
                                 <span class="condition-badge">Slope</span>
-                                <img src="https://images.unsplash.com/photo-1624890240392-8e7087991ccb" alt="Inclined Surface">
+                                <img src="{% static 'images/incliened.jpeg' %}" alt="Inclined Surface">
                                 <p>Inclined Surface</p>
-                                <input type="checkbox" name="surfaces[]" value="inclined" style="display: none;">
+                                <input type="checkbox" name="surfaces" value="inclined" style="display: none;">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="metal_grating">
                                 <span class="condition-badge">Industrial</span>
-                                <img src="https://images.unsplash.com/photo-1597484662317-9bd7bdda2eb5" alt="Metal Grating">
+                                <img src="{% static 'images/metal.jpg' %}" alt="Metal Grating">
                                 <p>Metal Grating</p>
-                                <input type="checkbox" name="surfaces[]" value="metal_grating" style="display: none;">
+                                <input type="checkbox" name="surfaces" value="metal_grating" style="display: none;">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="surface-option position-relative" onclick="toggleSelection(this)" data-surface="pool_deck">
                                 <span class="condition-badge">Wet/Slippery</span>
-                                <img src="https://images.unsplash.com/photo-1562841857-1a4323ce6fb7" alt="Pool Deck">
+                                <img src="{% static 'images/pool.jpg' %}" alt="Pool Deck">
                                 <p>Pool Deck</p>
-                                <input type="checkbox" name="surfaces[]" value="pool_deck" style="display: none;">
+                                <input type="checkbox" name="surfaces" value="pool_deck" style="display: none;">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Update Surface Selection to include condition -->
+                <!-- Surface Conditions -->
                 <div class="surface-category surface-conditions">
                     <h4 class="mb-3">Surface Conditions</h4>
                     <p class="required-note">At least one surface condition must be selected</p>
@@ -339,23 +346,23 @@
                             <label class="form-label">Surface Condition</label>
                             <div class="d-flex gap-3">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="conditionDry" name="surfaceConditions[]" value="dry">
+                                    <input class="form-check-input" type="checkbox" id="conditionDry" name="surfaceConditions" value="dry">
                                     <label class="form-check-label" for="conditionDry">Dry</label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="conditionWet" name="surfaceConditions[]" value="wet">
+                                    <input class="form-check-input" type="checkbox" id="conditionWet" name="surfaceConditions" value="wet">
                                     <label class="form-check-label" for="conditionWet">Wet</label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="conditionOily" name="surfaceConditions[]" value="oily">
+                                    <input class="form-check-input" type="checkbox" id="conditionOily" name="surfaceConditions" value="oily">
                                     <label class="form-check-label" for="conditionOily">Oily</label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="conditionDusty" name="surfaceConditions[]" value="dusty">
+                                    <input class="form-check-input" type="checkbox" id="conditionDusty" name="surfaceConditions" value="dusty">
                                     <label class="form-check-label" for="conditionDusty">Dusty</label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="conditionFrozen" name="surfaceConditions[]" value="frozen">
+                                    <input class="form-check-input" type="checkbox" id="conditionFrozen" name="surfaceConditions" value="frozen">
                                     <label class="form-check-label" for="conditionFrozen">Frozen</label>
                                 </div>
                             </div>
@@ -380,189 +387,40 @@
             updateValidationStatus();
         }
 
-        // Replace the form submission code
-        document.querySelector('form').addEventListener('submit', async function(event) {
+        document.querySelector('form').addEventListener('submit', function(event) {
             event.preventDefault();
-            let isValid = true;
-            let errorMessages = [];
-
-            // Clear previous validation states
-            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-            document.querySelectorAll('.border-danger').forEach(el => el.classList.remove('border-danger', 'p-3'));
-
-            // Validate numeric fields
-            const numericFields = [
-                { id: 'age', name: 'Age', min: 1 },
-                { id: 'weight', name: 'Weight', min: 1 },
-                { id: 'shoeSize', name: 'Shoe Size', min: 1 }
-            ];
-
-            numericFields.forEach(field => {
-                const input = document.getElementById(field.id);
-                const value = parseFloat(input.value);
-                if (isNaN(value) || value < field.min) {
-                    isValid = false;
-                    errorMessages.push(`Please enter a valid ${field.name}`);
-                    input.classList.add('is-invalid');
-                }
-            });
-
-            // Validate select fields
-            const selectFields = [
-                { id: 'previousIncidents', name: 'Previous Incidents' },
-                { id: 'footwearType', name: 'Footwear Type' },
-                { id: 'activity', name: 'Primary Activity' },
-                { id: 'usageFrequency', name: 'Usage Frequency' },
-                { id: 'temperature', name: 'Temperature Range' }
-            ];
-
-            selectFields.forEach(field => {
-                const select = document.getElementById(field.id);
-                if (!select.value || select.value === "Select...") {
-                    isValid = false;
-                    errorMessages.push(`Please select ${field.name}`);
-                    select.classList.add('is-invalid');
-                }
-            });
-
-            // Validate surface selection
-            const surfaces = document.querySelectorAll('input[name="surfaces[]"]:checked');
-            if (surfaces.length === 0) {
-                isValid = false;
-                errorMessages.push('Please select at least one surface type');
-                document.querySelectorAll('.surface-category').forEach(category => {
-                    if (!category.classList.contains('surface-conditions')) {
-                        category.classList.add('border', 'border-danger', 'p-3');
-                    }
-                });
-            }
-
-            // Validate surface conditions
-            const conditions = document.querySelectorAll('input[name="surfaceConditions[]"]:checked');
-            if (conditions.length === 0) {
-                isValid = false;
-                errorMessages.push('Please select at least one surface condition');
-                document.querySelector('.surface-conditions').classList.add('border', 'border-danger', 'p-3');
-            }
-
-            const alertDiv = document.getElementById('validationAlert');
             
-            if (!isValid) {
-                const errorHtml = errorMessages.map(msg => `<li>${msg}</li>`).join('');
-                alertDiv.innerHTML = `
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <strong>Please correct the following errors:</strong>
-                        <ul class="mb-0">${errorHtml}</ul>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                `;
-                alertDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Get selected surfaces
+            const selectedSurfaces = Array.from(document.querySelectorAll('input[name="surfaces"]:checked')).map(cb => cb.value);
+            
+            // Get selected conditions
+            const selectedConditions = Array.from(document.querySelectorAll('input[name="surfaceConditions"]:checked')).map(cb => cb.value);
+            
+            // Validate selections
+            if (selectedSurfaces.length === 0) {
+                alert('Please select at least one surface type');
+                return;
+            }
+            
+            if (selectedConditions.length === 0) {
+                alert('Please select at least one surface condition');
                 return;
             }
 
-            // If validation passes, submit the form
-            alertDiv.innerHTML = '';
+            // Create FormData object
+            const formData = new FormData(this);
+            
+            // Append selected surfaces and conditions
+            selectedSurfaces.forEach(surface => {
+                formData.append('surfaces[]', surface);
+            });
+            
+            selectedConditions.forEach(condition => {
+                formData.append('surfaceConditions[]', condition);
+            });
+            
+            // Submit the form
             this.submit();
-        });
-
-        // Add this to clear validation styling when user makes changes
-        document.addEventListener('DOMContentLoaded', function() {
-            // Clear validation on input change
-            document.querySelectorAll('input, select').forEach(element => {
-                element.addEventListener('input', function() {
-                    this.classList.remove('is-invalid');
-                    // Remove border-danger from parent surface category if it's a surface checkbox
-                    if (this.name === 'surfaces[]' || this.name === 'surfaceConditions[]') {
-                        const surfaceCategory = this.closest('.surface-category');
-                        if (surfaceCategory) {
-                            surfaceCategory.classList.remove('border', 'border-danger', 'p-3');
-                        }
-                    }
-                });
-            });
-
-            // Clear validation on surface selection
-            document.querySelectorAll('.surface-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    const surfaceCategory = this.closest('.surface-category');
-                    if (surfaceCategory) {
-                        surfaceCategory.classList.remove('border', 'border-danger', 'p-3');
-                    }
-                    // Check if any surface is selected and clear the error message if true
-                    const allSurfaces = document.querySelectorAll('input[name="surfaces[]"]:checked');
-                    if (allSurfaces.length > 0) {
-                        document.querySelectorAll('.surface-category').forEach(category => {
-                            category.classList.remove('border', 'border-danger', 'p-3');
-                        });
-                    }
-                });
-            });
-        });
-
-        function updateValidationStatus() {
-            // Update numeric fields
-            document.querySelectorAll('input[type="number"]').forEach(input => {
-                const value = parseFloat(input.value);
-                if (!isNaN(value) && value > 0) {
-                    input.classList.add('is-valid');
-                    input.classList.remove('is-invalid');
-                } else {
-                    input.classList.remove('is-valid');
-                }
-            });
-
-            // Update select fields
-            document.querySelectorAll('select').forEach(select => {
-                if (select.value && select.value !== "Select...") {
-                    select.classList.add('is-valid');
-                    select.classList.remove('is-invalid');
-                } else {
-                    select.classList.remove('is-valid');
-                }
-            });
-
-            // Update surface selections
-            const surfaces = document.querySelectorAll('input[name="surfaces[]"]:checked');
-            const surfaceCategories = document.querySelectorAll('.surface-category:not(.surface-conditions)');
-            if (surfaces.length > 0) {
-                surfaceCategories.forEach(category => {
-                    category.classList.add('is-valid');
-                    category.classList.remove('is-invalid');
-                });
-            } else {
-                surfaceCategories.forEach(category => {
-                    category.classList.remove('is-valid');
-                });
-            }
-
-            // Update surface conditions
-            const conditions = document.querySelectorAll('input[name="surfaceConditions[]"]:checked');
-            const conditionsCategory = document.querySelector('.surface-conditions');
-            if (conditions.length > 0) {
-                conditionsCategory.classList.add('is-valid');
-                conditionsCategory.classList.remove('is-invalid');
-            } else {
-                conditionsCategory.classList.remove('is-valid');
-            }
-        }
-
-        // Add event listeners for validation updates
-        document.addEventListener('DOMContentLoaded', function() {
-            // Monitor input changes
-            document.querySelectorAll('input, select').forEach(element => {
-                element.addEventListener('input', updateValidationStatus);
-                element.addEventListener('change', updateValidationStatus);
-            });
-
-            // Monitor surface selections
-            document.querySelectorAll('.surface-option').forEach(option => {
-                option.addEventListener('click', updateValidationStatus);
-            });
-
-            // Monitor condition checkboxes
-            document.querySelectorAll('input[name="surfaceConditions[]"]').forEach(checkbox => {
-                checkbox.addEventListener('change', updateValidationStatus);
-            });
         });
 
         function updateActivityPredictions() {
